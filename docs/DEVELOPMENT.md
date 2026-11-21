@@ -72,3 +72,7 @@ Os critérios C01–C03 e S01–S04 estão nas especificações de [campanhas](s
 - **Refactor** — as gravações passaram a consultar o estado de arquivamento sem recomputar as métricas da campanha. A regressão incluiu lint, análise de tipos, build, SQLite e Chromium. O runner unitário continua sem casos. O SQLite e o fluxo de interface são os pontos de verificação dos comportamentos deste incremento.
 
 O uso privado entre dispositivos, o histórico, os rascunhos locais duráveis e a resolução de conflitos fazem parte do Incremento 2. Neste incremento a versão-base protege o texto já gravado, e uma alteração pendente fica disponível na aba enquanto ela permanece aberta.
+
+## Ensaio do check obrigatório
+
+Em um PR apenas de documentação, acompanhe o job `validar` para o SHA atual. Enquanto estiver pendente, o GitHub deve bloquear a integração. Depois de `success`, com a branch atualizada e os demais requisitos satisfeitos, o PR deve ficar elegível sem aprovação humana obrigatória. Registre o link da execução e o estado do botão de merge nas duas fases.
