@@ -1,0 +1,24 @@
+# MVP do Lorekeeper
+
+Escopo proposto para revisão com base no [documento de produto](PRODUCT.md). A primeira versão permite registrar várias sessões de uma campanha, alternar entre computadores e encontrar uma informação antiga pelo título, pelo corpo do texto ou pelo vínculo com uma entidade.
+
+## Escopo e critérios de aceitação
+
+| ID | Fluxo | Critério de aceitação |
+| --- | --- | --- |
+| MVP-01 | Acesso privado e navegação | O usuário abre o dashboard em dois computadores autorizados. Um dispositivo sem autorização fica sem acesso à interface e à API. A interface em português brasileiro, com tema escuro, permite ler e editar em telas estreitas. |
+| MVP-02 | Campanhas | Criar uma campanha informando apenas o nome. Editar metadados, abrir a campanha pelo dashboard e ver estado, personagem em destaque, número de sessões, última sessão e missões abertas quando houver dados. Arquivar, localizar e reativar sem perder conteúdo ou vínculos. |
+| MVP-03 | Sessões | A partir da campanha, abrir uma nova sessão diretamente no editor. Editar título, datas, número e participantes quando necessário. Reabrir o histórico em ordem cronológica e consultar a sessão anterior. |
+| MVP-04 | Editor Markdown | Digitar texto livre e visualizar títulos, listas, checklists, tabelas e destaques. O salvamento é automático e informa rascunho local, sincronização pendente, confirmação do servidor ou erro. Restaurar uma revisão do texto cria uma nova versão. |
+| MVP-05 | Troca de dispositivo | Gravar texto no computador A, aguardar a confirmação e encontrar a mesma versão ao abrir a sessão no computador B, sem transferência manual. |
+| MVP-06 | Queda de conexão | Com o editor aberto, continuar escrevendo após desconectar. Depois da confirmação local, fechar a aba e recuperar o texto ao reabrir online no mesmo perfil. O envio retoma sem criar sessão ou revisão duplicada. Se o armazenamento local falhar, a interface indica o erro e permite copiar ou baixar o texto. |
+| MVP-07 | Conflito | Abrir a mesma sessão nos dois computadores, salvar mais tarde sobre a mesma versão-base e verificar que a tentativa atrasada preserva o rascunho e mostra a versão do servidor. Salvar uma combinação mantém o histórico disponível. |
+| MVP-08 | Anotações rápidas | Abrir a captura a partir do dashboard, escrever sem escolher uma campanha e recuperar a nota na caixa de entrada. Atribuir campanha e vincular a uma sessão ou entidade depois. Aplicar a mesma proteção de texto das sessões. |
+| MVP-09 | Wiki e personagens | Cadastrar personagens, NPCs, localidades e missões com título e texto livre na campanha. Consultar missões abertas e acessar a página do personagem em destaque pela campanha. |
+| MVP-10 | Vínculos e tags | Vincular uma menção na sessão a uma página e ver a sessão nos backlinks. Renomear a página mantém o vínculo navegável. Entidades homônimas de campanhas diferentes permanecem independentes. Associar e remover tags. |
+| MVP-11 | Busca | Encontrar um termo no corpo de uma sessão antiga, com ou sem acentos. Filtrar por campanha, categoria e tag, ler trecho destacado e abrir o documento correspondente. |
+| MVP-12 | Exportação e backup | Abrir o Markdown e o JSON exportados fora do Lorekeeper. Restaurar uma cópia operacional separada e recuperar campanhas, textos, revisões e vínculos. Conferir que a busca retorna resultados coerentes após a restauração. |
+
+## Incremento posterior ao MVP
+
+A proposta deixa para os próximos incrementos a abertura a frio sem rede, a seleção de campanhas para disponibilidade offline e a instalação como PWA. Também ficam para depois capas e anexos, PDFs, editor rico, sintaxe `[[Nome]]`, atalhos avançados, linha do tempo ficcional, marcações de fatos e rumores, facções, itens, tela dedicada de preparação, histórico narrativo estruturado e exclusão definitiva. A visão geral inicial usa as sessões recentes e as missões abertas para retomar o contexto. Recursos de IA, importações, grafo e biblioteca de regras estão no [roadmap](ROADMAP.md).
