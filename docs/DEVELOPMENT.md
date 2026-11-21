@@ -72,3 +72,31 @@ Os critérios C01–C03 e S01–S04 estão nas especificações de [campanhas](s
 - **Refactor** — as gravações passaram a consultar o estado de arquivamento sem recomputar as métricas da campanha. A regressão incluiu lint, análise de tipos, build, SQLite e Chromium. O runner unitário continua sem casos. O SQLite e o fluxo de interface são os pontos de verificação dos comportamentos deste incremento.
 
 O uso privado entre dispositivos, o histórico, os rascunhos locais duráveis e a resolução de conflitos fazem parte do Incremento 2. Neste incremento a versão-base protege o texto já gravado, e uma alteração pendente fica disponível na aba enquanto ela permanece aberta.
+
+## Integração automatizada
+
+### Estado atual e evidências
+
+O PR #2 está na `main` em `a737343`. O Git por HTTPS funciona no Codex Cloud. A consulta REST aos metadados do repositório, proteção de branch e regras retornou HTTP 403. Isso impede confirmar o plano, a configuração de auto-merge e os checks obrigatórios com as credenciais atuais.
+
+A [auditoria](../.github/workflows/audit-integration.yml) é acionada por `workflow_run` quando o CI de um PR termina. Usa somente `actions: read`, `checks: read`, `contents: read` e `pull-requests: read`. Executa o script da revisão padrão do evento, sem instalar dependências ou executar código do PR. O workflow precisa existir na branch padrão antes de receber esses eventos.
+
+A auditoria verifica a identidade do workflow, a tentativa, o resultado do job `validar`, a associação a um PR, o repositório, a branch, os arquivos alterados, o candidato e seus pais. O resumo registra a decisão. `eligible` indica que a evidência coletada para `validar` passou na política de simulação. Se a API fornecer apenas o SHA do head e não o SHA do candidato sintético, a auditoria registra evidência indisponível. Paths fora da lista, mudanças críticas e renomeações a partir de caminhos críticos exigem revisão. A lista de paths é uma triagem conservadora, complementada por revisão de mudanças sensíveis antes de uma futura ativação.
+
+Testes locais da [política](../tests/unit/integration-gate.test.ts) cobrem aprovação, falha, pendência, cancelamento, conclusão ignorada, mudança de head ou base, conflito e PR fora da lista. A [integração HTTP](../tests/integration/integration-audit.test.ts) exercita o script contra uma API simulada e verifica que ele faz exclusivamente GET. A simulação não estabelece o comportamento da API real ou um merge de ponta a ponta.
+
+### Ativação proposta
+
+Priorizar auto-merge nativo se o repositório privado oferecer as proteções necessárias. Um administrador deve verificar **Settings → Rules → Rulesets** ou **Settings → Branches** e **Settings → General → Pull Requests**. Configurar a `main` para exigir PR e o check `validar` do GitHub Actions, exigir atualização da base e nova validação, impedir bypass inclusive por administradores e habilitar **Allow auto-merge** quando disponível. Para PRs comuns, zero aprovações obrigatórias. Para mudanças críticas, usar revisão específica antes da ativação para aquele PR.
+
+Antes de ativar o merge, demonstrar em PRs descartáveis os casos da [especificação](specs/03-integracao-automatizada.md). O GitHub pode aceitar conclusões como `skipped` ou `neutral` para checks obrigatórios. A política do projeto exige `success` explícito. Confirmar o bloqueio desses estados por um check confiável, sem execução condicional, associado ao candidato exato. Quando a fila de merge estiver disponível, manter o evento `merge_group` no CI e demonstrar que a fila testa o candidato construído sobre a base atual antes de integrar. Conferir todos os checks obrigatórios configurados no GitHub. Testar também uma atualização da base entre validação e tentativa de integração. Habilitar auto-merge por PR somente depois que todas essas garantias forem verificadas.
+
+O endpoint REST de merge verifica um SHA esperado para o head. Ele não oferece uma condição equivalente para o SHA da base. A concorrência de Actions serializa seus próprios jobs, enquanto outros atores ainda podem atualizar a `main`. Sem uma proteção do GitHub que feche essa janela, manter a opção de workflow separado em modo de auditoria.
+
+### Publicação de PRs e continuidade
+
+O push via credencial Git do Codex Cloud e a criação de PR via API são operações independentes. Se o acesso REST continuar bloqueado, verificar nas configurações de rede do ambiente o acesso a `api.github.com` e a identidade autorizada no GitHub. Se o token gerenciado não puder abrir PRs, considerar GitHub App instalado apenas no Lorekeeper, com `Contents: read` e `Pull requests: write` para abrir PRs de branches já publicadas e permissões de Actions/Checks em leitura para acompanhamento. Guardar a chave no cofre ou nos secrets do ambiente. Qualquer permissão futura de integração precisa ser avaliada separadamente. Um PR criado com token do App deve passar por ensaio para confirmar que o evento iniciou o CI automaticamente. PRs criados com `GITHUB_TOKEN` podem ter execução suprimida ou exigir aprovação, conforme o evento e a configuração. Evitar esse caminho para este fluxo.
+
+Em falha do CI, guardar o link e identificar o job que falhou. Fazer a correção na mesma branch com SDD/TDD, rodar testes locais e publicar nova revisão para revalidação remota. Uma falha da API indica indisponibilidade da evidência, sem alterar a conclusão dos testes locais.
+
+Cada incremento precisa de uma execução Codex. O repositório ainda não tem integração que dispare tarefas automaticamente após o merge. Uma futura orquestração pode receber o evento de merge confirmado, enfileirar uma única tarefa por novo SHA da `main` e fornecer a tarefa e o SHA como entradas. Essa integração precisa ser verificada em ambiente real antes de ser usada como mecanismo de continuidade.

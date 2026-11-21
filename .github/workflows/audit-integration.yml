@@ -1,0 +1,33 @@
+name: Auditoria de integração
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+
+permissions:
+  actions: read
+  checks: read
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: lorekeeper-integration-audit-main
+  cancel-in-progress: false
+
+jobs:
+  audit:
+    if: github.event.workflow_run.event == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - run: node .github/scripts/audit-integration.mjs
+        env:
+          GITHUB_TOKEN: ${{ github.token }}

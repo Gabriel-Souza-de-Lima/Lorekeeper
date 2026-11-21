@@ -55,3 +55,9 @@ Não tente implementar todas as funcionalidades do produto simultaneamente.
 - Rode os comandos aplicáveis em `docs/DEVELOPMENT.md` e registre o vínculo entre critérios, testes e resultados. Informe contagens, falhas e motivos de verificações não executadas.
 - Considere a funcionalidade concluída após cumprir os critérios da especificação, obter aprovação nas verificações aplicáveis e atualizar a documentação. A integração depende do check `validar` do CI.
 - Quando a consulta ao GitHub estiver indisponível, prossiga com o desenvolvimento autorizado e execute as verificações locais. Registre o resultado remoto como indisponível e mantenha o requisito de CI para integração.
+
+## Integração automatizada
+
+- Consulte [o processo de integração](docs/DEVELOPMENT.md#integração-automatizada) antes de ativar automações de escrita. O GitHub precisa comprovar que o candidato exato passou nas verificações obrigatórias. Resultado indisponível, pendente, cancelado, ignorado, reprovado ou obsoleto bloqueia o merge.
+- Trate mudanças de autenticação, permissões, CI, infraestrutura e migrações potencialmente destrutivas em PRs com revisão específica. A auditoria atual é somente leitura.
+- Use uma branch por incremento dependente e confirme a atualização da `main` no GitHub antes de iniciar trabalho que dependa dela. Continue seguindo SDD e TDD.
