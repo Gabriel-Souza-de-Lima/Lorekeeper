@@ -72,3 +72,22 @@ Os critérios C01–C03 e S01–S04 estão nas especificações de [campanhas](s
 - **Refactor** — as gravações passaram a consultar o estado de arquivamento sem recomputar as métricas da campanha. A regressão incluiu lint, análise de tipos, build, SQLite e Chromium. O runner unitário continua sem casos. O SQLite e o fluxo de interface são os pontos de verificação dos comportamentos deste incremento.
 
 O uso privado entre dispositivos, o histórico, os rascunhos locais duráveis e a resolução de conflitos fazem parte do Incremento 2. Neste incremento a versão-base protege o texto já gravado, e uma alteração pendente fica disponível na aba enquanto ela permanece aberta.
+
+## Integração autônoma no repositório público
+
+O Incremento 1 entrou na `main` no commit `a737343`. O [run do push pós-merge](https://github.com/Gabriel-Souza-de-Lima/Lorekeeper/actions/runs/44943221429) mostrou sucesso para o workflow `CI`, com o job `validar`. A [página pública de Rulesets](https://github.com/Gabriel-Souza-de-Lima/Lorekeeper/rules) exibiu uma lista vazia na verificação de 21 de novembro de 2026. A proteção clássica, as permissões de bypass e a configuração de auto-merge ainda precisam de verificação administrativa. A API do Codex Cloud retornou HTTP 403.
+
+### Configuração administrativa
+
+1. Em **Settings → Rules → Rulesets**, crie um **New branch ruleset**, com **Enforcement status: Active** e destino da regra `main`. Deixe **Bypass list** vazia para que as identidades usadas pelo fluxo também fiquem sujeitas à proteção.
+2. Marque **Require a pull request before merging**. Para PRs comuns, use zero aprovações obrigatórias. Reserve revisão específica para autenticação, exposição, CI, permissões e migrações potencialmente destrutivas.
+3. Marque **Require status checks to pass** e selecione **validar**, do GitHub Actions, conforme o job observado no run publicado. Marque **Require branches to be up to date before merging**. Confirme que uma atualização da base invalida aprovação anterior até nova execução.
+4. Em **Settings → General → Pull Requests**, habilite **Allow auto-merge**. Confirme o Ruleset publicado e a disponibilidade do auto-merge num PR de teste. O fluxo só pode armar auto-merge após verificar que o candidato atual obteve `success` explícito em todos os checks obrigatórios. Checks pendentes, ignorados, neutros, cancelados, obsoletos ou indisponíveis mantêm o merge suspenso. Uma checagem de status exigida pelo GitHub pode aceitar estados além de `success` e por isso a proteção isolada precisa ser verificada com esses cenários antes do uso autônomo.
+
+### Fluxo de entrega
+
+Parta da última `main` integrada e validada. Use o [roadmap](ROADMAP.md) para selecionar um incremento e registre critérios e casos em `docs/specs/`. Rode lint, análise de tipos, build e as três suítes após concluir Red → Green → Refactor. Faça push de uma branch própria e abra PR para `main` com a especificação, evidências e resultados. Em caso de falha remota, use os logs para corrigir a mesma branch e exija nova execução. Um HTTP 403 ou 404 pode impedir a consulta sem dizer nada sobre o resultado do CI.
+
+Com as proteções verificadas e acesso de escrita autenticado à API, solicite auto-merge nativo no PR elegível. Confira no GitHub o SHA que entrou e a execução pós-merge antes de prosseguir para o próximo incremento. Em caso de API indisponível, publique a branch e forneça o link de comparação. Para restabelecer a automação, configure acesso a `api.github.com` no Codex Cloud e uma identidade autorizada a criar PRs e armar auto-merge sob o Ruleset, por exemplo um GitHub App restrito ao Lorekeeper. Armazene sua credencial apenas em um cofre ou na configuração segura do ambiente. Verifique em um PR de teste que a identidade dispara o CI sem intervenção humana.
+
+O repositório público hospeda o código. A implantação da aplicação continua privada e seus dados ficam fora do repositório. Cada entrega dependente aguarda a anterior na `main`. Novas tarefas ainda dependem de uma nova execução Codex na ausência de um orquestrador que confirme merges e enfileire trabalho por SHA.

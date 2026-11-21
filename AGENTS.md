@@ -55,3 +55,10 @@ Não tente implementar todas as funcionalidades do produto simultaneamente.
 - Rode os comandos aplicáveis em `docs/DEVELOPMENT.md` e registre o vínculo entre critérios, testes e resultados. Informe contagens, falhas e motivos de verificações não executadas.
 - Considere a funcionalidade concluída após cumprir os critérios da especificação, obter aprovação nas verificações aplicáveis e atualizar a documentação. A integração depende do check `validar` do CI.
 - Quando a consulta ao GitHub estiver indisponível, prossiga com o desenvolvimento autorizado e execute as verificações locais. Registre o resultado remoto como indisponível e mantenha o requisito de CI para integração.
+
+## Publicação e integração
+
+- Selecione o próximo incremento pelo roadmap e confirme a revisão da `main` no GitHub. Use uma branch própria, trabalhe em entregas pequenas e registre no PR os critérios do MVP, a especificação, Red → Green → Refactor e os resultados da regressão.
+- Execute lint, análise de tipos, testes unitários, integração, E2E e build antes de publicar. Use auto-merge nativo apenas quando a proteção efetiva da `main` exigir PR, o job `validar` do workflow `CI` e revalidação da base, sem bypass. Exija sucesso explícito dos checks obrigatórios para o candidato atual. Confirme o merge e a validação na `main` antes de iniciar outro incremento dependente.
+- Em falha de CI, examine os logs, corrija a mesma branch e revalide. Se a API estiver indisponível, continue o trabalho independente e registre o estado remoto como desconhecido. Preserve a `main` e deixe o PR aguardando em caso de bloqueio.
+- Faça revisão específica para mudanças de autenticação, exposição da aplicação, CI, permissões e migrações potencialmente destrutivas. Publique apenas dados fictícios. Credenciais, bancos, backups, anotações e logs privados ficam fora do Git, do PR e das evidências de CI.
