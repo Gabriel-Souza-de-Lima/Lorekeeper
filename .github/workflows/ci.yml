@@ -28,8 +28,7 @@ jobs:
       - run: npm run typecheck
       - run: npm run test:unit
       - run: npm run test:integration
-      - name: Build quando disponível
-        run: npm run build --if-present
+      - run: npm run build
       - name: Instalar Chromium e dependências do sistema
         run: npx playwright install --with-deps chromium
       - run: npm run test:e2e

@@ -54,3 +54,4 @@ Não tente implementar todas as funcionalidades do produto simultaneamente.
 - Use somente dados fictícios. Teste persistência, migrações, recuperação e integridade com SQLite real. Preserve o banco de desenvolvimento e os dados pessoais.
 - Rode os comandos aplicáveis em `docs/DEVELOPMENT.md` e registre o vínculo entre critérios, testes e resultados. Informe contagens, falhas e motivos de verificações não executadas.
 - Considere a funcionalidade concluída após cumprir os critérios da especificação, obter aprovação nas verificações aplicáveis e atualizar a documentação. A integração depende do check `validar` do CI.
+- Quando a consulta ao GitHub estiver indisponível, prossiga com o desenvolvimento autorizado e execute as verificações locais. Registre o resultado remoto como indisponível e mantenha o requisito de CI para integração.
