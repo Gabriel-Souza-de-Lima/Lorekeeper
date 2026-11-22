@@ -2,11 +2,14 @@ import { useEffect, useId, useState } from 'react'
 import type { SessionSummary, WikiSummary } from '../contracts.ts'
 import { api, displayDate } from './api.ts'
 
-export function SessionWikiLinks({ sessionUrl, campaignUrl, archived, navigationBlocked, onOpen }: {
+export function SessionWikiLinks({ sessionUrl, campaignUrl, archived, navigationBlocked, version, canInsert, onInsert, onOpen }: {
   sessionUrl: string
   campaignUrl: string
   archived: boolean
   navigationBlocked: boolean
+  version: number
+  canInsert: boolean
+  onInsert: (page: WikiSummary) => void
   onOpen: (id: string) => void
 }) {
   const pickerId = useId()
@@ -30,7 +33,7 @@ export function SessionWikiLinks({ sessionUrl, campaignUrl, archived, navigation
       }
     }).catch(() => { if (active) setFailed(true) })
     return () => { active = false }
-  }, [archived, attempt, campaignUrl, url])
+  }, [archived, attempt, campaignUrl, url, version])
 
   async function link() {
     const page = pages.find((item) => item.id === selected)
@@ -39,7 +42,7 @@ export function SessionWikiLinks({ sessionUrl, campaignUrl, archived, navigation
     setError('')
     try {
       await api<void>(`${url}/${page.id}`, 'PUT')
-      setLinked((items) => [...(items ?? []), page])
+      setLinked((items) => items?.some((item) => item.id === page.id) ? items : [...(items ?? []), page])
       setSelected('')
     } catch (failure) {
       setError(failure instanceof Error ? failure.message : 'Não foi possível vincular a página.')
@@ -49,7 +52,7 @@ export function SessionWikiLinks({ sessionUrl, campaignUrl, archived, navigation
   }
 
   const linkedIds = new Set(linked?.map((page) => page.id))
-  const available = pages.filter((page) => !linkedIds.has(page.id))
+  const selectedPage = pages.find((page) => page.id === selected)
   return <section className="panel" aria-label="Páginas vinculadas">
     <h2>Páginas vinculadas</h2>
     {linked === null ? !failed && <p>Carregando páginas…</p>
@@ -57,13 +60,16 @@ export function SessionWikiLinks({ sessionUrl, campaignUrl, archived, navigation
         : <ul className="session-list">{linked.map((page) => <li key={page.id}>
           <button className="quiet" disabled={busy || navigationBlocked} onClick={() => onOpen(page.id)}>{page.title}</button>
         </li>)}</ul>}
-    {!archived && available.length > 0 && <div className="actions">
+    {!archived && pages.length > 0 && <div className="actions">
       <label htmlFor={pickerId}>Página da wiki</label>
       <select id={pickerId} value={selected} disabled={busy} onChange={(e) => setSelected(e.target.value)}>
         <option value="">Escolha uma página</option>
-        {available.map((page) => <option key={page.id} value={page.id}>{page.title}</option>)}
+        {pages.map((page) => <option key={page.id} value={page.id}>{page.title}</option>)}
       </select>
-      <button disabled={!selected || busy} onClick={() => void link()}>Vincular página</button>
+      <button disabled={!selected || busy || linkedIds.has(selected)} onClick={() => void link()}>Vincular página</button>
+      <button disabled={!selectedPage || !canInsert || busy} onClick={() => {
+        if (selectedPage) onInsert(selectedPage)
+      }}>Inserir no Markdown</button>
     </div>}
     {error && <p className="error" role="alert">{error}</p>}
     {failed && <><p className="error" role="alert">Não foi possível carregar as páginas.</p>

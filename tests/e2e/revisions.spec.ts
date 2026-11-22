@@ -1,6 +1,7 @@
 import { resolve } from 'node:path'
 import { expect, test } from '@playwright/test'
 import type { APIRequestContext, Page } from '@playwright/test'
+import type { Session } from '../../src/contracts.ts'
 import { createApp } from '../../src/server/app.ts'
 
 async function seed(request: APIRequestContext, base: string) {
@@ -10,10 +11,10 @@ async function seed(request: APIRequestContext, base: string) {
   return `${path}/${session.id}`
 }
 
-async function openEditor(page: Page, base: string) {
+async function openEditor(page: Page, base: string, sessionTitle = 'Nova sessão') {
   await page.goto(base)
   await page.getByRole('button', { name: 'Farol', exact: true }).click()
-  await page.getByRole('button', { name: 'Nova sessão', exact: true }).last().click()
+  await page.getByRole('listitem').getByRole('button', { name: sessionTitle, exact: true }).click()
   const notes = page.getByLabel('Anotações', { exact: true })
   await expect(notes).toBeEnabled()
   return notes
@@ -89,15 +90,23 @@ test('I2-06: restaura título e texto em nova revisão, mantendo os metadados', 
   try {
     const base = await app.listen({ host: '127.0.0.1', port: 0 })
     const path = await seed(request, base)
-    const notes = await openEditor(page, base)
+    const session = await request.get(path)
+    expect(session.ok()).toBe(true)
+    const { id, ...initial }: Session = await session.json()
+    expect(path.endsWith(id)).toBe(true)
+    const original = await request.put(path, {
+      data: { ...initial, title: 'Avistamos o farol', body: 'O farol apareceu na névoa.' },
+    })
+    expect(original.ok()).toBe(true)
+    const latest = await request.put(path, {
+      data: { ...initial, version: (await original.json()).version,
+        title: 'Chegamos ao farol', body: 'A lanterna apagou.', participants: 'Lia' },
+    })
+    expect(latest.ok()).toBe(true)
+
+    const notes = await openEditor(page, base, 'Chegamos ao farol')
     const title = page.getByLabel('Título', { exact: true })
-    await title.fill('Avistamos o farol')
-    await notes.fill('O farol apareceu na névoa.')
-    await expect(page.getByRole('status')).toHaveText('Salvo no servidor')
-    await title.fill('Chegamos ao farol')
-    await notes.fill('A lanterna apagou.')
-    await page.getByLabel('Participantes').fill('Lia')
-    await expect(page.getByRole('status')).toHaveText('Salvo no servidor')
+    await expect(notes).toHaveValue('A lanterna apagou.')
     await page.getByRole('button', { name: 'Histórico de revisões' }).click({ timeout: 3000 })
     await page.getByRole('button', { name: 'Inspecionar versão 2' }).click()
     await expect(page.getByRole('region', { name: 'Conteúdo da revisão' })).toContainText('O farol apareceu na névoa.')
