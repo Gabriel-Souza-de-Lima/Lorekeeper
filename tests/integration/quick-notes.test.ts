@@ -141,6 +141,12 @@ test('I3-03: encaminha uma nota uma vez e isola as consultas por campanha', asyn
   assert.equal(assigned.statusCode, 200)
   assert.deepEqual(assigned.json(), { ...captured.json(), campaignId: first })
   assert.deepEqual((await assign(first)).json(), assigned.json())
+  const uppercaseRetry = await app.inject({
+    method: 'PUT', url: `${inbox}/${noteId.toUpperCase()}/campaign`,
+    payload: { campaignId: first.toUpperCase() },
+  })
+  assert.equal(uppercaseRetry.statusCode, 200)
+  assert.deepEqual(uppercaseRetry.json(), assigned.json())
   assert.deepEqual((await app.inject(inbox)).json(), [])
   assert.deepEqual((await list(second)).json(), [])
   assert.equal((await assign(second)).statusCode, 409)
