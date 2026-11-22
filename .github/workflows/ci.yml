@@ -36,4 +36,15 @@ jobs:
       - run: npm run build
       - name: Instalar Chromium e dependências do sistema
         run: npx playwright install --with-deps chromium
-      - run: npm run test:e2e
+      - id: e2e
+        run: npm run test:e2e
+      - name: Publicar diagnóstico E2E
+        if: ${{ failure() && steps.e2e.outcome == 'failure' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-failures
+          path: |
+            test-results/**/trace.zip
+            test-results/**/error-context.md
+          if-no-files-found: ignore
+          retention-days: 7
