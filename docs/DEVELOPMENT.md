@@ -77,7 +77,17 @@ O uso privado entre dispositivos, o histórico, os rascunhos locais duráveis e 
 
 Um [workflow sem checkout, token com escopos ou secrets](../.github/workflows/notify-codex-branch.yml) sinaliza o push de uma branch interna `codex/`. A [reconciliação](../.github/workflows/github-app.yml) roda com código da `main` após o sinal, na conclusão de CI de um PR interno e por agendamento como contingência. O bot redescobre os commits e os PRs pela API. A App usa token temporário restrito ao Lorekeeper com **Contents** e **Pull requests** em escrita. Usa as configurações existentes `LOREKEEPER_APP_CLIENT_ID` e `LOREKEEPER_APP_PRIVATE_KEY`. O token padrão lê Actions, Contents e Pull Requests. O job privilegiado não faz checkout, instala dependências ou executa código do PR.
 
-Use uma branch nova `codex/<nome>` baseada na `main`, com diff revisado e critérios aplicáveis testados. A lista de elegibilidade aceita alterações comuns em `src/web/`, `tests/` e `docs/specs/`, com exclusões para caminhos sensíveis. O bot abre o PR se o conjunto de arquivos for elegível e não houver PR existente para essa branch. Branches com PR fechado ou integrado não são recicladas. Mudanças de servidor, dependências, configuração, CI, autenticação e migrações seguem revisão separada.
+Use uma branch nova `codex/<nome>` baseada na `main`, com diff revisado e critérios aplicáveis testados. A lista de elegibilidade aceita alterações comuns em `src/web/`, `tests/` e `docs/specs/`, com exclusões para caminhos sensíveis. O bot abre o PR se o conjunto de arquivos for elegível e não houver PR existente para essa branch. Branches com PR fechado ou integrado não são recicladas. Mudanças em `AGENTS.md`, servidor, dependências, configuração, CI, infraestrutura, autenticação e migrações seguem revisão separada. Se uma funcionalidade comum exigir uma alteração excluída, registre a dependência e o motivo da revisão.
+
+### Responsabilidade pela integração
+
+| Entrega | Caminho de integração |
+| --- | --- |
+| Alteração comum que passa pela política de arquivos | Publique em `codex/<nome>` a partir da `main` atualizada. A App cria o PR e solicita o auto-merge. Acompanhe publicamente o sinal, o workflow da App, `validar`, o merge e o CI na `main`. |
+| Alteração crítica ou fora da política | Publique em branch própria e separe o PR para revisão e merge protegido. Informe a condição e continue o trabalho independente autorizado. |
+| HTTP 403 no Codex Cloud | Registre a limitação de acesso. Verifique os runs do Actions e o estado público do PR antes de atribuir uma falha à App ou ao CI. Retome uma operação bloqueada após uma mudança de acesso. |
+
+A integração de um PR elegível é responsabilidade da App. O Codex acompanha e corrige a entrega sem solicitar merge ou auto-merge pela API do ambiente. A confirmação do merge e do `validar` na `main` libera as etapas dependentes. O [PR #7](https://github.com/Gabriel-Souza-de-Lima/Lorekeeper/pull/7) comprova o caminho automático. A [revisão do PR #11](https://github.com/Gabriel-Souza-de-Lima/Lorekeeper/pull/11) seguiu o caminho separado devido à branch `feat/` e à mudança em `AGENTS.md`.
 
 ### Auto-merge nativo
 
