@@ -4,6 +4,7 @@ import remarkGfm from 'remark-gfm'
 import type { Session } from '../contracts.ts'
 import { ConflictReview, RevisionHistory } from './session-review.tsx'
 import { useSessionDraft } from './use-session-draft.ts'
+import { SessionWikiLinks } from './wiki-links.tsx'
 import { SessionNoteLinks } from './session-note-links.tsx'
 
 interface Props {
@@ -12,10 +13,11 @@ interface Props {
   session: Session
   path: string
   archived: boolean
+  onOpenWiki: (id: string) => void
   onBack: () => void
 }
 
-export function SessionEditor({ campaignName, campaignUrl, session, path, archived, onBack }: Props) {
+export function SessionEditor({ campaignName, campaignUrl, session, path, archived, onOpenWiki, onBack }: Props) {
   const editor = useSessionDraft(path, session, archived)
   const { draft, ready, dirty, locallySaved, storageFailed, saving, failure, recoverable, recover, update, retry } = editor
 
@@ -24,10 +26,13 @@ export function SessionEditor({ campaignName, campaignUrl, session, path, archiv
     if (ready && !archived) notes.current?.focus()
   }, [archived, ready])
 
-  function back() {
+  function leave(navigate: () => void) {
+    if (saving) return
     if (dirty && !locallySaved && !window.confirm('O rascunho ainda está apenas nesta aba. Sair do editor?')) return
-    onBack()
+    navigate()
   }
+
+  const back = () => leave(onBack)
 
   function download() {
     const url = URL.createObjectURL(new Blob([draft.body], { type: 'text/markdown;charset=utf-8' }))
@@ -87,6 +92,8 @@ export function SessionEditor({ campaignName, campaignUrl, session, path, archiv
             components={{ img: ({ alt }) => <span>{alt}</span> }}>{draft.body}</Markdown>
         </section>
       </div>
+      <SessionWikiLinks sessionUrl={`${path}/${session.id}`} campaignUrl={campaignUrl} archived={archived}
+        navigationBlocked={saving} onOpen={(id) => leave(() => onOpenWiki(id))} />
       <SessionNoteLinks sessionUrl={`${path}/${session.id}`} campaignUrl={campaignUrl} archived={archived} />
     </>
   )

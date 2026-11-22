@@ -131,6 +131,13 @@ function App() {
       })} />
   }
 
+  function openWikiPage(campaign: Campaign, id: string) {
+    void action(async () => {
+      const initialPage = await api<WikiDetails>(`${campaignPath}/${campaign.id}/wiki/${id}`)
+      setView({ page: 'wiki', campaign, initialPage })
+    })
+  }
+
   function campaignPage(campaign: Campaign) {
     const url = `${campaignPath}/${campaign.id}`
     const locked = Boolean(campaign.archivedAt)
@@ -168,10 +175,7 @@ function App() {
           <span>{campaign.sessionCount} {campaign.sessionCount === 1 ? 'sessão' : 'sessões'}</span>
           <span>{campaign.lastSessionDate ? `Última sessão em ${displayDate(campaign.lastSessionDate)}` : 'Nenhuma sessão registrada'}</span>
         </div>
-        <WikiOverview key={campaign.id} campaign={campaign} busy={working} onOpen={(id) => void action(async () => {
-          const initialPage = await api<WikiDetails>(`${url}/wiki/${id}`)
-          setView({ page: 'wiki', campaign, initialPage })
-        })} />
+        <WikiOverview key={campaign.id} campaign={campaign} busy={working} onOpen={(id) => openWikiPage(campaign, id)} />
         <section>
           <header className="page-header"><h2>Sessões</h2>
             {!locked && <button className="primary" disabled={working} onClick={() => openSession()}>Nova sessão</button>}
@@ -195,6 +199,10 @@ function App() {
       case 'edit': return campaignForm(view.campaign)
       case 'campaign': return campaignPage(view.campaign)
       case 'wiki': return <Wiki campaign={view.campaign} initialPage={view.initialPage}
+        onOpenSession={(id) => void action(async () => {
+          const session = await api<Session>(`${campaignPath}/${view.campaign.id}/sessions/${id}`)
+          setView({ page: 'session', campaign: view.campaign, session })
+        })}
         onBack={() => void action(() => openCampaign(view.campaign.id))} />
       case 'campaign-notes': return <CampaignNotes campaign={view.campaign}
         onBack={() => setView({ page: 'campaign', campaign: view.campaign })} />
@@ -202,6 +210,7 @@ function App() {
         campaignUrl={`${campaignPath}/${view.campaign.id}`}
         session={view.session} archived={Boolean(view.campaign.archivedAt)}
         path={`${campaignPath}/${view.campaign.id}/sessions`}
+        onOpenWiki={(id) => openWikiPage(view.campaign, id)}
         onBack={() => void action(() => openCampaign(view.campaign.id))} />
       case 'dashboard': return (
         <>
