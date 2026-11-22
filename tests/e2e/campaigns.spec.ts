@@ -19,7 +19,13 @@ test('C01/C02/C03/S01/S02: gerencia campanha, escreve duas sessões e reabre ap�
     await page.getByLabel('Sistema', { exact: true }).fill('D&D')
     await page.getByRole('button', { name: 'Salvar campanha' }).click()
 
-    await page.getByRole('button', { name: 'Nova sessão' }).click()
+    const newSession = page.locator('header')
+      .filter({ has: page.getByRole('heading', { name: 'Sessões', exact: true }) })
+      .getByRole('button', { name: 'Nova sessão', exact: true })
+    await newSession.click()
+    // Uma sessão sem título personalizado também aparece como «Nova sessão».
+    await page.getByRole('button', { name: 'Voltar à campanha' }).click()
+    await newSession.click()
     await page.getByLabel('Título').fill('O farol')
     await page.getByLabel('Data real').fill('2026-02-01')
     const notes = page.getByLabel('Anotações', { exact: true })
@@ -29,7 +35,7 @@ test('C01/C02/C03/S01/S02: gerencia campanha, escreve duas sessões e reabre ap�
     await expect(page.getByRole('status')).toHaveText('Salvo no servidor')
     await page.getByRole('button', { name: 'Voltar à campanha' }).click()
 
-    await page.getByRole('button', { name: 'Nova sessão' }).click()
+    await newSession.click()
     await page.getByLabel('Título').fill('A ponte')
     await page.getByLabel('Data real').fill('2026-02-02')
     await page.route('**/api/campaigns/*/sessions/*', (route) =>
@@ -58,7 +64,8 @@ test('C01/C02/C03/S01/S02: gerencia campanha, escreve duas sessões e reabre ap�
     await expect(notes).toBeDisabled()
     await page.getByRole('button', { name: 'Voltar à campanha' }).click()
     await page.getByRole('button', { name: 'Reativar campanha' }).click()
-    await expect(page.getByRole('button', { name: 'Nova sessão' })).toBeVisible()
+    await expect(newSession).toBeVisible()
+    await expect(page.getByRole('listitem').getByRole('button', { name: 'Nova sessão', exact: true })).toHaveCount(1)
   } finally {
     await app.close()
     rmSync(dir, { recursive: true, force: true })
