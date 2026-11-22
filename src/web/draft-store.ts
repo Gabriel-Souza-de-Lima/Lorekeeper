@@ -34,9 +34,14 @@ export function openDraftStore(): Promise<IDBDatabase> {
 function transact<T>(db: IDBDatabase, mode: IDBTransactionMode, work: (store: IDBObjectStore) => IDBRequest<T>) {
   return new Promise<T>((resolve, reject) => {
     const tx = db.transaction(storeName, mode)
-    const request = work(tx.objectStore(storeName))
-    tx.oncomplete = () => resolve(request.result)
     tx.onabort = () => reject(tx.error)
+    try {
+      const request = work(tx.objectStore(storeName))
+      tx.oncomplete = () => resolve(request.result)
+    } catch (error) {
+      tx.abort()
+      reject(error)
+    }
   })
 }
 

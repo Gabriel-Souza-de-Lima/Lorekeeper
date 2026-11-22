@@ -20,6 +20,7 @@ export function useSessionDraft(path: string, session: Session, archived: boolea
   const [openAttempt, setOpenAttempt] = useState(0)
   const [recoverable, setRecoverable] = useState<LocalDraft[]>([])
   const [recovering, setRecovering] = useState(false)
+  const [discarding, setDiscarding] = useState(false)
   const [storageFailed, setStorageFailed] = useState(false)
   const [saving, setSaving] = useState(false)
   const [failure, setFailure] = useState<{ message: string; status: number; attempts: number } | null>(null)
@@ -32,15 +33,19 @@ export function useSessionDraft(path: string, session: Session, archived: boolea
   const locallySaved = record !== null && record === persisted && !storageFailed
   const draft = record?.fields ?? saved
 
-  const persist = useCallback((next: LocalDraft | null) => {
-    working.current = next
-    setRecord(next)
+  const persist = useCallback((next: LocalDraft | null, afterCommit = false) => {
+    const adopt = () => {
+      working.current = next
+      setRecord(next)
+    }
+    if (!afterCommit) adopt()
     const active = storage.current
     if (!active) {
       setStorageFailed(true)
       return Promise.resolve(false)
     }
     const write = queue.current.then(() => writeDraft(active.db, active.id, next)).then(() => {
+      if (afterCommit) adopt()
       stored.current = next
       setPersisted(next)
       setStorageFailed(false)
@@ -151,19 +156,50 @@ export function useSessionDraft(path: string, session: Session, archived: boolea
     return () => window.removeEventListener('beforeunload', warn)
   }, [])
 
-  function update<K extends keyof SessionFields>(key: K, value: SessionFields[K]) {
+  function replaceDraft(fields: SessionFields, baseVersion?: number) {
     const current = working.current
     const invalid = failure?.status === 400 || failure?.status === 413
-    if (invalid) setFailure(null)
-    void persist({
+    const replaceOperation = invalid || baseVersion !== undefined
+    if (replaceOperation) setFailure(null)
+    return persist({
       id: current?.id ?? storage.current?.id ?? '',
       path: url,
-      fields: { ...(current?.fields ?? confirmed.current.fields), [key]: value },
-      version: current?.version ?? confirmed.current.version,
+      fields,
+      version: baseVersion ?? current?.version ?? confirmed.current.version,
       generation: (current?.generation ?? 0) + 1,
       updatedAt: Date.now(),
-      operation: invalid ? null : current?.operation ?? null,
+      operation: replaceOperation ? null : current?.operation ?? null,
     })
+  }
+
+  function update<K extends keyof SessionFields>(key: K, value: SessionFields[K]) {
+    void replaceDraft({ ...(working.current?.fields ?? confirmed.current.fields), [key]: value })
+  }
+
+  function resolveConflict(server: Session) {
+    const current = working.current
+    if (failure?.status !== 409 || !current || server.id !== id || server.version <= current.version) return
+    void replaceDraft(current.fields, server.version)
+  }
+
+  async function discardConflict(server: Session) {
+    const current = working.current
+    const { id: serverId, version, ...fields } = server
+    if (failure?.status !== 409 || !current || serverId !== id || version <= current.version || discarding) return
+    setDiscarding(true)
+    try {
+      if (!await persist(null, true)) return
+      confirmed.current = { fields, version }
+      setSaved(fields)
+      setFailure(null)
+    } finally {
+      setDiscarding(false)
+    }
+  }
+
+  function restoreRevision(text: Pick<SessionFields, 'title' | 'body'>) {
+    if (archived || !ready || working.current) return
+    void replaceDraft({ ...confirmed.current.fields, title: text.title, body: text.body })
   }
 
   async function recover(candidate: LocalDraft) {
@@ -199,6 +235,7 @@ export function useSessionDraft(path: string, session: Session, archived: boolea
   }
 
   function retry() {
+    if (failure?.status === 409) return
     if (storageFailed && working.current) {
       if (storage.current) void persist(working.current)
       else {
@@ -210,7 +247,8 @@ export function useSessionDraft(path: string, session: Session, archived: boolea
   }
 
   return {
-    draft, ready: ready && !recovering, dirty: record !== null, locallySaved, storageFailed, saving,
-    failure, recoverable, recover, update, retry,
+    draft, ready: ready && !recovering && !discarding, dirty: record !== null, locallySaved, storageFailed, saving,
+    failure, recoverable, recover, update, retry, resolveConflict, discardConflict, restoreRevision,
+    baseVersion: record?.version ?? confirmed.current.version,
   }
 }

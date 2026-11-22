@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import type { Session } from '../contracts.ts'
+import { ConflictReview, RevisionHistory } from './session-review.tsx'
 import { useSessionDraft } from './use-session-draft.ts'
 
 interface Props {
@@ -51,10 +52,15 @@ export function SessionEditor({ campaignName, session, path, archived, onBack }:
         <div><p className="context">{campaignName}</p><h1>Editor de sessão</h1></div>
         <div className="save-state">
           <span role="status" className={failure || storageFailed ? 'error' : ''}>{status}</span>
-          {(failure || storageFailed) && dirty && <button onClick={retry}>Tentar novamente</button>}
+          {(failure || storageFailed) && failure?.status !== 409 && dirty && <button onClick={retry}>Tentar novamente</button>}
           {(failure || storageFailed) && dirty && <button onClick={download}>Baixar rascunho</button>}
         </div>
       </header>
+      <RevisionHistory url={`${path}/${session.id}`} canRestore={!archived && ready && !dirty}
+        onRestore={editor.restoreRevision} />
+      {failure?.status === 409 && <ConflictReview url={`${path}/${session.id}`}
+        draft={draft} baseVersion={editor.baseVersion} busy={!ready || saving} canKeep={locallySaved}
+        onKeep={back} onResolve={editor.resolveConflict} onDiscard={(server) => void editor.discardConflict(server)} />}
       {!archived && !dirty && recoverable.length > 0 && <div className="actions">
         {recoverable.map((candidate) => <button key={candidate.id} disabled={!ready}
           onClick={() => void recover(candidate)}>
