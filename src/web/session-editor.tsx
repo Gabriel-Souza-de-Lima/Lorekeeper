@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useLayoutEffect, useRef } from 'react'
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import type { Session } from '../contracts.ts'
@@ -18,7 +18,7 @@ export function SessionEditor({ campaignName, session, path, archived, onBack }:
   const { draft, ready, dirty, locallySaved, storageFailed, saving, failure, recoverable, recover, update, retry } = editor
 
   const notes = useRef<HTMLTextAreaElement>(null)
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (ready && !archived) notes.current?.focus()
   }, [archived, ready])
 

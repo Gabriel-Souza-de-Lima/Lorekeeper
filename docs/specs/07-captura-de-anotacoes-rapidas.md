@@ -17,3 +17,18 @@ A migração amplia o tipo de documento e permite campanha nula para anotações
 - **Red** — a criação retornou 404 antes da validação do texto e a listagem não existia para o banco legado.
 - **Green** — a criação e a listagem passaram com SQLite em disco. A mesma captura pôde ser reenviada após reiniciar. A migração preservou a sessão e suas relações.
 - **Refactor** — a captura e consulta da caixa de entrada ficaram separadas das rotas de sessões. A migração agora reconfirma a versão após obter o lock e reverte a troca de tabela quando a verificação das relações falha.
+
+## I3-02 — Interface da caixa de entrada
+
+- I3-02a. A partir do painel, abrir Anotações rápidas, digitar sem escolher campanha, guardar e ver a nota na caixa de entrada. Ao reabrir a aplicação, a nota continua disponível.
+- I3-02b. Guardar o rascunho localmente antes do envio. Se a resposta se perder, reabrir o editor com o mesmo texto e repetir o mesmo UUID. O texto fica congelado até o servidor confirmar a captura. Uma segunda aba pode consultar a caixa, enquanto a primeira mantém a posse do rascunho.
+- I3-02c. Uma falha de armazenamento é visível e oferece download do texto. O editor indica quando a gravação permanece pendente.
+- A associação a campanhas ou sessões e a busca pertencem às etapas seguintes. O rascunho usa armazenamento local do navegador e uma trava por origem.
+
+### Evidências de I3-02
+
+- **Red** — os testes de navegador falharam ao procurar a ação Anotações rápidas no painel.
+- **Green** — a captura funciona sem campanha. Com perda da resposta após o POST, a caixa lista a nota confirmada e permite recuperar o rascunho e reenviar o UUID original sem duplicá-la. Uma falha local oferece download.
+- **Refactor** — o rótulo do campo permanece estável com texto preenchido e uma listagem antiga não substitui o estado após salvar. A regressão também cobre outra aba consultando a caixa enquanto o editor está ocupado.
+
+Na regressão C01/C02/C03/S01/S02, o trace mostrou um salvamento com o título padrão depois da tentativa de alterá-lo. O editor de sessões agora posiciona o foco antes de permitir a interação, e o teste verifica o valor preenchido antes de enviar.
