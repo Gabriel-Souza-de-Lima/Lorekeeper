@@ -7,9 +7,15 @@ A implementação começa após a revisão da [arquitetura](ARCHITECTURE.md) e d
 | Ordem | Entrega | Verificação para avançar |
 | --- | --- | --- |
 | 1 | Campanhas e editor de sessões. Estrutura web, banco com migrações, dashboard, criação e arquivamento, sessões e Markdown com gravação automática no servidor. | Criar uma campanha, escrever duas sessões, reiniciar o processo com o mesmo volume e reabrir os textos. Testar migração, isolamento entre campanhas e gravação condicionada à versão. Usar dados de teste nesta etapa. |
-| 2 | Integridade do editor e acesso em dois dispositivos. Rascunhos locais, reenvio idempotente, histórico, resolução de conflitos e implantação privada. | Usar dois contextos de navegador e os computadores de jogo. Testar perda de conexão, perda da resposta após a gravação, fechamento com rascunho confirmado e duas abas com edições concorrentes. Verificar bloqueio do acesso externo. |
+| 2 — concluído | Integridade do editor e acesso em dois dispositivos. Rascunhos locais, reenvio idempotente, histórico, resolução de conflitos e implantação privada. | Usar dois contextos de navegador e os computadores de jogo. Testar perda de conexão, perda da resposta após a gravação, fechamento com rascunho confirmado e duas abas com edições concorrentes. Verificar bloqueio do acesso externo. |
 | 3 | Caixa de entrada, wiki e busca. Notas rápidas, cadastro básico das entidades, tags, vínculos, backlinks e busca global. | Anotar uma descoberta, vincular um NPC, recuperar a sessão pela busca e confirmar o isolamento de campanhas homônimas. Verificar o estado do índice após edição, arquivamento e restauração de texto. |
 | 4 | Portabilidade e piloto pessoal. Exportação, rotina de backup com cópia externa, ensaio de restauração e revisão da interface responsiva. | Restaurar em instância separada e completar o fluxo de criação de campanha, registro de sessões, troca de computador e busca. Medir tempo de restauração e só então iniciar o uso com o acervo real. |
+
+## Aceite do Incremento 2
+
+- **I2-01 a I2-06 aprovados.** A suíte cobre migração e persistência de revisões, reenvio idempotente, recuperação de rascunhos, edições concorrentes e restauração. Os testes antecederam a implementação e foram executados no CI das entregas integradas. [Especificação e evidências](specs/04-integridade-do-editor.md)
+- **I2-07 aprovado.** O mantenedor relatou 4/4 verificações em host Windows com SQLite de teste e HTTPS privado via Tailscale. Passaram acesso e gravação, sincronização entre dois dispositivos autorizados, bloqueio a acesso externo e isolamento da porta 3000. [Registro do ensaio](specs/06-ensaio-de-acesso-privado.md#resultado-do-ensaio-manual)
+- **Validação operacional em Linux pendente de uma implantação Linux.** A comprovação funcional do acesso privado em Windows encerra o Incremento 2. Gerenciamento de serviço, permissões locais, configuração de rede e recuperação após reinício em Linux ficam para a validação de um futuro host Linux.
 
 ## Depois do MVP
 
