@@ -4,6 +4,7 @@ import staticFiles from '@fastify/static'
 import { campaignStatuses } from '../contracts.ts'
 import type { Campaign, CampaignFields, Session, SessionFields, SessionSummary } from '../contracts.ts'
 import { openDatabase } from './database.ts'
+import { registerQuickNotes } from './quick-notes.ts'
 
 const text = { type: 'string' }
 const date = { ...text, pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}$' }
@@ -213,5 +214,6 @@ export function createApp(database: string, webRoot?: string) {
       return reply.code(result.status).send(result.session ?? { message: result.message })
     })
 
+  registerQuickNotes(app, db)
   return app
 }
