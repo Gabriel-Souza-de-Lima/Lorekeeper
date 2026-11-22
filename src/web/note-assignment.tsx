@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 import type { Campaign } from '../contracts.ts'
 import { api, ApiError } from './api.ts'
 
-interface Note {
+export interface Note {
   id: string
   title: string
   body: string

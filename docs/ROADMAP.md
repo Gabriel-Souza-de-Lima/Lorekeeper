@@ -20,7 +20,7 @@ A implementação começa após a revisão da [arquitetura](ARCHITECTURE.md) e d
 ## Entregas do Incremento 3
 
 - A caixa de entrada recebe anotações rápidas e permite encaminhá-las para campanhas. [Especificação](specs/07-captura-de-anotacoes-rapidas.md)
-- A API de vínculo entre nota e sessão inclui os backlinks da sessão e a migração aditiva V4. A próxima entrega expõe esse fluxo na interface. [Especificação](specs/09-vinculos-entre-anotacoes-e-sessoes.md)
+- Os vínculos entre notas e sessões estão disponíveis no editor, com leitura de campanhas arquivadas e recuperação após perda de resposta. A próxima entrega inicia o cadastro básico das entidades da wiki. [Especificação](specs/09-vinculos-entre-anotacoes-e-sessoes.md)
 
 ## Depois do MVP
 

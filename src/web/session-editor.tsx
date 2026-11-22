@@ -4,16 +4,18 @@ import remarkGfm from 'remark-gfm'
 import type { Session } from '../contracts.ts'
 import { ConflictReview, RevisionHistory } from './session-review.tsx'
 import { useSessionDraft } from './use-session-draft.ts'
+import { SessionNoteLinks } from './session-note-links.tsx'
 
 interface Props {
   campaignName: string
+  campaignUrl: string
   session: Session
   path: string
   archived: boolean
   onBack: () => void
 }
 
-export function SessionEditor({ campaignName, session, path, archived, onBack }: Props) {
+export function SessionEditor({ campaignName, campaignUrl, session, path, archived, onBack }: Props) {
   const editor = useSessionDraft(path, session, archived)
   const { draft, ready, dirty, locallySaved, storageFailed, saving, failure, recoverable, recover, update, retry } = editor
 
@@ -85,6 +87,7 @@ export function SessionEditor({ campaignName, session, path, archived, onBack }:
             components={{ img: ({ alt }) => <span>{alt}</span> }}>{draft.body}</Markdown>
         </section>
       </div>
+      <SessionNoteLinks sessionUrl={`${path}/${session.id}`} campaignUrl={campaignUrl} archived={archived} />
     </>
   )
 }

@@ -20,6 +20,7 @@ export async function api<T>(path: string, method = 'GET', body?: unknown, heade
     const result = await response.json()
     throw new ApiError(result.message || 'A operação não pôde ser concluída.', response.status)
   }
+  if (response.status === 204) return undefined as T
   return response.json()
 }
 
