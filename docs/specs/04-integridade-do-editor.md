@@ -37,3 +37,19 @@
 - **Refactor** — as verificações de escopo passaram a usar uma consulta de existência compartilhada, sem carregar o texto da sessão. A regressão completa inclui persistência em disco, reabertura e o fluxo de edição do Incremento 1.
 
 Esta entrega implementa I2-01 e I2-02. I2-03–I2-07 continuam planejados.
+
+## Contrato de rascunhos e fila
+
+- O IndexedDB identifica o rascunho pela sessão e por uma edição individual. Uma aba detém um Web Lock durante a edição. Outra aba pode editar a mesma sessão sem substituir o rascunho ativo.
+- Após reabrir online, a interface oferece os rascunhos recuperáveis do mesmo perfil. Escolher um deles preserva sua versão-base e a operação eventualmente pendente. Uma aba que já detém o rascunho continua com a posse.
+- Antes de enviar um PUT, grave localmente o UUID, o conteúdo exato e a versão-base da operação. Uma edição posterior mantém essa operação congelada. A confirmação de uma geração antiga mantém as edições seguintes na fila.
+- Ofereça nova tentativa e tente novamente após o retorno da conexão. Erro de armazenamento é visível e permite baixar o texto. Conflitos mantêm o rascunho para resolução posterior.
+- I2-03 e I2-04 são verificados em Chromium com queda de rede, perda de resposta após gravação, atraso da confirmação, reabertura e falha de IndexedDB. A comparação de versões no conflito pertence ao próximo incremento interno.
+
+### Evidências de I2-03 e I2-04
+
+- **Red** — Chromium demonstrou ausência do UUID na perda de resposta e ausência de aviso quando o IndexedDB falhou.
+- **Green** — testes E2E confirmam o reenvio do mesmo UUID após reabrir a aba, preservação de edição mais recente, falha local com download e recuperação de duas edições offline independentes.
+- **Refactor** — a confirmação durável passou a ser comparada ao rascunho atual no evento de saída. O foco retorna às anotações depois da verificação inicial e da recuperação.
+
+A fila do navegador depende da integração dos comprovantes idempotentes da primeira entrega. O histórico visual, a resolução de conflitos e o acesso privado ficam nas próximas entregas internas do Incremento 2.

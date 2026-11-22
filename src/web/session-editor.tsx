@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import type { Session, SessionFields } from '../contracts.ts'
-import { api } from './api.ts'
+import type { Session } from '../contracts.ts'
+import { useSessionDraft } from './use-session-draft.ts'
 
 interface Props {
   campaignName: string
@@ -13,54 +13,35 @@ interface Props {
 }
 
 export function SessionEditor({ campaignName, session, path, archived, onBack }: Props) {
-  const { id, version: initialVersion, ...initialFields } = session
-  const [draft, setDraft] = useState(initialFields)
-  const [saved, setSaved] = useState(initialFields)
-  const [version, setVersion] = useState(initialVersion)
-  const [saving, setSaving] = useState(false)
-  const [error, setError] = useState('')
-  const dirty = draft !== saved
+  const editor = useSessionDraft(path, session, archived)
+  const { draft, ready, dirty, locallySaved, storageFailed, saving, failure, recoverable, recover, update, retry } = editor
 
+  const notes = useRef<HTMLTextAreaElement>(null)
   useEffect(() => {
-    if (archived || !dirty || saving || error) return
-    const timeout = window.setTimeout(async () => {
-      setSaving(true)
-      try {
-        const result = await api<Session>(`${path}/${id}`, 'PUT', { ...draft, version })
-        setVersion(result.version)
-        setSaved(draft)
-      } catch (failure) {
-        setError(failure instanceof Error ? failure.message : 'Tente novamente.')
-      } finally {
-        setSaving(false)
-      }
-    }, 450)
-    return () => window.clearTimeout(timeout)
-  }, [archived, dirty, draft, error, id, path, saving, version])
-
-  useEffect(() => {
-    if (!dirty) return
-    const warn = (event: BeforeUnloadEvent) => {
-      event.preventDefault()
-      event.returnValue = true
-    }
-    window.addEventListener('beforeunload', warn)
-    return () => window.removeEventListener('beforeunload', warn)
-  }, [dirty])
-
-  function update<K extends keyof SessionFields>(key: K, value: SessionFields[K]) {
-    setDraft((current) => ({ ...current, [key]: value }))
-  }
+    if (ready && !archived) notes.current?.focus()
+  }, [archived, ready])
 
   function back() {
-    if (dirty && !window.confirm('Há alterações sem confirmação do servidor. Sair do editor?')) return
+    if (dirty && !locallySaved && !window.confirm('O rascunho ainda está apenas nesta aba. Sair do editor?')) return
     onBack()
   }
 
+  function download() {
+    const url = URL.createObjectURL(new Blob([draft.body], { type: 'text/markdown;charset=utf-8' }))
+    const anchor = document.createElement('a')
+    anchor.href = url
+    anchor.download = 'rascunho-da-sessao.md'
+    anchor.click()
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000)
+  }
+
   let status = 'Salvo no servidor'
-  if (error) status = `Falha ao salvar. ${error} O texto continua disponível no editor.`
+  if (storageFailed) status = 'Falha no armazenamento local. Baixe o rascunho antes de sair.'
+  else if (failure) status = `Falha ao salvar. ${failure.message} O rascunho continua disponível neste navegador.`
+  else if (!ready) status = 'Verificando rascunhos locais…'
   else if (saving) status = 'Salvando…'
-  else if (dirty) status = 'Alterações pendentes'
+  else if (locallySaved) status = 'Rascunho local · sincronização pendente'
+  else if (dirty) status = 'Guardando rascunho local…'
   else if (archived) status = 'Campanha arquivada · somente leitura'
 
   return (
@@ -69,11 +50,19 @@ export function SessionEditor({ campaignName, session, path, archived, onBack }:
       <header className="page-header">
         <div><p className="context">{campaignName}</p><h1>Editor de sessão</h1></div>
         <div className="save-state">
-          <span role="status" className={error ? 'error' : ''}>{status}</span>
-          {error && <button onClick={() => setError('')}>Tentar novamente</button>}
+          <span role="status" className={failure || storageFailed ? 'error' : ''}>{status}</span>
+          {(failure || storageFailed) && dirty && <button onClick={retry}>Tentar novamente</button>}
+          {(failure || storageFailed) && dirty && <button onClick={download}>Baixar rascunho</button>}
         </div>
       </header>
-      <fieldset className="form-grid session-fields" disabled={archived}>
+      {!archived && !dirty && recoverable.length > 0 && <div className="actions">
+        {recoverable.map((candidate) => <button key={candidate.id} disabled={!ready}
+          onClick={() => void recover(candidate)}>
+          Recuperar rascunho · {new Date(candidate.updatedAt).toLocaleString('pt-BR')} ·{' '}
+          {candidate.fields.body.trim().slice(0, 72) || candidate.fields.title}
+        </button>)}
+      </div>}
+      <fieldset className="form-grid session-fields" disabled={archived || !ready}>
         <label className="wide">Título<input value={draft.title} onChange={(e) => update('title', e.target.value)} /></label>
         <label>Data real<input type="date" value={draft.date} onChange={(e) => update('date', e.target.value)} /></label>
         <label>Número<input type="number" min="1" step="1" value={draft.number ?? ''}
@@ -82,7 +71,7 @@ export function SessionEditor({ campaignName, session, path, archived, onBack }:
         <label>Participantes<input value={draft.participants} onChange={(e) => update('participants', e.target.value)} /></label>
       </fieldset>
       <div className="editor-grid">
-        <div className="panel editor"><label htmlFor="session-notes">Anotações</label><textarea id="session-notes" autoFocus={!archived} disabled={archived} value={draft.body}
+        <div className="panel editor"><label htmlFor="session-notes">Anotações</label><textarea id="session-notes" ref={notes} disabled={archived || !ready} value={draft.body}
           placeholder="Registre o que aconteceu nesta sessão…" onChange={(e) => update('body', e.target.value)} /></div>
         <section className="panel preview" aria-label="Prévia Markdown">
           <p className="context">Prévia Markdown</p>
