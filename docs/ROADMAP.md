@@ -20,7 +20,9 @@ A implementação começa após a revisão da [arquitetura](ARCHITECTURE.md) e d
 ## Entregas do Incremento 3
 
 - A caixa de entrada recebe anotações rápidas e permite encaminhá-las para campanhas. [Especificação](specs/07-captura-de-anotacoes-rapidas.md)
-- Os vínculos entre notas e sessões estão disponíveis no editor, com leitura de campanhas arquivadas e recuperação após perda de resposta. A próxima entrega inicia o cadastro básico das entidades da wiki. [Especificação](specs/09-vinculos-entre-anotacoes-e-sessoes.md)
+- Os vínculos entre notas e sessões estão disponíveis no editor, com leitura de campanhas arquivadas e recuperação após perda de resposta. [Especificação](specs/09-vinculos-entre-anotacoes-e-sessoes.md)
+
+- O cadastro básico da wiki organiza personagens, NPCs, localidades e missões por campanha. A consulta de missões abertas e o personagem em destaque continuam pendentes no MVP-09. [Especificação](specs/10-cadastro-da-wiki.md)
 
 ## Depois do MVP
 
