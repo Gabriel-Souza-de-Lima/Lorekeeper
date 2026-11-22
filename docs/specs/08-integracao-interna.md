@@ -13,3 +13,7 @@ Teste a decisão pura e a sequência HTTP com CI aguardando, aprovado e reprovad
 - **Red** — os testes da política falharam ao exigir um prefixo interno adicional e ao reconhecer o candidato aprovado.
 - **Green** — o teste HTTP distingue publicação autorizada, auto-merge pendente, recuperação após sucesso e bloqueios por origem, autoria, conflito, atualização, proteção ou candidato incorreto.
 - **Refactor** — a política de diffs e a comprovação do CI ficam separadas das operações HTTP. A solicitação nativa e a recuperação compartilham a conferência atualizada do PR, do candidato, da base e da proteção.
+
+## Ensaio real com alteração em servidor
+
+A App abriu o [PR #21](https://github.com/Gabriel-Souza-de-Lima/Lorekeeper/pull/21) para a branch `fix/valida-id-encaminhamento`, com modificação em `src/server/quick-notes.ts`. Na abertura, nenhum run de CI havia sido observado. Um novo push acrescentou a verificação de UUID em maiúsculas e disparou o CI do head `9fb7ac9`. A linha do tempo registra que `lorekeeper-pr-bot[bot]` solicitou auto-merge enquanto o PR estava aberto com `validar` em execução. O [job validar](https://github.com/Gabriel-Souza-de-Lima/Lorekeeper/actions/runs/45054695910/job/137307212161) aprovou o candidato `eddf523`. O GitHub atribuiu à App o merge `6ce5386`, e o [CI pós-merge](https://github.com/Gabriel-Souza-de-Lima/Lorekeeper/actions/runs/45054880212) passou. A recuperação tardia continua coberta pelo ensaio HTTP local.

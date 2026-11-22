@@ -47,3 +47,17 @@ Na regressão C01/C02/C03/S01/S02, o trace mostrou um salvamento com o título p
 - **Refactor** — captura e encaminhamento compartilham a construção de esquemas de entrada. O encaminhamento usa o mesmo formato canônico de UUID da captura. O esquema SQLite permanece na V3.
 
 No encaminhamento, a API rejeita um identificador de anotação malformado com 400 e mantém 404 para um UUID válido que não existe. O teste de integração usa os dois cenários.
+
+## I3-04 — Encaminhamento na interface
+
+- I3-04a. A caixa de entrada permite escolher uma campanha não arquivada para cada nota. Depois da confirmação, a nota sai da caixa geral e pode ser lida em **Anotações da campanha**, na campanha de destino.
+- I3-04b. Se a resposta do encaminhamento se perder, preserve a nota visível e ofereça nova tentativa com o mesmo destino. Bloqueie outra escolha durante essa incerteza. O servidor confirma a repetição sem duplicar nem transferir a nota.
+- I3-04c. Campanhas arquivadas permitem consultar as notas já encaminhadas. O seletor de destino oferece apenas campanhas não arquivadas. Sem destinos disponíveis, informe a condição no lugar do seletor.
+
+Os testes de navegador exercitam a saída da caixa, a leitura na campanha e a perda da resposta. Vínculos com sessões e entidades pertencem às próximas entregas.
+
+### Evidências de I3-04
+
+- **Red** — o teste de navegador encontrou a nota na caixa, mas o seletor da campanha de destino não existia.
+- **Green** — o navegador encaminhou a nota, manteve o destino durante a perda de resposta, confirmou o reenvio e abriu o texto na campanha.
+- **Refactor** — a caixa e a campanha compartilham a renderização da lista. Captura e encaminhamento usam a mesma atualização da caixa. A regressão inclui a consulta após arquivar a campanha.
