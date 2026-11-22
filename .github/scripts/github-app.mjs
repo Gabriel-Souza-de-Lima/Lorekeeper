@@ -24,12 +24,17 @@ async function request(path, { token = reader, body } = {}) {
 async function protection() {
   const repository = await request('', { token: appToken })
   if (repository.default_branch !== 'main' || repository.allow_auto_merge !== true ||
-      !repository.allow_merge_commit) return false
+      !repository.allow_merge_commit) {
+    console.log('A API não confirmou main como padrão, auto-merge habilitado e método merge permitido.')
+    return false
+  }
   const rules = await request('/rules/branches/main')
   const ids = [...new Set(rules.map((rule) => rule.ruleset_id))]
   if (ids.some((id) => !Number.isSafeInteger(id))) return false
   const rulesets = await Promise.all(ids.map((id) => request(`/rulesets/${id}`, { token: appToken })))
-  return strictRules(rules, rulesets)
+  if (strictRules(rules, rulesets)) return true
+  console.log('A API não comprovou o Ruleset estrito, a origem de validar e a ausência de bypass.')
+  return false
 }
 
 async function compare(base, head, branch) {
@@ -69,9 +74,15 @@ async function askNativeMerge(pr, branch, sha, base) {
   const query = new URLSearchParams({ event: 'pull_request', branch, head_sha: sha, per_page: '10' })
   const { workflow_runs: runs } = await request(`/actions/workflows/ci.yml/runs?${query}`)
   const run = runs[0]
-  if (!run || run.head_sha !== sha || run.status !== 'completed' || run.conclusion !== 'success') return
+  if (!run || run.head_sha !== sha || run.status !== 'completed' || run.conclusion !== 'success') {
+    console.log(`PR #${pr.number}: CI bem-sucedido ainda sem confirmação para o head atual.`)
+    return
+  }
   const { jobs, total_count } = await request(`/actions/runs/${run.id}/attempts/${run.run_attempt}/jobs?per_page=100`)
-  if (jobs.length !== total_count || !candidateApproved({ number: pr.number, head: sha, candidate }, run, jobs)) return
+  if (jobs.length !== total_count || !candidateApproved({ number: pr.number, head: sha, candidate }, run, jobs)) {
+    console.log(`PR #${pr.number}: falta confirmação de validar para o candidato exato.`)
+    return
+  }
 
   const [latest, main] = await Promise.all([request(url), request('/git/ref/heads/main')])
   if (latest.state !== 'open' || latest.draft !== false || latest.auto_merge || latest.mergeable !== true ||
