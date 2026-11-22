@@ -26,7 +26,9 @@ A implementação começa após a revisão da [arquitetura](ARCHITECTURE.md) e d
 
 - A visão geral oferece acesso às missões abertas e ao personagem em destaque. [Especificação](specs/11-visao-geral-da-wiki.md)
 
-- Sessões e páginas da wiki permitem navegar por vínculos manuais nos dois sentidos. Menções no Markdown, tags e busca ainda estão pendentes. [Especificação](specs/12-vinculos-da-wiki.md)
+- Sessões e páginas da wiki permitem navegar por vínculos manuais nos dois sentidos. [Especificação](specs/12-vinculos-da-wiki.md)
+
+- Menções em Markdown de sessões atualizam os backlinks na gravação e ficam navegáveis na prévia. Tags e busca continuam pendentes. [Especificação](specs/13-mencoes-markdown.md)
 
 ## Depois do MVP
 

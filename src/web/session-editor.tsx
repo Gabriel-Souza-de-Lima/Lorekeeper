@@ -1,7 +1,8 @@
 import { useLayoutEffect, useRef } from 'react'
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import type { Session } from '../contracts.ts'
+import type { Session, WikiSummary } from '../contracts.ts'
+import { wikiMention, wikiReferenceId } from '../wiki-reference.ts'
 import { ConflictReview, RevisionHistory } from './session-review.tsx'
 import { useSessionDraft } from './use-session-draft.ts'
 import { SessionWikiLinks } from './wiki-links.tsx'
@@ -33,6 +34,20 @@ export function SessionEditor({ campaignName, campaignUrl, session, path, archiv
   }
 
   const back = () => leave(onBack)
+
+  function insertMention(page: WikiSummary) {
+    const field = notes.current
+    if (!field || !ready || archived) return
+    const { selectionStart, selectionEnd } = field
+    const selected = draft.body.slice(selectionStart, selectionEnd)
+    const label = selected.trim()
+    const mention = wikiMention(label || page.title, page.id)
+    const leading = label ? selected.match(/^\s*/)?.[0] ?? '' : ''
+    const trailing = label ? selected.match(/\s*$/)?.[0] ?? '' : ''
+    const start = label ? selectionStart : selectionEnd
+    update('body', draft.body.slice(0, start) + leading + mention + trailing + draft.body.slice(selectionEnd))
+    field.focus()
+  }
 
   function download() {
     const url = URL.createObjectURL(new Blob([draft.body], { type: 'text/markdown;charset=utf-8' }))
@@ -89,11 +104,20 @@ export function SessionEditor({ campaignName, campaignUrl, session, path, archiv
         <section className="panel preview" aria-label="Prévia Markdown">
           <p className="context">Prévia Markdown</p>
           <Markdown skipHtml remarkPlugins={[remarkGfm]}
-            components={{ img: ({ alt }) => <span>{alt}</span> }}>{draft.body}</Markdown>
+            components={{
+              img: ({ alt }) => <span>{alt}</span>,
+              a: ({ href, title, children }) => {
+                const id = wikiReferenceId(href ?? '')
+                return id ? <button type="button" className="quiet" disabled={saving}
+                  onClick={() => leave(() => onOpenWiki(id))}>{children}</button>
+                  : <a href={href} title={title}>{children}</a>
+              },
+            }}>{draft.body}</Markdown>
         </section>
       </div>
       <SessionWikiLinks sessionUrl={`${path}/${session.id}`} campaignUrl={campaignUrl} archived={archived}
-        navigationBlocked={saving} onOpen={(id) => leave(() => onOpenWiki(id))} />
+        navigationBlocked={saving} version={editor.baseVersion} canInsert={ready && !archived}
+        onInsert={insertMention} onOpen={(id) => leave(() => onOpenWiki(id))} />
       <SessionNoteLinks sessionUrl={`${path}/${session.id}`} campaignUrl={campaignUrl} archived={archived} />
     </>
   )

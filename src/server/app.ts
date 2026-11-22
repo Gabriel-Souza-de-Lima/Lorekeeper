@@ -4,6 +4,7 @@ import staticFiles from '@fastify/static'
 import { campaignStatuses } from '../contracts.ts'
 import type { Campaign, CampaignFields, Session, SessionFields, SessionSummary } from '../contracts.ts'
 import { openDatabase } from './database.ts'
+import { prepareMarkdownLinks } from './markdown-links.ts'
 import { registerQuickNotes } from './quick-notes.ts'
 import { registerWiki } from './wiki.ts'
 
@@ -150,6 +151,7 @@ export function createApp(database: string, webRoot?: string) {
   const updateDocument = db.prepare(`
     UPDATE documents SET title = @title, body = @body, version = version + 1, updated_at = @now
     WHERE id = @id AND campaign_id = @campaignId AND version = @version`)
+  const syncMarkdownLinks = prepareMarkdownLinks(db)
   const updateSession = db.prepare(`
     UPDATE sessions SET session_date = @date, fictional_date = @fictionalDate,
       participants = @participants, number = @number WHERE document_id = @id`)
@@ -195,6 +197,7 @@ export function createApp(database: string, webRoot?: string) {
     const values = { ...draft, id, campaignId, now: new Date().toISOString() }
     if (!updateDocument.run(values).changes) return { status: 409, message: 'A sessão foi alterada desde que você a abriu.' }
     updateSession.run(values)
+    syncMarkdownLinks(id, campaignId, draft.body)
     insertRevision.run(id)
     const session = selectSession.get(campaignId, id)
     if (!session) throw new Error('A sessão não pôde ser confirmada.')
