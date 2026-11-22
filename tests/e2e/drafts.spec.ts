@@ -1,3 +1,4 @@
+import { readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { expect, test } from '@playwright/test'
 import type { APIRequestContext } from '@playwright/test'
@@ -60,12 +61,15 @@ test('I2-04: falha de armazenamento é visível e oferece download do texto', as
     })
     await page.goto(base)
     await page.getByRole('button', { name: 'Observatório' }).click()
-    await page.getByRole('button', { name: 'Nova sessão', exact: true }).last().click()
+    await page.getByRole('listitem').getByRole('button', { name: 'Nova sessão', exact: true }).click()
     await page.getByLabel('Anotações', { exact: true }).fill('Registro ainda disponível na aba.')
     await expect(page.getByRole('status')).toHaveText(/Falha no armazenamento local/)
-    const download = page.waitForEvent('download')
-    await page.getByRole('button', { name: 'Baixar rascunho' }).click()
-    expect((await download).suggestedFilename()).toBe('rascunho-da-sessao.md')
+    const [download] = await Promise.all([
+      page.waitForEvent('download', { timeout: 5000 }),
+      page.getByRole('button', { name: 'Baixar rascunho', exact: true }).click({ timeout: 5000 }),
+    ])
+    expect(download.suggestedFilename()).toBe('rascunho-da-sessao.md')
+    expect(await readFile(await download.path(), 'utf8')).toBe('Registro ainda disponível na aba.')
     await expect(page.getByLabel('Anotações', { exact: true })).toHaveValue('Registro ainda disponível na aba.')
   } finally {
     await app.close()
