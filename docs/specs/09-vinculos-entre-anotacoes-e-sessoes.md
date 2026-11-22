@@ -1,6 +1,6 @@
 # I3-02 — Vínculos entre anotações rápidas e sessões
 
-- **Estado** — implementada na API.
+- **Estado** — implementada na API e no editor de sessão.
 - **Objetivo** — preservar uma anotação rápida como documento independente e recuperá-la a partir de uma sessão relacionada.
 - **Rastreabilidade** — MVP-08, MVP-10 e vínculos manuais da arquitetura.
 
@@ -18,4 +18,13 @@ A API lista os backlinks de uma sessão e permite adicionar ou remover um víncu
 
 ## Dependências e limitações
 
-Esta entrega disponibiliza a API. A interface de seleção, os vínculos com entidades e as referências derivadas de Markdown serão entregues em etapas seguintes.
+Vínculos com entidades e referências derivadas de Markdown ficam para as próximas etapas.
+
+## Interface da sessão
+
+| ID | Critério verificável | Teste associado |
+| --- | --- | --- |
+| I3-02d | Na sessão ativa, selecionar notas da caixa ou da própria campanha, consultar o texto vinculado e remover somente o vínculo. Excluir da seleção notas de outras campanhas ou já vinculadas. | E2E em `tests/e2e/session-note-links.spec.ts` |
+| I3-02e | Após perder a resposta de uma alteração, oferecer repetição da mesma operação idempotente. Ao reabrir uma campanha arquivada, exibir vínculos em modo de leitura. | E2E em `tests/e2e/session-note-links.spec.ts` |
+
+**Evidências de TDD.** Red: o E2E chegou ao editor e falhou pela ausência do seletor. Green: o fluxo passou no Chromium com SQLite real, incluindo a perda da resposta HTTP após a gravação. Refactor: a exclusão de notas já vinculadas passou a consultar os IDs em um conjunto, e o painel oferece recarga após erro definitivo.

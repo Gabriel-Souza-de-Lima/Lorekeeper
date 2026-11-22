@@ -187,6 +187,7 @@ function App() {
       case 'campaign-notes': return <CampaignNotes campaign={view.campaign}
         onBack={() => setView({ page: 'campaign', campaign: view.campaign })} />
       case 'session': return <SessionEditor key={view.session.id} campaignName={view.campaign.name}
+        campaignUrl={`${campaignPath}/${view.campaign.id}`}
         session={view.session} archived={Boolean(view.campaign.archivedAt)}
         path={`${campaignPath}/${view.campaign.id}/sessions`}
         onBack={() => void action(() => openCampaign(view.campaign.id))} />
