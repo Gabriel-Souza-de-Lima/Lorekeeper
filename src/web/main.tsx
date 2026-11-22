@@ -3,6 +3,7 @@ import type { FormEvent } from 'react'
 import { createRoot } from 'react-dom/client'
 import type { Campaign, CampaignFields, CampaignStatus, Session, SessionSummary } from '../contracts.ts'
 import { api, displayDate, localDate } from './api.ts'
+import { CampaignNotes } from './note-assignment.tsx'
 import { QuickNotes } from './quick-notes.tsx'
 import { SessionEditor } from './session-editor.tsx'
 import './style.css'
@@ -15,6 +16,7 @@ type View =
   | { page: 'quick-notes' }
   | { page: 'new' }
   | { page: 'campaign' | 'edit'; campaign: Campaign }
+  | { page: 'campaign-notes'; campaign: Campaign }
   | { page: 'session'; campaign: Campaign; session: Session }
 
 const campaignMetadata = [
@@ -143,6 +145,9 @@ function App() {
           <div><p className="context">{locked ? 'Campanha arquivada' : statusLabels[campaign.status]}</p>
             <h1>{campaign.name}</h1>{campaign.description && <p>{campaign.description}</p>}</div>
           <div className="actions">
+            <button disabled={working} onClick={() => { setError(''); setView({ page: 'campaign-notes', campaign }) }}>
+              Anotações da campanha
+            </button>
             {!locked && <button disabled={working} onClick={() => { setError(''); setView({ page: 'edit', campaign }) }}>
               Editar campanha
             </button>}
@@ -179,6 +184,8 @@ function App() {
       case 'new': return campaignForm()
       case 'edit': return campaignForm(view.campaign)
       case 'campaign': return campaignPage(view.campaign)
+      case 'campaign-notes': return <CampaignNotes campaign={view.campaign}
+        onBack={() => setView({ page: 'campaign', campaign: view.campaign })} />
       case 'session': return <SessionEditor key={view.session.id} campaignName={view.campaign.name}
         session={view.session} archived={Boolean(view.campaign.archivedAt)}
         path={`${campaignPath}/${view.campaign.id}/sessions`}

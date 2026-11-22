@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
+import type { Campaign } from '../contracts.ts'
+import { AssignNote, NoteList } from './note-assignment.tsx'
 import { api } from './api.ts'
 import { claimDraft } from './draft-store.ts'
 
@@ -19,6 +21,9 @@ const path = '/api/quick-notes'
 const storageKey = 'lorekeeper-quick-note-capture'
 
 export function QuickNotes({ onBack }: { onBack: () => void }) {
+  const [campaigns, setCampaigns] = useState<Campaign[] | null>(null)
+  const [campaignsFailed, setCampaignsFailed] = useState(false)
+  const [campaignAttempt, setCampaignAttempt] = useState(0)
   const [items, setItems] = useState<Note[] | null>(null)
   const [capture, setCapture] = useState<Capture | null>(null)
   const [editor, setEditor] = useState<'loading' | 'available' | 'locked' | 'unavailable'>('loading')
@@ -67,6 +72,15 @@ export function QuickNotes({ onBack }: { onBack: () => void }) {
   }, [listAttempt])
 
   useEffect(() => {
+    let active = true
+    void api<Campaign[]>('/api/campaigns').then(
+      (results) => { if (active) setCampaigns(results.filter((campaign) => !campaign.archivedAt)) },
+      () => { if (active) setCampaignsFailed(true) },
+    )
+    return () => { active = false }
+  }, [campaignAttempt])
+
+  useEffect(() => {
     if (!storageFailed || !capture?.body) return
     const warn = (event: BeforeUnloadEvent) => {
       event.preventDefault()
@@ -75,6 +89,12 @@ export function QuickNotes({ onBack }: { onBack: () => void }) {
     window.addEventListener('beforeunload', warn)
     return () => window.removeEventListener('beforeunload', warn)
   }, [storageFailed, capture?.body])
+
+  function refreshList() {
+    listVersion.current++
+    setListingFailed(false)
+    setListAttempt((value) => value + 1)
+  }
 
   function persist(record: Capture) {
     try {
@@ -104,9 +124,7 @@ export function QuickNotes({ onBack }: { onBack: () => void }) {
     setSaving(true)
     try {
       const note = await api<Note>(path, 'POST', { id: pending.id, body: pending.body })
-      listVersion.current++
-      setListingFailed(false)
-      setListAttempt((value) => value + 1)
+      refreshList()
       setItems((current) => [note, ...(current ?? []).filter((item) => item.id !== note.id)])
       setMessage('Anotação guardada')
       try {
@@ -120,6 +138,11 @@ export function QuickNotes({ onBack }: { onBack: () => void }) {
     } finally {
       setSaving(false)
     }
+  }
+
+  function removeAssigned(id: string) {
+    refreshList()
+    setItems((current) => current?.filter((note) => note.id !== id) ?? null)
   }
 
   function download() {
@@ -162,16 +185,22 @@ export function QuickNotes({ onBack }: { onBack: () => void }) {
     <section aria-label="Caixa de entrada">
       <header className="page-header"><h2>Caixa de entrada</h2></header>
       {listingFailed && <p className="error">Não foi possível consultar a caixa de entrada.{' '}
-        <button onClick={() => { setListingFailed(false); setListAttempt((value) => value + 1) }}>Recarregar caixa</button>
+        <button onClick={refreshList}>Recarregar caixa</button>
       </p>}
       {items === null && !listingFailed && <p>Carregando anotações…</p>}
       {items?.length === 0 && <p className="panel empty">Nenhuma anotação na caixa de entrada.</p>}
-      {items && <ul className="session-list">{items.map((note) => <li className="panel" key={note.id}>
-        <div className="preview">
-          <h3>{note.title}</h3>
-          {note.body.trim() !== note.title && <p style={{ whiteSpace: 'pre-wrap' }}>{note.body}</p>}
-        </div>
-      </li>)}</ul>}
+      {items && items.length > 0 && <>
+        {campaignsFailed && <p className="error">Não foi possível carregar as campanhas de destino.{' '}
+          <button onClick={() => { setCampaignsFailed(false); setCampaignAttempt((value) => value + 1) }}>
+            Recarregar campanhas
+          </button>
+        </p>}
+        {campaigns === null && !campaignsFailed && <p>Carregando campanhas de destino…</p>}
+        {campaigns?.length === 0 && <p>Nenhuma campanha disponível para encaminhamento.</p>}
+        <NoteList items={items} actions={campaigns?.length
+          ? (note) => <AssignNote noteId={note.id} campaigns={campaigns} onAssigned={removeAssigned} />
+          : undefined} />
+      </>}
     </section>
   </>
 }
