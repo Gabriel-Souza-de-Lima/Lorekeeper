@@ -2,6 +2,7 @@ import { useEffect, useId, useState } from 'react'
 import type { ReactNode } from 'react'
 import type { Campaign } from '../contracts.ts'
 import { api, ApiError } from './api.ts'
+import { DocumentTags } from './document-tags.tsx'
 
 export interface Note {
   id: string
@@ -87,6 +88,7 @@ export function CampaignNotes({ campaign, onBack }: { campaign: Campaign; onBack
       <button onClick={() => { setError(false); setAttempt((value) => value + 1) }}>Recarregar anotações</button>
     </div> : notes === null ? <p>Carregando anotações…</p> : notes.length === 0
       ? <p className="panel empty">Nenhuma anotação encaminhada para esta campanha.</p>
-      : <NoteList items={notes} />}
+      : <NoteList items={notes} actions={(note) => <DocumentTags campaignUrl={`/api/campaigns/${campaign.id}`}
+          documentId={note.id} archived={Boolean(campaign.archivedAt)} />} />}
   </>
 }

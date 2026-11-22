@@ -4,6 +4,7 @@ import staticFiles from '@fastify/static'
 import { campaignStatuses } from '../contracts.ts'
 import type { Campaign, CampaignFields, Session, SessionFields, SessionSummary } from '../contracts.ts'
 import { openDatabase } from './database.ts'
+import { registerDocumentTags } from './document-tags.ts'
 import { prepareMarkdownLinks } from './markdown-links.ts'
 import { registerQuickNotes } from './quick-notes.ts'
 import { registerWiki } from './wiki.ts'
@@ -242,5 +243,6 @@ export function createApp(database: string, webRoot?: string) {
 
   registerQuickNotes(app, db)
   registerWiki(app, db)
+  registerDocumentTags(app, db)
   return app
 }

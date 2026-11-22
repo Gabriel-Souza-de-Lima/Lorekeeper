@@ -48,3 +48,8 @@ export interface WikiPage {
 
 export type WikiDetails = WikiPage & { closed?: boolean }
 export type WikiSummary = Omit<WikiPage, 'body'>
+
+export interface DocumentTag {
+  id: string
+  name: string
+}
