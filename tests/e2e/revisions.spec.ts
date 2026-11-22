@@ -80,8 +80,14 @@ test('I2-05: mantém o rascunho em conflito e exige nova comparação se o servi
     await expect(recovered).toHaveValue('A ponte leva à praça, onde está o mapa.')
     expect((await (await request.get(path)).json()).version).toBe(4)
   } finally {
-    await other.close()
-    await app.close()
+    try {
+      await test.step('Fechar os contextos do teste de conflito', async () => {
+        await Promise.all([page.context().close(), other.close()])
+      }, { timeout: 5000 })
+    } finally {
+      app.server.closeAllConnections()
+      await test.step('Fechar o servidor do teste de conflito', () => app.close(), { timeout: 5000 })
+    }
   }
 })
 

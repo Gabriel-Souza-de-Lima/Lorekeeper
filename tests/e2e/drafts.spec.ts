@@ -1,4 +1,3 @@
-import { readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { expect, test } from '@playwright/test'
 import type { APIRequestContext } from '@playwright/test'
@@ -58,6 +57,15 @@ test('I2-04: falha de armazenamento é visível e oferece download do texto', as
     await seed(request, base)
     await page.addInitScript(() => {
       indexedDB.open = () => { throw new DOMException('Falha simulada', 'QuotaExceededError') }
+      const click = HTMLAnchorElement.prototype.click
+      HTMLAnchorElement.prototype.click = function () {
+        if (this.download === 'rascunho-da-sessao.md' && this.href.startsWith('blob:')) {
+          void fetch(this.href).then((response) => response.text()).then((text) => {
+            document.documentElement.dataset.downloadedDraft = text
+          })
+        }
+        click.call(this)
+      }
     })
     await page.goto(base)
     await page.getByRole('button', { name: 'Observatório' }).click()
@@ -69,10 +77,15 @@ test('I2-04: falha de armazenamento é visível e oferece download do texto', as
       page.getByRole('button', { name: 'Baixar rascunho', exact: true }).click({ timeout: 5000 }),
     ])
     expect(download.suggestedFilename()).toBe('rascunho-da-sessao.md')
-    expect(await readFile(await download.path(), 'utf8')).toBe('Registro ainda disponível na aba.')
+    await expect(page.locator('html')).toHaveAttribute('data-downloaded-draft', 'Registro ainda disponível na aba.')
     await expect(page.getByLabel('Anotações', { exact: true })).toHaveValue('Registro ainda disponível na aba.')
   } finally {
-    await app.close()
+    try {
+      await page.close()
+    } finally {
+      app.server.closeAllConnections()
+      await app.close()
+    }
   }
 })
 
@@ -125,7 +138,7 @@ test('I2-03: duas abas mantêm edições offline independentes e permitem recupe
     for (const tab of [page, second]) {
       await tab.goto(base)
       await tab.getByRole('button', { name: 'Observatório' }).click()
-      await tab.getByRole('button', { name: 'Nova sessão', exact: true }).last().click()
+      await tab.getByRole('listitem').getByRole('button', { name: 'Nova sessão', exact: true }).click()
     }
     await context.setOffline(true)
     const notes = 'Anotações'
@@ -139,7 +152,7 @@ test('I2-03: duas abas mantêm edições offline independentes e permitem recupe
     const reopened = await context.newPage()
     await reopened.goto(base)
     await reopened.getByRole('button', { name: 'Observatório' }).click()
-    await reopened.getByRole('button', { name: 'Nova sessão', exact: true }).last().click()
+    await reopened.getByRole('listitem').getByRole('button', { name: 'Nova sessão', exact: true }).click()
     const alternatives = reopened.getByRole('button', { name: /Recuperar rascunho/ })
     await expect(alternatives).toHaveCount(2)
     await alternatives.filter({ hasText: 'Segunda aba desenhou o mapa.' }).click()
@@ -147,7 +160,11 @@ test('I2-03: duas abas mantêm edições offline independentes e permitem recupe
     await expect(reopened.getByRole('status')).toHaveText('Salvo no servidor')
     await expect(alternatives).toHaveCount(1)
   } finally {
-    await context.setOffline(false)
-    await app.close()
+    try {
+      await test.step('Encerrar o contexto de abas de teste', () => context.close(), { timeout: 5000 })
+    } finally {
+      app.server.closeAllConnections()
+      await test.step('Encerrar o servidor de teste', () => app.close(), { timeout: 5000 })
+    }
   }
 })
