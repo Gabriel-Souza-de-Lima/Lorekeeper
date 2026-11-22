@@ -55,3 +55,9 @@ Não tente implementar todas as funcionalidades do produto simultaneamente.
 - Rode os comandos aplicáveis em `docs/DEVELOPMENT.md` e registre o vínculo entre critérios, testes e resultados. Informe contagens, falhas e motivos de verificações não executadas.
 - Considere a funcionalidade concluída após cumprir os critérios da especificação, obter aprovação nas verificações aplicáveis e atualizar a documentação. A integração depende do check `validar` do CI.
 - Quando a consulta ao GitHub estiver indisponível, prossiga com o desenvolvimento autorizado e execute as verificações locais. Registre o resultado remoto como indisponível e mantenha o requisito de CI para integração.
+
+## Integração com a GitHub App
+
+- Para uma entrega comum e verificável, use uma branch `codex/<nome>` somente quando o diff estiver revisado, os testes locais passarem e a branch estiver atualizada com a `main`. O prefixo autoriza a App a criar o PR. Mantenha especificação, testes e evidências na entrega.
+- Mudanças de CI, autenticação, infraestrutura, dependências e migrações ficam fora do fluxo automático e passam por PR de revisão específica. Nunca exponha chaves, dados de produção ou material privado.
+- A App solicita auto-merge nativo somente com Ruleset efetivo sem bypass, base atual e sucesso explícito do job `validar` para o candidato corrente. Confirme o merge pelo GitHub antes de avançar a um incremento dependente. Veja o [guia de desenvolvimento](docs/DEVELOPMENT.md#publicação-com-github-app).
