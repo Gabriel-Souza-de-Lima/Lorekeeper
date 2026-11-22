@@ -141,6 +141,12 @@ test('I3-03: encaminha uma nota uma vez e isola as consultas por campanha', asyn
   assert.equal(assigned.statusCode, 200)
   assert.deepEqual(assigned.json(), { ...captured.json(), campaignId: first })
   assert.deepEqual((await assign(first)).json(), assigned.json())
+  const uppercaseRetry = await app.inject({
+    method: 'PUT', url: `${inbox}/${noteId.toUpperCase()}/campaign`,
+    payload: { campaignId: first.toUpperCase() },
+  })
+  assert.equal(uppercaseRetry.statusCode, 200)
+  assert.deepEqual(uppercaseRetry.json(), assigned.json())
   assert.deepEqual((await app.inject(inbox)).json(), [])
   assert.deepEqual((await list(second)).json(), [])
   assert.equal((await assign(second)).statusCode, 409)
@@ -148,4 +154,15 @@ test('I3-03: encaminha uma nota uma vez e isola as consultas por campanha', asyn
   assert.equal((await app.inject(`/api/campaigns/${first}`)).json().sessionCount, 0)
   await archive(first)
   assert.deepEqual((await list(first)).json(), [assigned.json()])
+})
+
+test('I3-03: distingue identificador malformado de anotação inexistente', async (t) => {
+  const app = createApp(':memory:')
+  t.after(() => app.close())
+  const payload = { campaignId: 'faa06cb0-1abe-477a-ac0c-412b18c02f19' }
+  const assign = (id: string) => app.inject({
+    method: 'PUT', url: `${inbox}/${id}/campaign`, payload,
+  })
+  assert.equal((await assign('nao-e-uuid')).statusCode, 400)
+  assert.equal((await assign(noteId)).statusCode, 404)
 })

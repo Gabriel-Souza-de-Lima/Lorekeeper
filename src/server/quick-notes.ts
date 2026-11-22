@@ -64,7 +64,10 @@ export function registerQuickNotes(app: FastifyInstance, db: Database.Database) 
     return listByCampaign.all(campaignId)
   })
   app.put<{ Params: { noteId: string }; Body: { campaignId: string } }>(`${path}/:noteId/campaign`, {
-    schema: noteBody({ campaignId: uuid }),
+    schema: {
+      ...noteBody({ campaignId: uuid }),
+      params: { type: 'object', required: ['noteId'], properties: { noteId: uuid } },
+    },
   }, (request, reply) => {
     const result = assign.immediate(request.params.noteId.toLowerCase(), request.body.campaignId.toLowerCase())
     return reply.code(result.status).send(result.note ?? { message: result.message })

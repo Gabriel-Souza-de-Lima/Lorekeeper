@@ -45,3 +45,5 @@ Na regressão C01/C02/C03/S01/S02, o trace mostrou um salvamento com o título p
 - **Red** — encaminhar para uma campanha arquivada retornava 404 porque a rota ainda não existia.
 - **Green** — o teste de integração confirma a transferência inicial, reenvio, rejeição de destinos inválidos e isolamento da consulta.
 - **Refactor** — captura e encaminhamento compartilham a construção de esquemas de entrada. O encaminhamento usa o mesmo formato canônico de UUID da captura. O esquema SQLite permanece na V3.
+
+No encaminhamento, a API rejeita um identificador de anotação malformado com 400 e mantém 404 para um UUID válido que não existe. O teste de integração usa os dois cenários.
