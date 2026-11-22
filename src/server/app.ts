@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto'
+import { createHash, randomUUID } from 'node:crypto'
 import Fastify from 'fastify'
 import staticFiles from '@fastify/static'
 import { campaignStatuses } from '../contracts.ts'
@@ -31,6 +31,15 @@ type SessionParams = CampaignParams & { sessionId: string }
 const campaignPath = '/api/campaigns/:campaignId'
 const sessionsPath = `${campaignPath}/sessions`
 const sessionPath = `${sessionsPath}/:sessionId`
+const operationIdPattern = /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i
+type SaveDraft = SessionFields & { version: number }
+
+function hashDraft(draft: SaveDraft) {
+  const { version, title, body, date, fictionalDate, participants, number } = draft
+  return createHash('sha256')
+    .update(JSON.stringify([version, title, body, date, fictionalDate, participants, number]))
+    .digest('hex')
+}
 
 export function createApp(database: string, webRoot?: string) {
   const db = openDatabase(database)
@@ -107,6 +116,9 @@ export function createApp(database: string, webRoot?: string) {
   const selectSession = db.prepare<[campaignId: string, sessionId: string], Session>(`
     SELECT d.id, d.title, d.body, d.version, s.session_date AS date, s.fictional_date AS fictionalDate,
       s.participants, s.number ${sessionSelect} AND d.id = ?`)
+  const sessionExists = db.prepare<[campaignId: string, sessionId: string]>(
+    `SELECT 1 ${sessionSelect} AND d.id = ?`,
+  )
   const insertDocument = db.prepare(`
     INSERT INTO documents (id, campaign_id, type, title, created_at, updated_at)
     VALUES (@id, @campaignId, 'session', 'Nova sessão', @now, @now)`)
@@ -117,6 +129,19 @@ export function createApp(database: string, webRoot?: string) {
   const updateSession = db.prepare(`
     UPDATE sessions SET session_date = @date, fictional_date = @fictionalDate,
       participants = @participants, number = @number WHERE document_id = @id`)
+
+  const insertRevision = db.prepare<[id: string]>(`
+    INSERT INTO session_revisions (document_id, version, title, body, created_at)
+    SELECT id, version, title, body, updated_at FROM documents WHERE id = ?`)
+  const listRevisions = db.prepare<[id: string]>(`
+    SELECT version, title, body, created_at AS createdAt
+    FROM session_revisions WHERE document_id = ? ORDER BY version DESC`)
+  const selectReceipt = db.prepare<[id: string, key: string], { requestHash: string; responseJson: string }>(`
+    SELECT request_hash AS requestHash, response_json AS responseJson FROM session_save_receipts
+    WHERE document_id = ? AND operation_id = ?`)
+  const insertReceipt = db.prepare(`
+    INSERT INTO session_save_receipts (document_id, operation_id, revision, request_hash, response_json)
+    VALUES (?, ?, ?, ?, ?)`)
 
   function editability(campaignId: string) {
     const campaign = campaignState.get(campaignId)
@@ -130,16 +155,27 @@ export function createApp(database: string, webRoot?: string) {
     const id = randomUUID()
     insertDocument.run({ id, campaignId, now: new Date().toISOString() })
     insertSession.run(id, date)
+    insertRevision.run(id)
     return { status: 201, session: selectSession.get(campaignId, id) }
   })
-  const saveSession = db.transaction((params: SessionParams, draft: SessionFields & { version: number }) => {
+  const saveSession = db.transaction((params: SessionParams, draft: SaveDraft, operationId?: string) => {
     const { campaignId, sessionId: id } = params
-    if (!selectSession.get(campaignId, id)) return { status: 404, message: 'Sessão não encontrada.' }
+    if (!sessionExists.get(campaignId, id)) return { status: 404, message: 'Sessão não encontrada.' }
+    const requestHash = operationId ? hashDraft(draft) : null
+    const receipt = operationId ? selectReceipt.get(id, operationId) : undefined
+    if (receipt) {
+      if (receipt.requestHash !== requestHash) return { status: 409, message: 'A chave já foi usada para outra gravação.' }
+      return { status: 200, session: JSON.parse(receipt.responseJson) as Session }
+    }
     if (editability(campaignId) === 409) return { status: 409, message: 'Reative a campanha para editar.' }
     const values = { ...draft, id, campaignId, now: new Date().toISOString() }
     if (!updateDocument.run(values).changes) return { status: 409, message: 'A sessão foi alterada desde que você a abriu.' }
     updateSession.run(values)
-    return { status: 200, session: selectSession.get(campaignId, id) }
+    insertRevision.run(id)
+    const session = selectSession.get(campaignId, id)
+    if (!session) throw new Error('A sessão não pôde ser confirmada.')
+    if (operationId) insertReceipt.run(id, operationId, session.version, requestHash, JSON.stringify(session))
+    return { status: 200, session }
   })
 
   app.get<{ Params: CampaignParams }>(sessionsPath, (request, reply) => {
@@ -159,12 +195,21 @@ export function createApp(database: string, webRoot?: string) {
     const { campaignId, sessionId } = request.params
     return selectSession.get(campaignId, sessionId) ?? reply.code(404).send({ message: 'Sessão não encontrada.' })
   })
-  app.put<{ Params: SessionParams; Body: SessionFields & { version: number } }>(
+  app.get<{ Params: SessionParams }>(`${sessionPath}/revisions`, (request, reply) => {
+    const { campaignId, sessionId } = request.params
+    if (!sessionExists.get(campaignId, sessionId)) return reply.code(404).send({ message: 'Sessão não encontrada.' })
+    return listRevisions.all(sessionId)
+  })
+  app.put<{ Params: SessionParams; Body: SaveDraft }>(
     sessionPath, { schema: bodySchema(sessionFields) }, (request, reply) => {
       if (!validDate(request.body.date)) return reply.code(400).send({ message: 'Informe uma data válida.' })
       const title = request.body.title.trim()
       if (!title) return reply.code(400).send({ message: 'Informe o título da sessão.' })
-      const result = saveSession.immediate(request.params, { ...request.body, title })
+      const key = request.headers['idempotency-key']
+      if (key !== undefined && (typeof key !== 'string' || !operationIdPattern.test(key))) {
+        return reply.code(400).send({ message: 'Chave de gravação inválida.' })
+      }
+      const result = saveSession.immediate(request.params, { ...request.body, title }, key?.toLowerCase())
       return reply.code(result.status).send(result.session ?? { message: result.message })
     })
 

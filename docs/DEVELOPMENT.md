@@ -90,3 +90,9 @@ Mantenha os escritores da branch confiáveis e preserve o diff aprovado após ar
 ### Ensaio
 
 A alteração que instala os workflows passa primeiro por PR de infraestrutura com revisão apropriada. Depois que chegar à `main`, publique uma branch inédita `codex/` com um arquivo fictício em `docs/specs/`. Observe a execução de sinalização, a autoria do PR e da solicitação nativa, o CI pendente, a conclusão de `validar`, o merge e o CI na `main`. Registre SHAs e links e avance no roadmap somente após o ensaio real.
+
+### Resultado do ensaio real
+
+A branch `codex/ensaio-auto-merge-final` partiu de `bb47c13` e publicou `b58022b`. O [sinal](https://github.com/Gabriel-Souza-de-Lima/Lorekeeper/actions/runs/44987317118) passou e o [workflow da App](https://github.com/Gabriel-Souza-de-Lima/Lorekeeper/actions/runs/44987327680) abriu o [PR #7](https://github.com/Gabriel-Souza-de-Lima/Lorekeeper/pull/7). O GitHub registra abertura, solicitação de auto-merge e merge por `lorekeeper-pr-bot[bot]`.
+
+O pedido foi registrado às 01h58min22s, horário de Brasília, com o CI ainda aguardando. O [job validar](https://github.com/Gabriel-Souza-de-Lima/Lorekeeper/actions/runs/44987340745/job/137100699306) aprovou o candidato `22e0403`, e o GitHub integrou o PR às 01h59min31s no commit `dce0d9d`. O [CI pós-merge](https://github.com/Gabriel-Souza-de-Lima/Lorekeeper/actions/runs/44987415546) passou na `main`.
