@@ -6,6 +6,7 @@ import { api, displayDate, localDate } from './api.ts'
 import { CampaignNotes } from './note-assignment.tsx'
 import { QuickNotes } from './quick-notes.tsx'
 import { SessionEditor } from './session-editor.tsx'
+import { Wiki } from './wiki.tsx'
 import './style.css'
 
 const campaignPath = '/api/campaigns'
@@ -17,6 +18,7 @@ type View =
   | { page: 'new' }
   | { page: 'campaign' | 'edit'; campaign: Campaign }
   | { page: 'campaign-notes'; campaign: Campaign }
+  | { page: 'wiki'; campaign: Campaign }
   | { page: 'session'; campaign: Campaign; session: Session }
 
 const campaignMetadata = [
@@ -148,6 +150,9 @@ function App() {
             <button disabled={working} onClick={() => { setError(''); setView({ page: 'campaign-notes', campaign }) }}>
               Anotações da campanha
             </button>
+            <button disabled={working} onClick={() => { setError(''); setView({ page: 'wiki', campaign }) }}>
+              Wiki da campanha
+            </button>
             {!locked && <button disabled={working} onClick={() => { setError(''); setView({ page: 'edit', campaign }) }}>
               Editar campanha
             </button>}
@@ -184,6 +189,8 @@ function App() {
       case 'new': return campaignForm()
       case 'edit': return campaignForm(view.campaign)
       case 'campaign': return campaignPage(view.campaign)
+      case 'wiki': return <Wiki campaign={view.campaign}
+        onBack={() => setView({ page: 'campaign', campaign: view.campaign })} />
       case 'campaign-notes': return <CampaignNotes campaign={view.campaign}
         onBack={() => setView({ page: 'campaign', campaign: view.campaign })} />
       case 'session': return <SessionEditor key={view.session.id} campaignName={view.campaign.name}

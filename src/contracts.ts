@@ -33,3 +33,15 @@ export interface Session extends SessionFields {
 }
 
 export type SessionSummary = Pick<Session, 'id' | 'title' | 'date' | 'number'>
+
+export const wikiTypes = ['character', 'npc', 'location', 'quest'] as const
+export type WikiType = typeof wikiTypes[number]
+
+export interface WikiPage {
+  id: string
+  type: WikiType
+  title: string
+  body: string
+}
+
+export type WikiSummary = Omit<WikiPage, 'body'>
