@@ -8,6 +8,7 @@ export function openDatabase(path: string) {
     db.pragma('synchronous = FULL')
     db.transaction(() => {
       const version = db.pragma('user_version', { simple: true })
+      if (version === 3) return
       if (version !== 0 && version !== 1 && version !== 2) throw new Error('Versão de banco incompatível.')
       if (version === 0) db.exec(`
         CREATE TABLE campaigns (
@@ -75,9 +76,48 @@ export function openDatabase(path: string) {
         PRAGMA user_version = 2;
       `)
     }).immediate()
+    migrateInbox(db)
     return db
   } catch (error) {
     db.close()
     throw error
+  }
+}
+
+
+// SQLite requires replacing the table to widen its type constraint.
+// Foreign keys are suspended only on this connection and checked before commit.
+function migrateInbox(db: Database.Database) {
+  if (db.pragma('user_version', { simple: true }) === 3) return
+  db.pragma('foreign_keys = OFF')
+  try {
+    db.transaction(() => {
+      const version = db.pragma('user_version', { simple: true })
+      if (version === 3) return
+      if (version !== 2) throw new Error('Versão de banco incompatível.')
+      db.exec(`
+        CREATE TABLE documents_v3 (
+          id TEXT PRIMARY KEY NOT NULL,
+          campaign_id TEXT REFERENCES campaigns (id),
+          type TEXT NOT NULL CHECK (type IN ('session', 'quick_note')),
+          title TEXT NOT NULL,
+          body TEXT NOT NULL DEFAULT '',
+          version INTEGER NOT NULL DEFAULT 1 CHECK (version > 0),
+          created_at TEXT NOT NULL,
+          updated_at TEXT NOT NULL,
+          CHECK (type = 'quick_note' OR campaign_id IS NOT NULL)
+        ) STRICT;
+
+        INSERT INTO documents_v3 (id, campaign_id, type, title, body, version, created_at, updated_at)
+        SELECT id, campaign_id, type, title, body, version, created_at, updated_at FROM documents;
+        DROP TABLE documents;
+        ALTER TABLE documents_v3 RENAME TO documents;
+        CREATE INDEX documents_campaign ON documents (campaign_id, type);
+        PRAGMA user_version = 3;
+      `)
+      if (db.prepare('PRAGMA foreign_key_check').get()) throw new Error('A migração da caixa de entrada violou relações existentes.')
+    }).immediate()
+  } finally {
+    db.pragma('foreign_keys = ON')
   }
 }
