@@ -32,3 +32,16 @@ A migração amplia o tipo de documento e permite campanha nula para anotações
 - **Refactor** — o rótulo do campo permanece estável com texto preenchido e uma listagem antiga não substitui o estado após salvar. A regressão também cobre outra aba consultando a caixa enquanto o editor está ocupado.
 
 Na regressão C01/C02/C03/S01/S02, o trace mostrou um salvamento com o título padrão depois da tentativa de alterá-lo. O editor de sessões agora posiciona o foco antes de permitir a interação, e o teste verifica o valor preenchido antes de enviar.
+
+## I3-03 — Encaminhamento para uma campanha (API)
+
+- I3-03a. Uma anotação sem campanha pode ser encaminhada a uma campanha ativa. Ela sai da caixa geral, aparece na listagem da campanha e preserva identificador, título e texto.
+- I3-03b. Repetir o encaminhamento para a mesma campanha confirma a operação. Um segundo destino, uma campanha arquivada ou uma campanha inexistente não alteram a associação. O fluxo de transferência entre campanhas segue como decisão posterior.
+- I3-03c. Listagens de campanhas diferentes não se misturam. A campanha arquivada conserva as anotações para consulta. Sessões e suas contagens continuam independentes.
+- Testes de integração usam o SQLite real e verificam os três comportamentos. A API usa `PUT /api/quick-notes/:noteId/campaign` com `campaignId` e `GET /api/campaigns/:campaignId/quick-notes`. A interface de encaminhamento e a vinculação a sessões são entregas posteriores.
+
+### Evidências de I3-03
+
+- **Red** — encaminhar para uma campanha arquivada retornava 404 porque a rota ainda não existia.
+- **Green** — o teste de integração confirma a transferência inicial, reenvio, rejeição de destinos inválidos e isolamento da consulta.
+- **Refactor** — captura e encaminhamento compartilham a construção de esquemas de entrada. O encaminhamento usa o mesmo formato canônico de UUID da captura. O esquema SQLite permanece na V3.
