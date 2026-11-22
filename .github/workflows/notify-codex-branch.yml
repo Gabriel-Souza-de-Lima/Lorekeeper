@@ -1,0 +1,16 @@
+name: Sinalizar branch Lorekeeper
+
+on:
+  push:
+    branches:
+      - 'codex/*'
+
+permissions: {}
+
+jobs:
+  notify:
+    if: github.event.deleted == false
+    runs-on: ubuntu-24.04
+    timeout-minutes: 2
+    steps:
+      - run: printf '%s\n' 'Branch publicada. O workflow da main pode reconciliar os PRs.'

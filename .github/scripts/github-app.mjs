@@ -1,9 +1,11 @@
-import { candidateApproved, ordinaryChange, strictRules } from './github-app-policy.ts'
+import { setTimeout as delay } from 'node:timers/promises'
+import { ordinaryChange, strictRules, waitingForCI } from './github-app-policy.ts'
 
 const repo = process.env.GITHUB_REPOSITORY
 const prefix = `/repos/${repo}`
 const appToken = process.env.APP_TOKEN
 const reader = process.env.GITHUB_TOKEN
+const botLogin = process.env.APP_SLUG && `${process.env.APP_SLUG}[bot]`
 
 async function request(path, { token = reader, body } = {}) {
   const url = path === '/graphql' ? process.env.GITHUB_GRAPHQL_URL : `${process.env.GITHUB_API_URL}${prefix}${path}`
@@ -22,25 +24,19 @@ async function request(path, { token = reader, body } = {}) {
 }
 
 async function protection() {
-  const repository = await request('', { token: appToken })
-  if (repository.default_branch !== 'main' || repository.allow_auto_merge !== true ||
-      !repository.allow_merge_commit) return false
   const rules = await request('/rules/branches/main')
-  const ids = [...new Set(rules.map((rule) => rule.ruleset_id))]
-  if (ids.some((id) => !Number.isSafeInteger(id))) return false
-  const rulesets = await Promise.all(ids.map((id) => request(`/rulesets/${id}`, { token: appToken })))
-  return strictRules(rules, rulesets)
+  return Array.isArray(rules) && strictRules(rules)
 }
 
-async function compare(base, head, branch) {
+async function currentDiff(base, head) {
   const diff = await request(`/compare/${base}...${head}`)
-  // A comparison at the API cap may be incomplete.
-  return diff.status === 'ahead' && diff.merge_base_commit.sha === base &&
-    diff.files?.length < 300 && ordinaryChange(branch, diff.files)
+  return diff.status === 'ahead' && diff.merge_base_commit?.sha === base ? diff : null
 }
 
 async function findOrPublish(branch, sha, base) {
-  if (!await compare(base, sha, branch)) return null
+  const diff = await currentDiff(base, sha)
+  // A comparison at the API cap may be incomplete.
+  if (!(diff?.files?.length < 300) || !ordinaryChange(branch, diff.files)) return null
   const owner = repo.split('/')[0]
   const query = new URLSearchParams({ state: 'all', head: `${owner}:${branch}`, base: 'main', per_page: '100' })
   const pulls = await request(`/pulls?${query}`)
@@ -55,39 +51,63 @@ async function findOrPublish(branch, sha, base) {
   return pr
 }
 
+function graphqlReason(errors) {
+  const raw = errors.map((error) => typeof error.message === 'string' ? error.message : '').join(' ')
+  if (/clean status|can be merged immediately/i.test(raw)) return 'PR já integrável; a janela de espera pelo CI passou'
+  if (/not authorized|forbidden|resource not accessible|permission/i.test(raw)) return 'a App não tem autorização para a solicitação nativa'
+  if (/disabled|not enabled/i.test(raw)) return 'auto-merge desabilitado ou indisponível no GitHub'
+  if (/conflict|dirty|not mergeable/i.test(raw)) return 'o GitHub detectou candidato não integrável'
+  return 'o GitHub não confirmou a solicitação (erro GraphQL sem categoria conhecida)'
+}
+
 async function askNativeMerge(pr, branch, sha, base) {
   const url = `/pulls/${pr.number}`
-  const current = await request(url)
-  if (current.state !== 'open' || current.draft !== false || current.auto_merge ||
-      current.head.ref !== branch || current.head.sha !== sha || current.head.repo?.full_name !== repo ||
-      current.base.ref !== 'main' || current.base.repo?.full_name !== repo ||
-      current.mergeable !== true || !current.merge_commit_sha) return
-  const candidate = current.merge_commit_sha
-  const commit = await request(`/git/commits/${candidate}`)
-  // Require the synthetic candidate built from the current base and head.
-  if (commit.parents.length !== 2 || commit.parents[0].sha !== base || commit.parents[1].sha !== sha) return
-  const query = new URLSearchParams({ event: 'pull_request', branch, head_sha: sha, per_page: '10' })
-  const { workflow_runs: runs } = await request(`/actions/workflows/ci.yml/runs?${query}`)
-  const run = runs[0]
-  if (!run || run.head_sha !== sha || run.status !== 'completed' || run.conclusion !== 'success') return
-  const { jobs, total_count } = await request(`/actions/runs/${run.id}/attempts/${run.run_attempt}/jobs?per_page=100`)
-  if (jobs.length !== total_count || !candidateApproved({ number: pr.number, head: sha, candidate }, run, jobs)) return
+  let current = await request(url)
+  for (let attempt = 0; current.mergeable === null && current.state === 'open' && attempt < 4; attempt++) {
+    await delay(750)
+    current = await request(url)
+  }
+  const eligible = (value) => value.state === 'open' && value.draft === false &&
+    value.head.sha === sha && value.head.ref === branch && value.head.repo?.full_name === repo &&
+    value.base.ref === 'main' && value.base.repo?.full_name === repo && value.user?.login === botLogin &&
+    value.mergeable === true && Boolean(value.merge_commit_sha)
 
-  const [latest, main] = await Promise.all([request(url), request('/git/ref/heads/main')])
-  if (latest.state !== 'open' || latest.draft !== false || latest.auto_merge || latest.mergeable !== true ||
-      latest.head.sha !== sha || latest.merge_commit_sha !== candidate || main.object.sha !== base ||
-      !await protection()) return
-
-  const result = await request('/graphql', { token: appToken, body: {
-    query: 'mutation Enable($id: ID!) { enablePullRequestAutoMerge(input: {pullRequestId: $id, mergeMethod: MERGE}) { pullRequest { number autoMergeRequest { enabledAt } merged } } }',
-    variables: { id: current.node_id },
-  } })
-  const confirmed = result.data?.enablePullRequestAutoMerge?.pullRequest
-  if (result.errors?.length || (!confirmed?.autoMergeRequest && !confirmed?.merged)) {
-    console.log(`PR #${pr.number}: solicitação de auto-merge não aceita pelo GitHub; PR mantido.`)
+  if (!botLogin || !eligible(current)) {
+    console.log(`PR #${pr.number}: autoria, estado ou candidato incompatível com a publicação.`)
     return
   }
-  console.log(`PR #${pr.number}: GitHub confirmou ${confirmed.merged ? 'merge' : 'solicitação de auto-merge'}.`)
+  if (current.auto_merge) {
+    console.log(`PR #${pr.number}: auto-merge já solicitado; autor ${current.auto_merge.enabled_by?.login === botLogin ? 'App' : 'outra identidade'}.`)
+    return
+  }
+  const candidate = current.merge_commit_sha
+  const commit = await request(`/git/commits/${candidate}`)
+  if (commit.parents.length !== 2 || commit.parents[0].sha !== base || commit.parents[1].sha !== sha) return
+
+  const query = new URLSearchParams({ event: 'pull_request', branch, head_sha: sha, per_page: '10' })
+  const { workflow_runs: runs } = await request(`/actions/workflows/ci.yml/runs?${query}`)
+  if (!Array.isArray(runs) || !waitingForCI(runs[0], sha)) {
+    console.log(`PR #${pr.number}: CI não está pendente para o head atual; nenhum pedido nativo.`)
+    return
+  }
+
+  const [latest, main, protectedMain] = await Promise.all([
+    request(url), request('/git/ref/heads/main'), protection(),
+  ])
+  if (!eligible(latest) || latest.merge_commit_sha !== candidate || latest.auto_merge ||
+      main.object.sha !== base || !protectedMain) return
+
+  const result = await request('/graphql', { token: appToken, body: {
+    query: 'mutation Enable($id: ID!, $head: GitObjectID!) { enablePullRequestAutoMerge(input: {pullRequestId: $id, expectedHeadOid: $head, mergeMethod: MERGE}) { pullRequest { number autoMergeRequest { enabledAt enabledBy { login } } } } }',
+    variables: { id: latest.node_id, head: sha },
+  } })
+  const confirmed = result.data?.enablePullRequestAutoMerge?.pullRequest
+  if (result.errors?.length || confirmed?.number !== pr.number ||
+      confirmed?.autoMergeRequest?.enabledBy?.login !== botLogin) {
+    console.log(`PR #${pr.number}: auto-merge recusado: ${graphqlReason(result.errors ?? [])}.`)
+    return
+  }
+  console.log(`PR #${pr.number}: solicitação nativa da App confirmada para head ${sha}; o GitHub aguarda validar.`)
 }
 
 async function reconcile() {
