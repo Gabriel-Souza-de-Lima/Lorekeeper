@@ -54,13 +54,12 @@ Não tente implementar todas as funcionalidades do produto simultaneamente.
 - Use somente dados fictícios. Teste persistência, migrações, recuperação e integridade com SQLite real. Preserve o banco de desenvolvimento e os dados pessoais.
 - Rode os comandos aplicáveis em `docs/DEVELOPMENT.md` e registre o vínculo entre critérios, testes e resultados. Informe contagens, falhas e motivos de verificações não executadas.
 - Considere a funcionalidade concluída após cumprir os critérios da especificação, obter aprovação nas verificações aplicáveis e atualizar a documentação. A integração depende do check `validar` do CI.
-- Quando a consulta ao GitHub estiver indisponível, conclua as verificações locais da entrega atual e registre o bloqueio. Aguarde a confirmação do merge e do CI na `main` antes de iniciar a etapa seguinte.
+- Se a consulta ao GitHub estiver indisponível, registre o bloqueio e continue o trabalho independente autorizado. Aguarde a confirmação do merge e do CI na `main` para avançar nas etapas que dependem da entrega.
 
 ## Integração com a GitHub App
 
-- Para cada etapa, abra o PR, acompanhe o check obrigatório, integre pelo fluxo protegido e confirme o merge e o CI na `main`. Se faltarem permissão, revisão específica ou evidência do CI, mantenha a etapa atual em aberto antes de começar a próxima.
-
 - Para uma entrega comum e verificável, use uma branch `codex/<nome>` somente quando o diff estiver revisado, os testes locais passarem e a branch estiver atualizada com a `main`. O prefixo autoriza a App a criar o PR. Mantenha especificação, testes e evidências na entrega.
-- Mudanças de CI, autenticação, infraestrutura, dependências e migrações ficam fora do fluxo automático e passam por PR de revisão específica. Nunca exponha chaves, dados de produção ou material privado.
-- A App solicita auto-merge nativo para um PR que ela abriu enquanto `validar` ainda está pendente. Mantenha o Ruleset ativo, sem bypass e com revalidação estrita. O GitHub só integra após as exigências da branch. Confirme o merge e o CI na `main` antes de avançar. Veja o [guia de desenvolvimento](docs/DEVELOPMENT.md#publicação-com-github-app).
+- Separe mudanças em `AGENTS.md`, CI, autenticação, infraestrutura, configuração, dependências e migrações em PRs de revisão específica. Inclua essas mudanças em uma funcionalidade comum somente se ela depender delas e sinalize a revisão no PR. Nunca exponha chaves, dados de produção ou material privado.
+- Deixe a App abrir e integrar PRs elegíveis. Acompanhe o `validar` e o merge pelo GitHub. Reserve à App as operações de merge e auto-merge dos PRs elegíveis. Um HTTP 403 do Codex Cloud indica acesso indisponível por esse caminho. Consulte evidências públicas da App e do Actions e só repita uma operação bloqueada se o acesso mudar.
+- A App solicita auto-merge nativo para um PR que ela abriu enquanto `validar` ainda está pendente. Mantenha o Ruleset ativo, sem bypass e com revalidação estrita. O GitHub só integra após as exigências da branch. Confirme o merge e o CI na `main` antes de avançar para uma etapa dependente. Veja o [guia de desenvolvimento](docs/DEVELOPMENT.md#publicação-com-github-app).
 - Uma branch `codex/` publicada é uma entrega revisada. Se o diff passar a conter mudanças críticas ou fora da lista, abra uma branch de revisão separada. GitHub pode manter o auto-merge armado após o push de uma identidade com escrita. Para corrigir uma entrega já armada, desarme o auto-merge antes de atualizar a branch.
