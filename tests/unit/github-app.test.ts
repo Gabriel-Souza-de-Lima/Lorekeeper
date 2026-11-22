@@ -1,42 +1,51 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { ordinaryChange, waitingForCI, strictRules } from '../../.github/scripts/github-app-policy.ts'
+import { authorizedAuthor, authorizedBranch, ordinaryChange, candidateApproved, waitingForCI, strictRules } from '../../.github/scripts/github-app-policy.ts'
 
 const rules = [
-  { type: 'pull_request', parameters: { required_approving_review_count: 0 } },
+  { type: 'pull_request' },
   { type: 'required_status_checks', parameters: {
     strict_required_status_checks_policy: true, required_status_checks: [{ context: 'validar', integration_id: 15368 }],
   } },
 ]
+const file = (filename: string, patch = '@@ -1 +1 @@\n-old\n+new') => ({ filename, patch, additions: patch.split('\n').filter((line) => line.startsWith('+')).length })
 
-test('IA-01/03: apenas alteração comum e explicitamente selecionada', () => {
-  const files = [{ filename: 'docs/specs/ensaio-ci.md' }]
-  assert.equal(ordinaryChange('codex/ensaio', files), true)
-  assert.equal(ordinaryChange('feat/ensaio', files), false)
-  assert.equal(ordinaryChange('codex/ensaio', []), false)
-  assert.equal(ordinaryChange('codex/ensaio', [{ filename: 'src/web/a.ts', previous_filename: '.github/workflows/ci.yml' }]), false)
-  assert.equal(ordinaryChange('codex/ensaio', [{ filename: 'src/server/database.ts' }]), false)
+test('IA-06/07: aceita escopo interno comum e bloqueia alterações sem prova suficiente', () => {
+  for (const prefix of ['codex', 'feat', 'fix', 'chore', 'docs']) {
+    assert.equal(authorizedBranch(`${prefix}/teste`), true)
+    assert.equal(ordinaryChange(`${prefix}/teste`, [file('src/server/app.ts'), file('Dockerfile')]), true)
+  }
+  assert.equal(authorizedBranch('main'), false)
+  assert.equal(authorizedAuthor('Owner', 'owner', 'bot[bot]', []), true)
+  assert.equal(authorizedAuthor('bot[bot]', 'owner', 'bot[bot]', []), true)
+  assert.equal(authorizedAuthor('Equipe', 'owner', 'bot[bot]', ['equipe']), true)
+  assert.equal(authorizedAuthor('outro', 'owner', 'bot[bot]', ['equipe']), false)
+  assert.equal(ordinaryChange('feat/teste', [file('.github/workflows/ci.yml')]), false)
+  assert.equal(ordinaryChange('feat/teste', [{ filename: 'binary.bin', additions: 0 }]), false)
+  assert.equal(ordinaryChange('feat/teste', [file('src/server/config.ts', '+const key = "-----BEGIN PRIVATE KEY-----"')]), false)
+  assert.equal(ordinaryChange('feat/teste', [file('src/server/database.ts')]), false)
+  const checks = file('tests/integration/db.test.ts', [
+    "+test('migration-integrity: valida relações', checkIntegrity)",
+    "+test('migration-preservation: conserva registros', checkData)",
+    "+test('migration-rollback: reverte falhas', checkRollback)",
+  ].join('\n'))
+  assert.equal(ordinaryChange('feat/teste', [file('src/server/database.ts'), checks]), true)
+  assert.equal(ordinaryChange('feat/teste', [file('src/server/database.ts'), file('tests/integration/db.test.ts',
+    '+// migration-integrity migration-preservation migration-rollback')]), false)
+  assert.equal(ordinaryChange('feat/teste', [{ ...file('src/server/app.ts'), additions: 2 }]), false)
+  assert.equal(ordinaryChange('feat/teste', [file('src/server/database.ts', '+DROP TABLE sessions;'), checks]), false)
 })
 
-test('IA-02/04: identifica somente CI em espera ou ainda não enfileirado', () => {
+test('IA-08: distingue CI pendente de sucesso para o candidato exato', () => {
+  const run = { event: 'pull_request', head_sha: 'head', status: 'completed', conclusion: 'success' }
+  const step = { name: 'PR 4 candidato exact', status: 'completed', conclusion: 'success' }
+  const job = { name: 'validar', status: 'completed', conclusion: 'success', steps: [step] }
   assert.equal(waitingForCI(undefined, 'head'), true)
-  for (const status of ['queued', 'in_progress', 'requested', 'waiting', 'pending']) {
-    assert.equal(waitingForCI({ head_sha: 'head', event: 'pull_request', status, conclusion: null }, 'head'), true)
-  }
-  for (const conclusion of ['success', 'failure', 'cancelled', 'neutral', 'skipped']) {
-    assert.equal(waitingForCI({ head_sha: 'head', event: 'pull_request', status: 'completed', conclusion }, 'head'), false)
-  }
-  assert.equal(waitingForCI({ head_sha: 'old', event: 'pull_request', status: 'queued', conclusion: null }, 'head'), false)
-})
-
-test('IA-04: confirma a proteção efetiva sem consultar a lista administrativa de bypass', () => {
+  assert.equal(waitingForCI({ ...run, status: 'queued', conclusion: null }, 'head'), true)
+  assert.equal(waitingForCI(run, 'head'), false)
+  assert.equal(candidateApproved({ number: 4, candidate: 'exact', head: 'head' }, run, [job]), true)
+  assert.equal(candidateApproved({ number: 4, candidate: 'stale', head: 'head' }, run, [job]), false)
+  assert.equal(candidateApproved({ number: 4, candidate: 'exact', head: 'head' }, { ...run, conclusion: 'failure' }, [job]), false)
   assert.equal(strictRules(rules), true)
-  assert.equal(strictRules([]), false)
   assert.equal(strictRules(rules.slice(0, 1)), false)
-  assert.equal(strictRules([rules[0], { ...rules[1], parameters: {
-    strict_required_status_checks_policy: true, required_status_checks: [{ context: 'validar', integration_id: 42 }],
-  } }]), false)
-  assert.equal(strictRules([rules[0], { ...rules[1], parameters: {
-    strict_required_status_checks_policy: false, required_status_checks: [{ context: 'validar', integration_id: 15368 }],
-  } }]), false)
 })

@@ -4,12 +4,21 @@ on:
   push:
     branches:
       - 'codex/*'
+      - 'feat/*'
+      - 'fix/*'
+      - 'chore/*'
+      - 'docs/*'
+  pull_request:
+    types: [opened, reopened, synchronize, ready_for_review]
+    branches: [main]
 
 permissions: {}
 
 jobs:
   notify:
-    if: github.event.deleted == false
+    if: >-
+      (github.event_name == 'push' && github.event.deleted == false) ||
+      (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ubuntu-24.04
     timeout-minutes: 2
     steps:
