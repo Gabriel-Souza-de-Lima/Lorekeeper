@@ -1,16 +1,21 @@
+import { readFileSync } from 'node:fs'
 import { setTimeout as delay } from 'node:timers/promises'
-import { ordinaryChange, strictRules, waitingForCI } from './github-app-policy.ts'
+import { authorizedAuthor, authorizedBranch, candidateApproved, ordinaryChange, strictRules, waitingForCI } from './github-app-policy.ts'
 
 const repo = process.env.GITHUB_REPOSITORY
 const prefix = `/repos/${repo}`
 const appToken = process.env.APP_TOKEN
 const reader = process.env.GITHUB_TOKEN
 const botLogin = process.env.APP_SLUG && `${process.env.APP_SLUG}[bot]`
+const owner = repo.split('/')[0]
+const allowed = (process.env.AUTHORIZED_AUTHORS ?? '').split(',').map((item) => item.trim()).filter(Boolean)
+const allowedAuthor = (login) => authorizedAuthor(login, owner, botLogin ?? '', allowed)
+const signalPath = '.github/workflows/notify-codex-branch.yml'
 
-async function request(path, { token = reader, body } = {}) {
+async function request(path, { token = reader, body, method = body ? 'POST' : 'GET' } = {}) {
   const url = path === '/graphql' ? process.env.GITHUB_GRAPHQL_URL : `${process.env.GITHUB_API_URL}${prefix}${path}`
   const response = await fetch(url, {
-    method: body ? 'POST' : 'GET', redirect: 'error',
+    method, redirect: 'error',
     headers: {
       Authorization: `Bearer ${token}`,
       Accept: 'application/vnd.github+json',
@@ -37,7 +42,6 @@ async function findOrPublish(branch, sha, base) {
   const diff = await currentDiff(base, sha)
   // A comparison at the API cap may be incomplete.
   if (!(diff?.files?.length < 300) || !ordinaryChange(branch, diff.files)) return null
-  const owner = repo.split('/')[0]
   const query = new URLSearchParams({ state: 'all', head: `${owner}:${branch}`, base: 'main', per_page: '100' })
   const pulls = await request(`/pulls?${query}`)
   const opened = pulls.find((pr) => pr.state === 'open' && pr.head.repo?.full_name === repo)
@@ -60,20 +64,26 @@ function graphqlReason(errors) {
   return 'o GitHub não confirmou a solicitação (erro GraphQL sem categoria conhecida)'
 }
 
-async function askNativeMerge(pr, branch, sha, base) {
+async function reconcilePull(pr, base) {
+  const { sha, ref: branch } = pr.head
+  const eligible = (value) => value.state === 'open' && value.draft === false &&
+    authorizedBranch(branch) && allowedAuthor(value.user?.login) &&
+    value.head.sha === sha && value.head.ref === branch && value.head.repo?.full_name === repo &&
+    value.base.ref === 'main' && value.base.repo?.full_name === repo
+  if (!eligible(pr)) return
+  const diff = await currentDiff(base, sha)
+  if (!(diff?.files?.length < 300) || !ordinaryChange(branch, diff.files)) {
+    console.log(`PR #${pr.number}: diff sem evidência suficiente, fora da política ou base desatualizada.`)
+    return
+  }
   const url = `/pulls/${pr.number}`
   let current = await request(url)
   for (let attempt = 0; current.mergeable === null && current.state === 'open' && attempt < 4; attempt++) {
     await delay(750)
     current = await request(url)
   }
-  const eligible = (value) => value.state === 'open' && value.draft === false &&
-    value.head.sha === sha && value.head.ref === branch && value.head.repo?.full_name === repo &&
-    value.base.ref === 'main' && value.base.repo?.full_name === repo && value.user?.login === botLogin &&
-    value.mergeable === true && Boolean(value.merge_commit_sha)
-
-  if (!botLogin || !eligible(current)) {
-    console.log(`PR #${pr.number}: autoria, estado ou candidato incompatível com a publicação.`)
+  if (!eligible(current) || current.mergeable !== true || !current.merge_commit_sha) {
+    console.log(`PR #${pr.number}: estado ou candidato incompatível com a publicação.`)
     return
   }
   if (current.auto_merge) {
@@ -86,16 +96,41 @@ async function askNativeMerge(pr, branch, sha, base) {
 
   const query = new URLSearchParams({ event: 'pull_request', branch, head_sha: sha, per_page: '10' })
   const { workflow_runs: runs } = await request(`/actions/workflows/ci.yml/runs?${query}`)
-  if (!Array.isArray(runs) || !waitingForCI(runs[0], sha)) {
-    console.log(`PR #${pr.number}: CI não está pendente para o head atual; nenhum pedido nativo.`)
-    return
+  if (!Array.isArray(runs)) return
+  const run = runs[0]
+  const waiting = waitingForCI(run, sha)
+  if (!waiting) {
+    if (run?.status !== 'completed' || run.conclusion !== 'success' ||
+        !Number.isSafeInteger(run.id) || !Number.isSafeInteger(run.run_attempt) ||
+        (run.pull_requests?.length && !run.pull_requests.some((pull) =>
+          pull.number === pr.number && pull.head?.sha === sha))) {
+      console.log(`PR #${pr.number}: CI sem sucesso comprovado para o head atual.`)
+      return
+    }
+    const { jobs, total_count } = await request(`/actions/runs/${run.id}/attempts/${run.run_attempt}/jobs?per_page=100`)
+    if (!Array.isArray(jobs) || jobs.length !== total_count ||
+        !candidateApproved({ number: pr.number, head: sha, candidate }, run, jobs)) {
+      console.log(`PR #${pr.number}: validar sem aprovação para o candidato exato.`)
+      return
+    }
   }
 
   const [latest, main, protectedMain] = await Promise.all([
     request(url), request('/git/ref/heads/main'), protection(),
   ])
-  if (!eligible(latest) || latest.merge_commit_sha !== candidate || latest.auto_merge ||
-      main.object.sha !== base || !protectedMain) return
+  if (!eligible(latest) || latest.mergeable !== true || latest.merge_commit_sha !== candidate ||
+      latest.auto_merge || main.object.sha !== base || !protectedMain) return
+
+  if (!waiting) {
+    const latestRun = await request(`/actions/runs/${run.id}`)
+    if (latest.mergeable_state !== 'clean' || latestRun.run_attempt !== run.run_attempt ||
+        latestRun.head_sha !== sha || latestRun.status !== 'completed' || latestRun.conclusion !== 'success') return
+    const merged = await request(`${url}/merge`, { token: appToken, method: 'PUT',
+      body: { sha, merge_method: 'merge' } })
+    if (merged.merged !== true) throw new Error(`PR #${pr.number}: GitHub não confirmou o merge protegido.`)
+    console.log(`PR #${pr.number}: merge protegido confirmado após CI para ${candidate}: ${merged.sha}.`)
+    return
+  }
 
   const result = await request('/graphql', { token: appToken, body: {
     query: 'mutation Enable($id: ID!, $head: GitObjectID!) { enablePullRequestAutoMerge(input: {pullRequestId: $id, expectedHeadOid: $head, mergeMethod: MERGE}) { pullRequest { number autoMergeRequest { enabledAt enabledBy { login } } } } }',
@@ -110,31 +145,66 @@ async function askNativeMerge(pr, branch, sha, base) {
   console.log(`PR #${pr.number}: solicitação nativa da App confirmada para head ${sha}; o GitHub aguarda validar.`)
 }
 
-async function reconcile() {
-  if (!appToken || !reader || process.env.GITHUB_REF !== 'refs/heads/main') {
-    throw new Error('A automação exige os tokens do GitHub e a branch padrão.')
+async function publicationSignals() {
+  if (process.env.GITHUB_EVENT_NAME === 'schedule') {
+    const { workflow_runs: runs } = await request(
+      '/actions/workflows/notify-codex-branch.yml/runs?event=push&status=success&per_page=30',
+    )
+    return Array.isArray(runs) ? runs : []
   }
-  // A native merge request is gated independently from PR publication.
+  if (!process.env.GITHUB_EVENT_PATH) return []
+  const event = JSON.parse(readFileSync(process.env.GITHUB_EVENT_PATH, 'utf8'))
+  return event.workflow_run ? [event.workflow_run] : []
+}
+
+async function reconcile() {
+  if (!appToken || !reader || !botLogin || process.env.GITHUB_REF !== 'refs/heads/main') {
+    throw new Error('A automação exige os tokens do GitHub, a identidade da App e a branch padrão.')
+  }
+  // Native auto-merge and the protected late path both require the active rules.
   let verified = false
   try {
     verified = await protection()
   } catch (error) {
     console.error(error.message)
   }
-  if (!verified) console.log('Proteção ou auto-merge sem confirmação; apenas publicação de PRs.')
+  if (!verified) console.log('Proteção indisponível; apenas publicação de PRs autorizados.')
   const main = await request('/git/ref/heads/main')
-  if (main.object.sha !== process.env.GITHUB_SHA) {
-    console.log('A main mudou depois do início do workflow. A próxima execução reconciliará as branches.')
+  const base = main.object.sha
+  if (base !== process.env.GITHUB_SHA) {
+    console.log('A main mudou depois do início do workflow. A próxima execução reconciliará os PRs.')
     return
   }
-  const refs = await request('/git/matching-refs/heads/codex/')
   let failures = 0
-  for (const { ref, object } of refs) {
-    const branch = ref.replace(/^refs\/heads\//, '')
-    if (!/^codex\/[a-z0-9][a-z0-9-]{0,70}$/.test(branch)) continue
+  const opened = new Map()
+  for (const signal of await publicationSignals()) {
+    const branch = signal.head_branch
+    if (signal.path !== signalPath || signal.event !== 'push' || signal.conclusion !== 'success' ||
+        signal.head_repository?.full_name !== repo || !authorizedBranch(branch) ||
+        !allowedAuthor(signal.actor?.login)) continue
     try {
-      const pr = await findOrPublish(branch, object.sha, main.object.sha)
-      if (pr && verified) await askNativeMerge(pr, branch, object.sha, main.object.sha)
+      const ref = await request(`/git/ref/heads/${branch}`)
+      if (ref.object.sha !== signal.head_sha) continue
+      const pr = await findOrPublish(branch, signal.head_sha, base)
+      if (pr) opened.set(pr.number, pr)
+    } catch (error) {
+      failures++
+      console.error(error.message)
+    }
+  }
+  if (!verified) {
+    if (failures) process.exitCode = 1
+    return
+  }
+  for (let page = 1; ; page++) {
+    const pulls = await request(`/pulls?state=open&base=main&per_page=100&page=${page}`)
+    for (const pr of pulls) if (!opened.has(pr.number)) opened.set(pr.number, pr)
+    if (pulls.length < 100) break
+  }
+  for (const pr of opened.values()) {
+    try {
+      if ((await request('/git/ref/heads/main')).object.sha !== base) break
+      await reconcilePull(pr, base)
     } catch (error) {
       failures++
       console.error(error.message)

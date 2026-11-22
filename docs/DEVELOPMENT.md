@@ -75,31 +75,26 @@ O uso privado entre dispositivos, o histórico, os rascunhos locais duráveis e 
 
 ## Publicação com GitHub App
 
-Um [workflow sem checkout, token com escopos ou secrets](../.github/workflows/notify-codex-branch.yml) sinaliza o push de uma branch interna `codex/`. A [reconciliação](../.github/workflows/github-app.yml) roda com código da `main` após o sinal, na conclusão de CI de um PR interno e por agendamento como contingência. O bot redescobre os commits e os PRs pela API. A App usa token temporário restrito ao Lorekeeper com **Contents** e **Pull requests** em escrita. Usa as configurações existentes `LOREKEEPER_APP_CLIENT_ID` e `LOREKEEPER_APP_PRIVATE_KEY`. O token padrão lê Actions, Contents e Pull Requests. O job privilegiado não faz checkout, instala dependências ou executa código do PR.
+O [sinal de push e de PR](../.github/workflows/notify-codex-branch.yml) roda sem checkout, secrets ou permissões. A [reconciliação privilegiada](../.github/workflows/github-app.yml) roda a partir da `main`, após o sinal, após o CI de um PR interno ou por agendamento. Ela consulta a API para confirmar repositório, estado, autores, referências, diff e proteção. O token temporário da App continua limitado a **Contents** e **Pull requests** em escrita no Lorekeeper. O job privilegiado executa somente código da `main`.
 
-Use uma branch nova `codex/<nome>` baseada na `main`, com diff revisado e critérios aplicáveis testados. A lista de elegibilidade aceita alterações comuns em `src/web/`, `tests/` e `docs/specs/`, com exclusões para caminhos sensíveis. O bot abre o PR se o conjunto de arquivos for elegível e não houver PR existente para essa branch. Branches com PR fechado ou integrado não são recicladas. Mudanças em `AGENTS.md`, servidor, dependências, configuração, CI, infraestrutura, autenticação e migrações seguem revisão separada. Se uma funcionalidade comum exigir uma alteração excluída, registre a dependência e o motivo da revisão.
+### Autorização e escopo
 
-### Responsabilidade pela integração
+- `codex/`, `feat/`, `fix/`, `chore/` e `docs/` identificam branches internas elegíveis. O dono do repositório e a App são autorizados. Se necessário, configure `LOREKEEPER_AUTHORIZED_AUTHORS` com logins confiáveis separados por vírgula. Autores desconhecidos, forks e rascunhos ficam fora do fluxo de integração.
+- A App pode publicar PR a partir de um sinal de push autorizado para o SHA atual. O agendamento consulta sinais recentes para recuperar notificações perdidas. PRs de um autor autorizado criados por outro caminho também entram na reconciliação. Branches fechadas ou já integradas permanecem fora da publicação automática.
+- Código de servidor, frontend, testes, documentação e infraestrutura de aplicação pode ser integrado. As raízes de confiança da automação e do CI, como workflows, scripts do bot, manifestos de dependências e configurações das verificações, ficam em PR de revisão específica. Patches indisponíveis, truncados ou com indícios de credenciais bloqueiam a integração automática. A verificação de segredos usa padrões conhecidos e complementa as proteções do GitHub.
+- Mudanças no esquema SQLite exigem testes de integração com casos `test(...)` nomeados com os prefixos `migration-integrity`, `migration-preservation` e `migration-rollback`. Os testes precisam verificar relações, dados existentes e uma falha exercitada; os marcadores ajudam a identificar os casos no diff. SQL potencialmente destrutivo, como exclusão de tabelas ou desligamento de chaves estrangeiras durante uma troca de tabela, exige revisão específica mesmo com testes.
 
-| Entrega | Caminho de integração |
-| --- | --- |
-| Alteração comum que passa pela política de arquivos | Publique em `codex/<nome>` a partir da `main` atualizada. A App cria o PR e solicita o auto-merge. Acompanhe publicamente o sinal, o workflow da App, `validar`, o merge e o CI na `main`. |
-| Alteração crítica ou fora da política | Publique em branch própria e separe o PR para revisão e merge protegido. Informe a condição e continue o trabalho independente autorizado. |
-| HTTP 403 no Codex Cloud | Registre a limitação de acesso. Verifique os runs do Actions e o estado público do PR antes de atribuir uma falha à App ou ao CI. Retome uma operação bloqueada após uma mudança de acesso. |
+### Auto-merge nativo e recuperação tardia
 
-A integração de um PR elegível é responsabilidade da App. O Codex acompanha e corrige a entrega sem solicitar merge ou auto-merge pela API do ambiente. A confirmação do merge e do `validar` na `main` libera as etapas dependentes. O [PR #7](https://github.com/Gabriel-Souza-de-Lima/Lorekeeper/pull/7) comprova o caminho automático. A [revisão do PR #11](https://github.com/Gabriel-Souza-de-Lima/Lorekeeper/pull/11) seguiu o caminho separado devido à branch `feat/` e à mudança em `AGENTS.md`.
+O Ruleset da `main` exige PR, `validar` de GitHub Actions, atualização da base e ausência de bypass. Para um PR interno elegível sem conflito, a App confere o candidato e solicita auto-merge nativo com o SHA esperado se o CI estiver pendente. O GitHub decide quando as exigências permitem integrar.
 
-### Auto-merge nativo
+Se o GitHub encerrar a janela de solicitação nativa, a conclusão do CI ou o agendamento volta a verificar o PR. A App exige sucesso do workflow oficial e do job `validar`, incluindo a etapa de checkout para o SHA do candidato sintético atual. Só envia a operação de merge normal com o SHA esperado quando o PR estiver limpo, a versão da `main` permanecer atual e as regras forem confirmadas. O GitHub ainda aplica o Ruleset a essa operação. CI ausente após uma falha de consulta, reprovado, cancelado, ignorado ou associado a outro candidato deixa o PR aberto.
 
-O administrador mantém o Ruleset da `main` ativo, exigindo PR, `validar` da origem **GitHub Actions** (15368), base atualizada, revalidação estrita e lista de bypass vazia. Confirme **Allow auto-merge** e o método de merge por commit nas configurações do repositório. O bot verifica as regras efetivas públicas para PR e `validar` estrito. GitHub aplica o Ruleset e decide se pode integrar. A App não faz merge direto, não precisa editar o Ruleset e não tenta ler campos administrativos ocultos. Este fluxo usa apenas o check `validar`.
+Mantenha os escritores confiáveis e revise o diff antes do push. Para alterar uma entrega já armada, desarme primeiro o auto-merge. O GitHub pode mantê-lo armado quando outro escritor autorizado modifica a branch. Registre merge e CI pós-merge antes de etapas dependentes. Um HTTP 403 no Codex Cloud indica limitação de acesso desse ambiente; confira os runs públicos antes de atribuir falha ao bot.
 
-Para um PR recém-aberto pela App, o bot confere autoria, repositório, base, head, diff e candidato sem conflito. Se o CI estiver pendente ou ainda não estiver registrado, relê a base, o PR e a proteção e solicita o auto-merge por GraphQL com o SHA esperado do head. Confirma que o GitHub registrou a App como autora da solicitação. CI reprovado, conclusão já conhecida, inconsistência de referências ou proteção indisponível deixam o PR aberto. Se o GitHub disser que o PR já está integrável, registre que a janela de solicitação passou. Isso não autoriza um merge alternativo.
+### Ensaio da ampliação
 
-Mantenha os escritores da branch confiáveis e preserve o diff aprovado após armar o auto-merge. O GitHub pode manter a solicitação quando um escritor envia outro commit. Para corrigir a entrega depois de armar, desarme o auto-merge antes de atualizar a branch. Mudanças fora da política devem usar branch de revisão própria. O Ruleset continua exigindo CI para o candidato corrente.
-
-### Ensaio
-
-A alteração que instala os workflows passa primeiro por PR de infraestrutura com revisão apropriada. Depois que chegar à `main`, publique uma branch inédita `codex/` com um arquivo fictício em `docs/specs/`. Observe a execução de sinalização, a autoria do PR e da solicitação nativa, o CI pendente, a conclusão de `validar`, o merge e o CI na `main`. Registre SHAs e links e avance no roadmap somente após o ensaio real.
+A alteração da própria automação é integrada primeiro por PR de revisão específica com `validar`. Depois, publique numa branch interna inédita uma alteração pequena em `src/server/` com testes. Registre o autor do PR, a identidade da solicitação, os SHAs do head e do candidato, o estado de `validar`, o merge e o CI pós-merge. A validação simulada não substitui esse ensaio.
 
 ### Resultado do ensaio real
 
