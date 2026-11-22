@@ -10,7 +10,7 @@ const job = { name: 'validar', status: 'completed', conclusion: 'success', steps
 ] }
 const rules = [{ type: 'pull_request', ruleset_id: 1, parameters: { required_approving_review_count: 0 } },
   { type: 'required_status_checks', ruleset_id: 1, parameters: {
-    strict_required_status_checks_policy: true, required_status_checks: [{ context: 'validar', integration_id: 15368 }],
+    strict_required_status_checks_policy: true, required_status_checks: [{ context: 'validar', integration_id: 15368 }, { context: 'integracao-lorekeeper', integration_id: 42 }],
   } }]
 
 test('IA-01/03: apenas mudança comum e explicitamente selecionada', () => {
@@ -34,8 +34,9 @@ test('IA-02: exige CI e validar aprovados para o candidato corrente', () => {
 })
 
 test('IA-04: exige regras efetivas da mesma origem sem permissões de bypass', () => {
-  assert.deepEqual(strictRules(rules, [{ id: 1, enforcement: 'active', bypass_actors: [] }]), true)
-  assert.equal(strictRules(rules, [{ id: 1, enforcement: 'active' }]), false)
-  assert.equal(strictRules(rules, [{ id: 1, enforcement: 'active', bypass_actors: [{}] }]), false)
-  assert.equal(strictRules(rules.slice(0, 1), [{ id: 1, enforcement: 'active', bypass_actors: [] }]), false)
+  assert.equal(strictRules(rules, [{ id: 1, enforcement: 'active', bypass_actors: [] }], 42), true)
+  assert.equal(strictRules(rules, [{ id: 1, enforcement: 'active', bypass_actors: [] }], 43), false)
+  assert.equal(strictRules(rules, [{ id: 1, enforcement: 'active' }], 42), false)
+  assert.equal(strictRules(rules, [{ id: 1, enforcement: 'active', bypass_actors: [{}] }], 42), false)
+  assert.equal(strictRules(rules.slice(0, 1), [{ id: 1, enforcement: 'active', bypass_actors: [] }], 42), false)
 })

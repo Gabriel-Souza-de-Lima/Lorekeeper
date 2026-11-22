@@ -31,6 +31,7 @@ jobs:
           )
         )
       )
+    environment: lorekeeper-ruleset-verification
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
@@ -48,9 +49,13 @@ jobs:
           private-key: ${{ secrets.LOREKEEPER_APP_PRIVATE_KEY }}
           owner: ${{ github.repository_owner }}
           repositories: ${{ github.event.repository.name }}
+          permission-checks: write
           permission-contents: write
           permission-pull-requests: write
       - run: node .github/scripts/github-app.mjs
         env:
           APP_TOKEN: ${{ steps.app.outputs.token }}
           GITHUB_TOKEN: ${{ github.token }}
+          APP_SLUG: ${{ steps.app.outputs.app-slug }}
+          APP_ID: ${{ vars.LOREKEEPER_APP_ID }}
+          RULESET_VERIFIER_TOKEN: ${{ secrets.LOREKEEPER_RULESET_VERIFIER_TOKEN }}

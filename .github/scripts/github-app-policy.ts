@@ -30,18 +30,39 @@ export function candidateApproved(
     steps[0].status === 'completed' && steps[0].conclusion === 'success')
 }
 
-export function strictRules(rules: Rule[], rulesets: Ruleset[]) {
+export const admissionCheck = 'integracao-lorekeeper'
+
+export function protectionIssues(rules: Rule[], rulesets: Ruleset[], appId: number) {
   const pull = rules.filter((rule) => rule.type === 'pull_request')
   const checks = rules.filter((rule) => rule.type === 'required_status_checks')
-  const verified = (id: number) => rulesets.some((ruleset) => ruleset.id === id &&
-    ruleset.enforcement === 'active' && Array.isArray(ruleset.bypass_actors) && !ruleset.bypass_actors.length)
+  const issues: string[] = []
+  for (const id of new Set(rules.map((rule) => rule.ruleset_id))) {
+    const ruleset = rulesets.find((value) => value.id === id)
+    if (ruleset?.enforcement !== 'active') issues.push(`ruleset-${id}-active-unconfirmed`)
+    if (!Array.isArray(ruleset?.bypass_actors)) issues.push(`ruleset-${id}-bypass-hidden`)
+    else if (ruleset.bypass_actors.length) issues.push(`ruleset-${id}-bypass-present`)
+  }
+  if (!pull.length || !pull.every(({ parameters }) => parameters?.required_approving_review_count === 0 &&
+    !parameters.require_code_owner_review && !parameters.require_last_push_approval)) issues.push('pr-rules-unconfirmed')
 
-  return pull.length > 0 && checks.length > 0 &&
-    rules.every((rule) => verified(rule.ruleset_id)) &&
-    pull.every(({ parameters }) => parameters?.required_approving_review_count === 0 &&
-      !parameters.require_code_owner_review && !parameters.require_last_push_approval) &&
-    checks.every(({ parameters }) => parameters?.strict_required_status_checks_policy === true &&
-      parameters.required_status_checks?.length === 1 &&
-      parameters.required_status_checks[0].context === 'validar' &&
-      parameters.required_status_checks[0].integration_id === 15368)
+  const required = new Map<string, Set<number>>()
+  for (const { parameters } of checks) {
+    for (const { context, integration_id } of parameters?.required_status_checks ?? []) {
+      const origins = required.get(context) ?? new Set()
+      origins.add(integration_id)
+      required.set(context, origins)
+    }
+  }
+  if (!checks.length || !checks.every(({ parameters }) => parameters?.strict_required_status_checks_policy === true)) {
+    issues.push('strict-status-checks-unconfirmed')
+  }
+  if (required.get('validar')?.size !== 1 || !required.get('validar')?.has(15368)) issues.push('validar-origin-unconfirmed')
+  if (!Number.isSafeInteger(appId) || appId <= 0 || required.get(admissionCheck)?.size !== 1 ||
+      !required.get(admissionCheck)?.has(appId)) issues.push('admission-origin-unconfirmed')
+  if (required.size > 2) issues.push('additional-required-checks')
+  return issues
+}
+
+export function strictRules(rules: Rule[], rulesets: Ruleset[], appId: number) {
+  return protectionIssues(rules, rulesets, appId).length === 0
 }
