@@ -8,7 +8,7 @@ export function openDatabase(path: string) {
     db.pragma('synchronous = FULL')
     db.transaction(() => {
       const version = db.pragma('user_version', { simple: true })
-      if (version === 3) return
+      if (version === 3 || version === 4) return
       if (version !== 0 && version !== 1 && version !== 2) throw new Error('Versão de banco incompatível.')
       if (version === 0) db.exec(`
         CREATE TABLE campaigns (
@@ -77,6 +77,7 @@ export function openDatabase(path: string) {
       `)
     }).immediate()
     migrateInbox(db)
+    migrateDocumentLinks(db)
     return db
   } catch (error) {
     db.close()
@@ -88,12 +89,13 @@ export function openDatabase(path: string) {
 // SQLite requires replacing the table to widen its type constraint.
 // Foreign keys are suspended only on this connection and checked before commit.
 function migrateInbox(db: Database.Database) {
-  if (db.pragma('user_version', { simple: true }) === 3) return
+  const currentVersion = db.pragma('user_version', { simple: true })
+  if (currentVersion === 3 || currentVersion === 4) return
   db.pragma('foreign_keys = OFF')
   try {
     db.transaction(() => {
       const version = db.pragma('user_version', { simple: true })
-      if (version === 3) return
+      if (version === 3 || version === 4) return
       if (version !== 2) throw new Error('Versão de banco incompatível.')
       db.exec(`
         CREATE TABLE documents_v3 (
@@ -120,4 +122,23 @@ function migrateInbox(db: Database.Database) {
   } finally {
     db.pragma('foreign_keys = ON')
   }
+}
+
+function migrateDocumentLinks(db: Database.Database) {
+  db.transaction(() => {
+    const version = db.pragma('user_version', { simple: true })
+    if (version === 4) return
+    if (version !== 3) throw new Error('Versão de banco incompatível.')
+    db.exec(`
+      CREATE TABLE document_links (
+        source_id TEXT NOT NULL REFERENCES documents (id),
+        target_id TEXT NOT NULL REFERENCES documents (id),
+        origin TEXT NOT NULL CHECK (origin IN ('manual', 'markdown')),
+        CHECK (source_id <> target_id),
+        PRIMARY KEY (source_id, target_id, origin)
+      ) STRICT;
+      CREATE INDEX document_links_target ON document_links (target_id, origin, source_id);
+      PRAGMA user_version = 4;
+    `)
+  }).immediate()
 }

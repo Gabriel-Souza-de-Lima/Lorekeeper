@@ -9,6 +9,9 @@ interface QuickNote {
   createdAt: string
 }
 
+type SessionParams = { campaignId: string; sessionId: string }
+type LinkParams = SessionParams & { noteId: string }
+
 const path = '/api/quick-notes'
 const uuid = { type: 'string', pattern: '^[0-9a-fA-F]{8}(-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}$' }
 function noteBody(properties: Record<string, unknown>) {
@@ -57,6 +60,50 @@ export function registerQuickNotes(app: FastifyInstance, db: Database.Database) 
     return { status: 200, note: { ...note, campaignId } }
   })
 
+  const sessionInCampaign = db.prepare<[campaignId: string, sessionId: string]>(`
+    SELECT 1 FROM sessions s JOIN documents d ON d.id = s.document_id
+    WHERE d.campaign_id = ? AND d.id = ? AND d.type = 'session'`)
+  const linkedNotes = db.prepare<[campaignId: string, sessionId: string], QuickNote>(`
+    ${quickNotes} AND campaign_id = ?
+      AND id IN (SELECT source_id FROM document_links WHERE target_id = ? AND origin = 'manual')
+    ${order}`)
+  const link = db.prepare(`
+    INSERT INTO document_links (source_id, target_id, origin) VALUES (?, ?, 'manual')
+    ON CONFLICT (source_id, target_id, origin) DO NOTHING`)
+  const unlink = db.prepare("DELETE FROM document_links WHERE source_id = ? AND target_id = ? AND origin = 'manual'")
+  const updateLink = db.transaction((params: LinkParams, add: boolean) => {
+    const { campaignId, sessionId, noteId } = params
+    if (!sessionInCampaign.get(campaignId, sessionId)) return { status: 404, message: 'Sessão não encontrada.' }
+    const id = noteId.toLowerCase()
+    const note = select.get(id)
+    if (!note || (note.campaignId !== campaignId && !(add && note.campaignId === null))) {
+      return { status: 404, message: 'Anotação não encontrada.' }
+    }
+    if (campaign.get(campaignId)?.archivedAt !== null) {
+      return { status: 409, message: 'Reative a campanha para alterar vínculos.' }
+    }
+    if (note.campaignId === null) setCampaign.run({ id, campaignId, now: new Date().toISOString() })
+    const statement = add ? link : unlink
+    statement.run(id, sessionId)
+    return { status: 204 }
+  })
+
+  const sessionNotes = '/api/campaigns/:campaignId/sessions/:sessionId/quick-notes'
+  app.get<{ Params: SessionParams }>(sessionNotes, (request, reply) => {
+    const { campaignId, sessionId } = request.params
+    if (!sessionInCampaign.get(campaignId, sessionId)) return reply.code(404).send({ message: 'Sessão não encontrada.' })
+    return linkedNotes.all(campaignId, sessionId)
+  })
+  app.route<{ Params: LinkParams }>({
+    method: ['PUT', 'DELETE'],
+    url: `${sessionNotes}/:noteId`,
+    schema: { params: { type: 'object', required: ['noteId'], properties: { noteId: uuid } } },
+    handler(request, reply) {
+      const result = updateLink.immediate(request.params, request.method === 'PUT')
+      if (result.status === 204) return reply.code(204).send()
+      return reply.code(result.status).send({ message: result.message })
+    },
+  })
   app.get(path, () => list.all())
   app.get<{ Params: { campaignId: string } }>('/api/campaigns/:campaignId/quick-notes', (request, reply) => {
     const { campaignId } = request.params

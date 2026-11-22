@@ -17,6 +17,11 @@ A implementação começa após a revisão da [arquitetura](ARCHITECTURE.md) e d
 - **I2-07 aprovado.** O mantenedor relatou 4/4 verificações em host Windows com SQLite de teste e HTTPS privado via Tailscale. Passaram acesso e gravação, sincronização entre dois dispositivos autorizados, bloqueio a acesso externo e isolamento da porta 3000. [Registro do ensaio](specs/06-ensaio-de-acesso-privado.md#resultado-do-ensaio-manual)
 - **Validação operacional em Linux pendente de uma implantação Linux.** A comprovação funcional do acesso privado em Windows encerra o Incremento 2. Gerenciamento de serviço, permissões locais, configuração de rede e recuperação após reinício em Linux ficam para a validação de um futuro host Linux.
 
+## Entregas do Incremento 3
+
+- A caixa de entrada recebe anotações rápidas e permite encaminhá-las para campanhas. [Especificação](specs/07-captura-de-anotacoes-rapidas.md)
+- A API de vínculo entre nota e sessão inclui os backlinks da sessão e a migração aditiva V4. A próxima entrega expõe esse fluxo na interface. [Especificação](specs/09-vinculos-entre-anotacoes-e-sessoes.md)
+
 ## Depois do MVP
 
 1. **Offline e PWA.** Disponibilizar campanhas selecionadas no dispositivo, abrir o aplicativo sem rede, ampliar a fila para mais operações e evoluir a busca local. Validar cache, migrações com pendências, limites de armazenamento e atualização do service worker durante uma edição.
