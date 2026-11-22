@@ -77,7 +77,7 @@ test('I3-01c: a migração preserva uma sessão legada, suas revisões e comprov
   }
   const inspected = new Database(path, { readonly: true })
   try {
-    assert.equal(inspected.pragma('user_version', { simple: true }), 3)
+    assert.equal(inspected.pragma('user_version', { simple: true }), 4)
     assert.deepEqual(inspected.pragma('foreign_key_check'), [])
     assert.deepEqual(inspected.prepare('SELECT request_hash, response_json FROM session_save_receipts').get(),
       { request_hash: 'hash-legado', response_json: JSON.stringify(session) })
