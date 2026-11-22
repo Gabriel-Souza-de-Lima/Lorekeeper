@@ -53,3 +53,16 @@ Esta entrega implementa I2-01 e I2-02. I2-03–I2-07 continuam planejados.
 - **Refactor** — a confirmação durável passou a ser comparada ao rascunho atual no evento de saída. O foco retorna às anotações depois da verificação inicial e da recuperação.
 
 A fila do navegador depende da integração dos comprovantes idempotentes da primeira entrega. O histórico visual, a resolução de conflitos e o acesso privado ficam nas próximas entregas internas do Incremento 2.
+
+## Contrato de conflitos e restauração
+
+- I2-05. Um conflito mantém o rascunho e permite consultar a versão do servidor. O editor mostra os valores locais e os da versão consultada. Editar o rascunho continua possível e a combinação só é enviada após confirmação explícita, com nova chave e a versão-base exibida. Se outra gravação ultrapassar essa versão, exija nova consulta. É possível sair com um rascunho confirmado no IndexedDB ou descartá-lo explicitamente em favor da versão exibida. Falha no descarte local mantém o texto.
+- I2-06. O histórico permite inspecionar e restaurar título e Markdown. A restauração usa a fila versionada normal e cria uma revisão, preservando metadados e histórico anterior. A ação exige confirmação e fica indisponível enquanto houver rascunho ativo ou a campanha estiver arquivada.
+
+### Evidências de I2-05 e I2-06
+
+- **Red** — Chromium encontrou a gravação em conflito, mas falhou ao procurar a comparação de versões e o histórico.
+- **Green** — dois contextos de navegador confirmam que o conflito preserva o rascunho, que uma nova edição remota exige outra comparação e que a restauração adiciona uma revisão mantendo os metadados.
+- **Refactor** — a combinação e a restauração reaproveitam a fila durável. O descarte adota a versão do servidor apenas após confirmar a exclusão local. A regressão cobre sair com o rascunho, reencontrá-lo, cancelar o descarte e manter o texto se o IndexedDB falhar.
+
+O ensaio de acesso HTTPS privado em dispositivos reais (I2-07) permanece pendente.

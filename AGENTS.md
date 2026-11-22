@@ -54,9 +54,11 @@ Não tente implementar todas as funcionalidades do produto simultaneamente.
 - Use somente dados fictícios. Teste persistência, migrações, recuperação e integridade com SQLite real. Preserve o banco de desenvolvimento e os dados pessoais.
 - Rode os comandos aplicáveis em `docs/DEVELOPMENT.md` e registre o vínculo entre critérios, testes e resultados. Informe contagens, falhas e motivos de verificações não executadas.
 - Considere a funcionalidade concluída após cumprir os critérios da especificação, obter aprovação nas verificações aplicáveis e atualizar a documentação. A integração depende do check `validar` do CI.
-- Quando a consulta ao GitHub estiver indisponível, prossiga com o desenvolvimento autorizado e execute as verificações locais. Registre o resultado remoto como indisponível e mantenha o requisito de CI para integração.
+- Quando a consulta ao GitHub estiver indisponível, conclua as verificações locais da entrega atual e registre o bloqueio. Aguarde a confirmação do merge e do CI na `main` antes de iniciar a etapa seguinte.
 
 ## Integração com a GitHub App
+
+- Para cada etapa, abra o PR, acompanhe o check obrigatório, integre pelo fluxo protegido e confirme o merge e o CI na `main`. Se faltarem permissão, revisão específica ou evidência do CI, mantenha a etapa atual em aberto antes de começar a próxima.
 
 - Para uma entrega comum e verificável, use uma branch `codex/<nome>` somente quando o diff estiver revisado, os testes locais passarem e a branch estiver atualizada com a `main`. O prefixo autoriza a App a criar o PR. Mantenha especificação, testes e evidências na entrega.
 - Mudanças de CI, autenticação, infraestrutura, dependências e migrações ficam fora do fluxo automático e passam por PR de revisão específica. Nunca exponha chaves, dados de produção ou material privado.
