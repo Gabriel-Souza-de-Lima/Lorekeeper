@@ -3,6 +3,7 @@ import type { FormEvent } from 'react'
 import { createRoot } from 'react-dom/client'
 import type { Campaign, CampaignFields, CampaignStatus, Session, SessionSummary } from '../contracts.ts'
 import { api, displayDate, localDate } from './api.ts'
+import { QuickNotes } from './quick-notes.tsx'
 import { SessionEditor } from './session-editor.tsx'
 import './style.css'
 
@@ -11,6 +12,7 @@ const statusLabels: Record<CampaignStatus, string> = { active: 'Ativa', paused: 
 
 type View =
   | { page: 'dashboard' }
+  | { page: 'quick-notes' }
   | { page: 'new' }
   | { page: 'campaign' | 'edit'; campaign: Campaign }
   | { page: 'session'; campaign: Campaign; session: Session }
@@ -173,6 +175,7 @@ function App() {
 
   function currentPage() {
     switch (view.page) {
+      case 'quick-notes': return <QuickNotes onBack={dashboard} />
       case 'new': return campaignForm()
       case 'edit': return campaignForm(view.campaign)
       case 'campaign': return campaignPage(view.campaign)
@@ -184,9 +187,14 @@ function App() {
         <>
           <header className="page-header">
             <h1>Campanhas</h1>
-            <button className="primary" disabled={working} onClick={() => { setError(''); setView({ page: 'new' }) }}>
-              Nova campanha
-            </button>
+            <div className="actions">
+              <button disabled={working} onClick={() => { setError(''); setView({ page: 'quick-notes' }) }}>
+                Anotações rápidas
+              </button>
+              <button className="primary" disabled={working} onClick={() => { setError(''); setView({ page: 'new' }) }}>
+                Nova campanha
+              </button>
+            </div>
           </header>
           <div className="tabs" aria-label="Visualizar campanhas">
             <button disabled={working} aria-pressed={!archived} onClick={() => {

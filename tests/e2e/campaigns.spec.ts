@@ -36,7 +36,9 @@ test('C01/C02/C03/S01/S02: gerencia campanha, escreve duas sessões e reabre ap�
     await page.getByRole('button', { name: 'Voltar à campanha' }).click()
 
     await newSession.click()
-    await page.getByLabel('Título').fill('A ponte')
+    const title = page.getByLabel('Título')
+    await title.fill('A ponte')
+    await expect(title).toHaveValue('A ponte')
     await page.getByLabel('Data real').fill('2026-02-02')
     await page.route('**/api/campaigns/*/sessions/*', (route) =>
       route.request().method() === 'PUT' ? route.abort() : route.continue())
