@@ -73,10 +73,6 @@ Os critérios C01–C03 e S01–S04 estão nas especificações de [campanhas](s
 
 O uso privado entre dispositivos, o histórico, os rascunhos locais duráveis e a resolução de conflitos fazem parte do Incremento 2. Neste incremento a versão-base protege o texto já gravado, e uma alteração pendente fica disponível na aba enquanto ela permanece aberta.
 
-## Ensaio do check obrigatório
-
-Em um PR apenas de documentação, acompanhe o job `validar` para o SHA atual. Enquanto estiver pendente, o GitHub deve bloquear a integração. Depois de `success`, com a branch atualizada e os demais requisitos satisfeitos, o PR deve ficar elegível sem aprovação humana obrigatória. Registre o link da execução e o estado do botão de merge nas duas fases.
-
 ## Publicação com GitHub App
 
 Um [workflow sem checkout, token com escopos ou secrets](../.github/workflows/notify-codex-branch.yml) sinaliza o push de uma branch interna `codex/`. A [reconciliação](../.github/workflows/github-app.yml) roda com código da `main` após o sinal, na conclusão de CI de um PR interno e por agendamento como contingência. O bot redescobre os commits e os PRs pela API. A App usa token temporário restrito ao Lorekeeper com **Contents** e **Pull requests** em escrita. Usa as configurações existentes `LOREKEEPER_APP_CLIENT_ID` e `LOREKEEPER_APP_PRIVATE_KEY`. O token padrão lê Actions, Contents e Pull Requests. O job privilegiado não faz checkout, instala dependências ou executa código do PR.
