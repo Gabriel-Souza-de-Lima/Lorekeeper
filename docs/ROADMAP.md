@@ -24,7 +24,9 @@ A implementação começa após a revisão da [arquitetura](ARCHITECTURE.md) e d
 
 - O cadastro básico da wiki organiza personagens, NPCs, localidades e missões por campanha. [Especificação](specs/10-cadastro-da-wiki.md)
 
-- A visão geral oferece acesso às missões abertas e ao personagem em destaque. A próxima entrega trata dos vínculos entre a wiki e as sessões. [Especificação](specs/11-visao-geral-da-wiki.md)
+- A visão geral oferece acesso às missões abertas e ao personagem em destaque. [Especificação](specs/11-visao-geral-da-wiki.md)
+
+- Sessões e páginas da wiki permitem navegar por vínculos manuais nos dois sentidos. Menções no Markdown, tags e busca ainda estão pendentes. [Especificação](specs/12-vinculos-da-wiki.md)
 
 ## Depois do MVP
 

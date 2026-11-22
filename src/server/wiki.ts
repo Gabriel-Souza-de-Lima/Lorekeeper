@@ -1,6 +1,6 @@
 import type Database from 'better-sqlite3'
 import type { FastifyInstance } from 'fastify'
-import { wikiTypes, type WikiPage, type WikiDetails, type WikiSummary } from '../contracts.ts'
+import { wikiTypes, type WikiPage, type WikiDetails, type WikiSummary, type SessionSummary } from '../contracts.ts'
 
 const path = '/api/campaigns/:campaignId/wiki'
 type Params = { campaignId: string }
@@ -50,6 +50,48 @@ export function registerWiki(app: FastifyInstance, db: Database.Database) {
     if (campaign.get(campaignId)?.archivedAt) return { status: 409, message: 'Reative a campanha para alterar a missão.' }
     if (page.closed !== closed) setClosed.run(Number(closed), new Date().toISOString(), id)
     return { status: 200, page: { ...page, closed } }
+  })
+
+  const sessionInCampaign = db.prepare<[string, string]>(`
+    SELECT 1 FROM sessions s JOIN documents d ON d.id = s.document_id
+    WHERE d.campaign_id = ? AND d.id = ? AND d.type = 'session'`)
+  const linkedPages = db.prepare<[string, ...string[]], WikiSummary>(`
+    SELECT id, type, title ${wikiDocuments}
+    AND id IN (SELECT target_id FROM document_links WHERE source_id = ?)
+    ORDER BY title COLLATE NOCASE, id`)
+  const backlinks = db.prepare<[string, string], SessionSummary>(`
+    SELECT d.id, d.title, s.session_date AS date, s.number
+    FROM sessions s JOIN documents d ON d.id = s.document_id
+    WHERE d.campaign_id = ? AND d.type = 'session'
+      AND d.id IN (SELECT source_id FROM document_links WHERE target_id = ?)
+    ORDER BY s.session_date DESC, d.id`)
+  const insertLink = db.prepare(`
+    INSERT INTO document_links (source_id, target_id, origin) VALUES (?, ?, 'manual')
+    ON CONFLICT (source_id, target_id, origin) DO NOTHING`)
+  const linkPage = db.transaction((campaignId: string, sessionId: string, wikiId: string) => {
+    if (!sessionInCampaign.get(campaignId, sessionId) || !details(campaignId, wikiId)) {
+      return { status: 404, message: 'Sessão ou página não encontrada.' }
+    }
+    if (campaign.get(campaignId)?.archivedAt) return { status: 409, message: 'Reative a campanha para vincular.' }
+    insertLink.run(sessionId, wikiId)
+    return { status: 204 }
+  })
+  const sessionLinks = '/api/campaigns/:campaignId/sessions/:sessionId/wiki-links'
+  app.get<{ Params: Params & { sessionId: string } }>(sessionLinks, ({ params }, reply) => {
+    if (!sessionInCampaign.get(params.campaignId, params.sessionId)) {
+      return reply.code(404).send({ message: 'Sessão não encontrada.' })
+    }
+    return linkedPages.all(params.campaignId, ...wikiTypes, params.sessionId)
+  })
+  app.put<{ Params: Params & { sessionId: string; wikiId: string } }>(`${sessionLinks}/:wikiId`, ({ params }, reply) => {
+    const result = linkPage.immediate(params.campaignId, params.sessionId, params.wikiId.toLowerCase())
+    if (result.status === 204) return reply.code(204).send()
+    return reply.code(result.status).send({ message: result.message })
+  })
+  app.get<{ Params: Params & { id: string } }>(`${path}/:id/backlinks`, ({ params }, reply) => {
+    const id = params.id.toLowerCase()
+    if (!details(params.campaignId, id)) return reply.code(404).send({ message: 'Página não encontrada.' })
+    return backlinks.all(params.campaignId, id)
   })
 
   app.get<{ Params: Params; Querystring: { openQuests?: string } }>(path, ({ params, query }, reply) => {

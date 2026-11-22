@@ -2,15 +2,17 @@ import { useEffect, useState, type FormEvent } from 'react'
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { wikiTypes, type Campaign, type WikiDetails, type WikiPage, type WikiSummary, type WikiType } from '../contracts.ts'
+import { WikiBacklinks } from './wiki-links.tsx'
 import { api, ApiError } from './api.ts'
 
 const labels: Record<WikiType, string> = {
   character: 'Personagem', npc: 'NPC', location: 'Localidade', quest: 'Missão',
 }
 
-export function Wiki({ campaign, initialPage, onBack }: {
+export function Wiki({ campaign, initialPage, onOpenSession, onBack }: {
   campaign: Campaign
   initialPage?: WikiDetails
+  onOpenSession: (id: string) => void
   onBack: () => void
 }) {
   const url = `/api/campaigns/${campaign.id}/wiki`
@@ -97,6 +99,7 @@ export function Wiki({ campaign, initialPage, onBack }: {
     {feedback}
     <div className="panel preview"><Markdown skipHtml remarkPlugins={[remarkGfm]}
       components={{ img: ({ alt }) => <span>{alt}</span> }}>{page.body}</Markdown></div>
+    <WikiBacklinks key={page.id} url={`${url}/${page.id}/backlinks`} busy={busy} onOpen={onOpenSession} />
   </>
   if (draft) return <>
     <h1>Nova página da wiki</h1>
