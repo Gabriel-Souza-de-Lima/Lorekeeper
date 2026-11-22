@@ -1,4 +1,5 @@
 import Database from 'better-sqlite3'
+import { migrateWikiOverview } from './migrations/wiki-overview.ts'
 import { migrateWiki } from './migrations/wiki.ts'
 
 export function openDatabase(path: string) {
@@ -9,7 +10,7 @@ export function openDatabase(path: string) {
     db.pragma('synchronous = FULL')
     db.transaction(() => {
       const version = db.pragma('user_version', { simple: true })
-      if (version === 3 || version === 4 || version === 5) return
+      if (version === 3 || version === 4 || version === 5 || version === 6) return
       if (version !== 0 && version !== 1 && version !== 2) throw new Error('Versão de banco incompatível.')
       if (version === 0) db.exec(`
         CREATE TABLE campaigns (
@@ -80,6 +81,7 @@ export function openDatabase(path: string) {
     migrateInbox(db)
     migrateDocumentLinks(db)
     migrateWiki(db)
+    migrateWikiOverview(db)
     return db
   } catch (error) {
     db.close()
@@ -92,12 +94,12 @@ export function openDatabase(path: string) {
 // Foreign keys are suspended only on this connection and checked before commit.
 function migrateInbox(db: Database.Database) {
   const currentVersion = db.pragma('user_version', { simple: true })
-  if (currentVersion === 3 || currentVersion === 4 || currentVersion === 5) return
+  if (currentVersion === 3 || currentVersion === 4 || currentVersion === 5 || currentVersion === 6) return
   db.pragma('foreign_keys = OFF')
   try {
     db.transaction(() => {
       const version = db.pragma('user_version', { simple: true })
-      if (version === 3 || version === 4 || version === 5) return
+      if (version === 3 || version === 4 || version === 5 || version === 6) return
       if (version !== 2) throw new Error('Versão de banco incompatível.')
       db.exec(`
         CREATE TABLE documents_v3 (
@@ -129,7 +131,7 @@ function migrateInbox(db: Database.Database) {
 function migrateDocumentLinks(db: Database.Database) {
   db.transaction(() => {
     const version = db.pragma('user_version', { simple: true })
-    if (version === 4 || version === 5) return
+    if (version === 4 || version === 5 || version === 6) return
     if (version !== 3) throw new Error('Versão de banco incompatível.')
     db.exec(`
       CREATE TABLE document_links (

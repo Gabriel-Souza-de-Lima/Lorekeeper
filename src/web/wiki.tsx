@@ -1,21 +1,26 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import { wikiTypes, type Campaign, type WikiPage, type WikiSummary, type WikiType } from '../contracts.ts'
+import { wikiTypes, type Campaign, type WikiDetails, type WikiPage, type WikiSummary, type WikiType } from '../contracts.ts'
 import { api, ApiError } from './api.ts'
 
 const labels: Record<WikiType, string> = {
   character: 'Personagem', npc: 'NPC', location: 'Localidade', quest: 'Missão',
 }
 
-export function Wiki({ campaign, onBack }: { campaign: Campaign; onBack: () => void }) {
+export function Wiki({ campaign, initialPage, onBack }: {
+  campaign: Campaign
+  initialPage?: WikiDetails
+  onBack: () => void
+}) {
   const url = `/api/campaigns/${campaign.id}/wiki`
   const [pages, setPages] = useState<WikiSummary[] | null>(null)
-  const [page, setPage] = useState<WikiPage | null>(null)
+  const [page, setPage] = useState<WikiDetails | null>(initialPage ?? null)
   const [draft, setDraft] = useState<WikiPage | null>(null)
   const [busy, setBusy] = useState(false)
   const [uncertain, setUncertain] = useState(false)
   const [error, setError] = useState('')
+  const [featuredId, setFeaturedId] = useState(campaign.featuredCharacterId)
   const [refresh, setRefresh] = useState(0)
 
   useEffect(() => {
@@ -31,7 +36,7 @@ export function Wiki({ campaign, onBack }: { campaign: Campaign; onBack: () => v
     setBusy(true)
     setError('')
     try {
-      setPage(await api<WikiPage>(`${url}/${id}`))
+      setPage(await api<WikiDetails>(`${url}/${id}`))
     } catch (failure) {
       setError(failure instanceof Error ? failure.message : 'Não foi possível abrir a página.')
     } finally {
@@ -45,7 +50,7 @@ export function Wiki({ campaign, onBack }: { campaign: Campaign; onBack: () => v
     setBusy(true)
     setError('')
     try {
-      const created = await api<WikiPage>(url, 'POST', draft)
+      const created = await api<WikiDetails>(url, 'POST', draft)
       setPages(null)
       setRefresh((value) => value + 1)
       setPage(created)
@@ -61,10 +66,35 @@ export function Wiki({ campaign, onBack }: { campaign: Campaign; onBack: () => v
     }
   }
 
+  async function updatePage(current: WikiDetails) {
+    setBusy(true)
+    setError('')
+    try {
+      if (current.type === 'quest') {
+        setPage(await api<WikiDetails>(`${url}/${current.id}/quest-state`, 'PUT', { closed: !current.closed }))
+      } else {
+        const id = featuredId === current.id ? null : current.id
+        const updated = await api<Campaign>(`/api/campaigns/${campaign.id}/featured-character`, 'PUT', { id })
+        setFeaturedId(updated.featuredCharacterId)
+      }
+    } catch (failure) {
+      setError(failure instanceof Error ? failure.message : 'Não foi possível atualizar a página.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
   const feedback = error && <p className="error" role="alert">{error}</p>
   if (page) return <>
-    <button className="quiet" onClick={() => setPage(null)}>Voltar à wiki</button>
+    <button className="quiet" disabled={busy} onClick={() => { setError(''); setPage(null) }}>Voltar à wiki</button>
     <header className="page-header"><div><p className="context">{labels[page.type]}</p><h1>{page.title}</h1></div></header>
+    {page.type === 'quest' && <p>{page.closed ? 'Missão concluída' : 'Missão aberta'}</p>}
+    {!campaign.archivedAt && (page.type === 'quest' || page.type === 'character') &&
+      <button disabled={busy} onClick={() => void updatePage(page)}>
+        {page.type === 'quest' ? (page.closed ? 'Reabrir missão' : 'Concluir missão')
+          : featuredId === page.id ? 'Remover destaque' : 'Destacar personagem'}
+      </button>}
+    {feedback}
     <div className="panel preview"><Markdown skipHtml remarkPlugins={[remarkGfm]}
       components={{ img: ({ alt }) => <span>{alt}</span> }}>{page.body}</Markdown></div>
   </>

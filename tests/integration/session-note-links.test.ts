@@ -42,7 +42,7 @@ test('migration-integrity I3-02c: vínculos exigem documentos, direção válida
     const insert = db.prepare('INSERT INTO document_links (source_id, target_id, origin) VALUES (?, ?, ?)')
     assert.throws(() => insert.run('ausente', 'outro', 'manual'), /FOREIGN KEY/)
     assert.throws(() => insert.run('ausente', 'ausente', 'manual'), /CHECK/)
-    db.exec("INSERT INTO documents VALUES ('a', NULL, 'quick_note', 'A', '', 1, 'hoje', 'hoje'), ('b', NULL, 'quick_note', 'B', '', 1, 'hoje', 'hoje')")
+    db.exec("INSERT INTO documents (id, campaign_id, type, title, body, version, created_at, updated_at) VALUES ('a', NULL, 'quick_note', 'A', '', 1, 'hoje', 'hoje'), ('b', NULL, 'quick_note', 'B', '', 1, 'hoje', 'hoje')")
     insert.run('a', 'b', 'manual')
     assert.throws(() => insert.run('a', 'b', 'manual'), /UNIQUE/)
     assert.deepEqual(db.pragma('foreign_key_check'), [])
@@ -55,13 +55,18 @@ test('migration-preservation I3-02c: V4 preserva nota, sessão, revisão e compr
   const path = temporaryPath(t)
   legacyDatabase(path)
   const snapshot = (db: Database.Database) => ['campaigns', 'documents', 'sessions', 'session_revisions', 'session_save_receipts']
-    .map((table) => db.prepare(`SELECT * FROM ${table} ORDER BY 1`).all())
+    .map((table) => {
+    const columns = table === 'documents' ? 'id, campaign_id, type, title, body, version, created_at, updated_at'
+      : table === 'campaigns' ? 'id, name, description, game_master, system, rules_version, notes, status, archived_at, created_at, updated_at'
+        : '*'
+    return db.prepare(`SELECT ${columns} FROM ${table} ORDER BY 1`).all()
+  })
   const legacy = new Database(path, { readonly: true })
   const original = snapshot(legacy)
   legacy.close()
   const db = openDatabase(path)
   try {
-    assert.equal(db.pragma('user_version', { simple: true }), 5)
+    assert.equal(db.pragma('user_version', { simple: true }), 6)
     assert.deepEqual(snapshot(db), original)
     assert.deepEqual(db.pragma('integrity_check'), [{ integrity_check: 'ok' }])
   } finally {

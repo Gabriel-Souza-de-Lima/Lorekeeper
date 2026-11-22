@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { createRoot } from 'react-dom/client'
-import type { Campaign, CampaignFields, CampaignStatus, Session, SessionSummary } from '../contracts.ts'
+import type { Campaign, CampaignFields, CampaignStatus, Session, SessionSummary, WikiDetails } from '../contracts.ts'
 import { api, displayDate, localDate } from './api.ts'
 import { CampaignNotes } from './note-assignment.tsx'
 import { QuickNotes } from './quick-notes.tsx'
 import { SessionEditor } from './session-editor.tsx'
+import { WikiOverview } from './wiki-overview.tsx'
 import { Wiki } from './wiki.tsx'
 import './style.css'
 
@@ -18,7 +19,7 @@ type View =
   | { page: 'new' }
   | { page: 'campaign' | 'edit'; campaign: Campaign }
   | { page: 'campaign-notes'; campaign: Campaign }
-  | { page: 'wiki'; campaign: Campaign }
+  | { page: 'wiki'; campaign: Campaign; initialPage?: WikiDetails }
   | { page: 'session'; campaign: Campaign; session: Session }
 
 const campaignMetadata = [
@@ -167,6 +168,10 @@ function App() {
           <span>{campaign.sessionCount} {campaign.sessionCount === 1 ? 'sessão' : 'sessões'}</span>
           <span>{campaign.lastSessionDate ? `Última sessão em ${displayDate(campaign.lastSessionDate)}` : 'Nenhuma sessão registrada'}</span>
         </div>
+        <WikiOverview key={campaign.id} campaign={campaign} busy={working} onOpen={(id) => void action(async () => {
+          const initialPage = await api<WikiDetails>(`${url}/wiki/${id}`)
+          setView({ page: 'wiki', campaign, initialPage })
+        })} />
         <section>
           <header className="page-header"><h2>Sessões</h2>
             {!locked && <button className="primary" disabled={working} onClick={() => openSession()}>Nova sessão</button>}
@@ -189,8 +194,8 @@ function App() {
       case 'new': return campaignForm()
       case 'edit': return campaignForm(view.campaign)
       case 'campaign': return campaignPage(view.campaign)
-      case 'wiki': return <Wiki campaign={view.campaign}
-        onBack={() => setView({ page: 'campaign', campaign: view.campaign })} />
+      case 'wiki': return <Wiki campaign={view.campaign} initialPage={view.initialPage}
+        onBack={() => void action(() => openCampaign(view.campaign.id))} />
       case 'campaign-notes': return <CampaignNotes campaign={view.campaign}
         onBack={() => setView({ page: 'campaign', campaign: view.campaign })} />
       case 'session': return <SessionEditor key={view.session.id} campaignName={view.campaign.name}

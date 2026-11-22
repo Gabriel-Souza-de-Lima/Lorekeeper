@@ -22,7 +22,9 @@ A implementação começa após a revisão da [arquitetura](ARCHITECTURE.md) e d
 - A caixa de entrada recebe anotações rápidas e permite encaminhá-las para campanhas. [Especificação](specs/07-captura-de-anotacoes-rapidas.md)
 - Os vínculos entre notas e sessões estão disponíveis no editor, com leitura de campanhas arquivadas e recuperação após perda de resposta. [Especificação](specs/09-vinculos-entre-anotacoes-e-sessoes.md)
 
-- O cadastro básico da wiki organiza personagens, NPCs, localidades e missões por campanha. A consulta de missões abertas e o personagem em destaque continuam pendentes no MVP-09. [Especificação](specs/10-cadastro-da-wiki.md)
+- O cadastro básico da wiki organiza personagens, NPCs, localidades e missões por campanha. [Especificação](specs/10-cadastro-da-wiki.md)
+
+- A visão geral oferece acesso às missões abertas e ao personagem em destaque. A próxima entrega trata dos vínculos entre a wiki e as sessões. [Especificação](specs/11-visao-geral-da-wiki.md)
 
 ## Depois do MVP
 

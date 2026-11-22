@@ -60,6 +60,8 @@ export function createApp(database: string, webRoot?: string) {
   const campaignSelect = `
     SELECT c.id, c.name, c.description, c.game_master AS gameMaster, c.system,
       c.rules_version AS rulesVersion, c.notes, c.status, c.archived_at AS archivedAt,
+      c.featured_character_id AS featuredCharacterId,
+      (SELECT title FROM documents WHERE id = c.featured_character_id) AS featuredCharacterTitle,
       COUNT(s.document_id) AS sessionCount, MAX(s.session_date) AS lastSessionDate
     FROM campaigns c
     LEFT JOIN documents d ON d.campaign_id = c.id AND d.type = 'session'
@@ -76,6 +78,18 @@ export function createApp(database: string, webRoot?: string) {
     UPDATE campaigns SET name = @name, description = @description, game_master = @gameMaster,
       system = @system, rules_version = @rulesVersion, notes = @notes, status = @status, updated_at = @now
     WHERE id = @id AND archived_at IS NULL`)
+  const character = db.prepare("SELECT 1 FROM documents WHERE id = ? AND campaign_id = ? AND type = 'character'")
+  const setFeatured = db.prepare(`
+    UPDATE campaigns SET featured_character_id = @id, updated_at = @now
+    WHERE id = @campaignId AND featured_character_id IS NOT @id`)
+  const featureCharacter = db.transaction((campaignId: string, id: string | null) => {
+    const current = campaignState.get(campaignId)
+    if (!current) return { status: 404, message: 'Campanha não encontrada.' }
+    if (current.archivedAt) return { status: 409, message: 'Reative a campanha para mudar o destaque.' }
+    if (id !== null && !character.get(id, campaignId)) return { status: 404, message: 'Personagem não encontrado.' }
+    setFeatured.run({ id, now: new Date().toISOString(), campaignId })
+    return { status: 200, campaign: selectCampaign.get(campaignId) }
+  })
   const archiveCampaign = db.prepare('UPDATE campaigns SET archived_at = ?, updated_at = ? WHERE id = ?')
 
   app.get<{ Querystring: { archived?: string } }>('/api/campaigns', (request) =>
@@ -107,6 +121,14 @@ export function createApp(database: string, webRoot?: string) {
       const result = archiveCampaign.run(request.body.archived ? now : null, now, id)
       if (!result.changes) return reply.code(404).send({ message: 'Campanha não encontrada.' })
       return selectCampaign.get(id)
+    })
+
+  app.put<{ Params: CampaignParams; Body: { id: string | null } }>(
+    `${campaignPath}/featured-character`, { schema: bodySchema({ id: { type: ['string', 'null'] } }) }, (request, reply) => {
+      const id = request.body.id?.toLowerCase() ?? null
+      if (id !== null && !operationIdPattern.test(id)) return reply.code(400).send({ message: 'Identificador inválido.' })
+      const result = featureCharacter.immediate(request.params.campaignId, id)
+      return reply.code(result.status).send(result.campaign ?? { message: result.message })
     })
 
   const sessionSelect = `

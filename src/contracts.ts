@@ -14,6 +14,8 @@ export interface CampaignFields {
 export interface Campaign extends CampaignFields {
   id: string
   archivedAt: string | null
+  featuredCharacterId: string | null
+  featuredCharacterTitle: string | null
   sessionCount: number
   lastSessionDate: string | null
 }
@@ -44,4 +46,5 @@ export interface WikiPage {
   body: string
 }
 
+export type WikiDetails = WikiPage & { closed?: boolean }
 export type WikiSummary = Omit<WikiPage, 'body'>
