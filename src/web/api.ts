@@ -1,15 +1,24 @@
-export async function api<T>(path: string, method = 'GET', body?: unknown): Promise<T> {
+export class ApiError extends Error {
+  readonly status: number
+
+  constructor(message: string, status: number) {
+    super(message)
+    this.status = status
+  }
+}
+
+export async function api<T>(path: string, method = 'GET', body?: unknown, headers?: Record<string, string>): Promise<T> {
   const response = await fetch(path, {
     method,
     ...(body === undefined ? {} : {
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...headers },
       body: JSON.stringify(body),
     }),
-  }).catch(() => { throw new Error('Verifique a conexão com o servidor.') })
+  }).catch(() => { throw new ApiError('Verifique a conexão com o servidor.', 0) })
   if (!response.ok) {
-    if (response.status >= 500) throw new Error('O servidor não conseguiu concluir a operação.')
+    if (response.status >= 500) throw new ApiError('O servidor não conseguiu concluir a operação.', response.status)
     const result = await response.json()
-    throw new Error(result.message || 'A operação não pôde ser concluída.')
+    throw new ApiError(result.message || 'A operação não pôde ser concluída.', response.status)
   }
   return response.json()
 }
