@@ -1,4 +1,3 @@
-import { readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { expect, test } from '@playwright/test'
 import type { APIRequestContext } from '@playwright/test'
@@ -58,6 +57,15 @@ test('I2-04: falha de armazenamento é visível e oferece download do texto', as
     await seed(request, base)
     await page.addInitScript(() => {
       indexedDB.open = () => { throw new DOMException('Falha simulada', 'QuotaExceededError') }
+      const click = HTMLAnchorElement.prototype.click
+      HTMLAnchorElement.prototype.click = function () {
+        if (this.download === 'rascunho-da-sessao.md' && this.href.startsWith('blob:')) {
+          void fetch(this.href).then((response) => response.text()).then((text) => {
+            document.documentElement.dataset.downloadedDraft = text
+          })
+        }
+        click.call(this)
+      }
     })
     await page.goto(base)
     await page.getByRole('button', { name: 'Observatório' }).click()
@@ -69,10 +77,15 @@ test('I2-04: falha de armazenamento é visível e oferece download do texto', as
       page.getByRole('button', { name: 'Baixar rascunho', exact: true }).click({ timeout: 5000 }),
     ])
     expect(download.suggestedFilename()).toBe('rascunho-da-sessao.md')
-    expect(await readFile(await download.path(), 'utf8')).toBe('Registro ainda disponível na aba.')
+    await expect(page.locator('html')).toHaveAttribute('data-downloaded-draft', 'Registro ainda disponível na aba.')
     await expect(page.getByLabel('Anotações', { exact: true })).toHaveValue('Registro ainda disponível na aba.')
   } finally {
-    await app.close()
+    try {
+      await page.close()
+    } finally {
+      app.server.closeAllConnections()
+      await app.close()
+    }
   }
 })
 
