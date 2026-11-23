@@ -40,7 +40,9 @@ A implementação começa após a revisão da [arquitetura](ARCHITECTURE.md) e d
 
 - O painel exporta o acervo salvo em ZIP com Markdown e JSON versionado. [Especificação](specs/17-exportacao-portavel.md)
 
-- O comando de cópia verifica a integridade do SQLite e permite ensaiar a restauração em outra instância. Criptografia, destino externo, agendamento e retenção seguem pendentes. [Especificação](specs/18-backup-sqlite.md)
+- O comando de cópia verifica a integridade do SQLite e permite ensaiar a restauração em outra instância. [Especificação](specs/18-backup-sqlite.md)
+
+- A CLI gera e recupera cópias externas criptografadas. A especificação define frequência diária e retenção. A configuração no host e o ensaio em volume externo real ficam para o piloto. [Especificação](specs/19-backup-externo.md)
 
 ## Depois do MVP
 
