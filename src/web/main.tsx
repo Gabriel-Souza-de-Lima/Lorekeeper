@@ -201,7 +201,7 @@ function App() {
           onWiki={(id) => openWikiPage(campaign, id)}
           onPending={(itemId) => setView({ page: 'pending-items', campaign, itemId })}
           onNote={(noteId) => setView({ page: 'campaign-notes', campaign, noteId })} />
-        <Attachments key={url} campaignUrl={url} archived={locked} />
+        <Attachments key={url} campaignUrl={url} archived={locked} navigationPending={working} />
         <section>
           <header className="page-header"><h2>Sessões</h2>
             {!locked && <button className="primary" disabled={working} onClick={() => openSession()}>Nova sessão</button>}
