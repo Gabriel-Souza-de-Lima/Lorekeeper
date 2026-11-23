@@ -23,6 +23,7 @@ test('I3-09c: renomeia a página e reencontra o destino pela menção, backlink 
     await notes.evaluate((field: HTMLTextAreaElement) => field.setSelectionRange(2, 6))
     await wiki.getByRole('button', { name: 'Inserir no Markdown' }).click()
     await expect(notes).toHaveValue(/O \[guia\]\(#wiki-[^)]*\) chegou\./)
+    await page.getByRole('button', { name: 'Salvar', exact: true }).click()
     await expect(page.getByRole('status')).toHaveText('Salvo no servidor')
     await page.getByRole('region', { name: 'Prévia Markdown' }).getByRole('button', { name: 'guia' }).click()
     await expect(page.getByRole('heading', { name: 'Guia do farol' })).toBeVisible()

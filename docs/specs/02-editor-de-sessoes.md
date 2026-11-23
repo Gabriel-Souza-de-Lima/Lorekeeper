@@ -1,10 +1,10 @@
 # I1-S — Sessões e editor Markdown
 
-- **Estado** — pronta para implementar.
+- **Estado** — entregue no Incremento 1. A política atual de gravação está no [salvamento manual](22-salvamento-manual.md).
 - **Objetivo** — registrar uma sessão rapidamente e encontrar o texto ao reabrir a campanha.
 - **Rastreabilidade** — MVP-03, MVP-04 (editor e gravação no servidor), MVP-07 (checagem de versão), Produto §4.3.
 
-## Comportamento e regras
+## Comportamento original do Incremento 1
 
 Nova sessão abre diretamente no editor, com título inicial “Nova sessão” e data civil do navegador. Título, data real, número opcional positivo, data ficcional, participantes e corpo Markdown são editáveis. A lista ordena por data real decrescente, com desempate estável. O editor oferece prévia de títulos, listas, checklists, tabelas e destaque, com HTML embutido desabilitado.
 
@@ -13,7 +13,7 @@ Após pausa na edição, enviar uma gravação por vez com a versão-base. A con
 | ID | Cenário e critério verificável | Teste |
 | --- | --- | --- |
 | S01 | Abrir nova sessão pelo dashboard da campanha e editar texto e metadados. Reabrir duas sessões, em ordem por data, após reiniciar o servidor com o mesmo banco. | Integração e E2E de sessões |
-| S02 | Após digitar sem clicar em salvar, ver confirmação e prévia Markdown. Se uma gravação falhar, manter o conteúdo editável e permitir nova tentativa. | E2E de sessões |
+| S02 | Na política original, digitar iniciava a gravação automaticamente; a política atual exige Salvar. Se uma gravação falhar, manter o conteúdo editável e permitir nova tentativa. | E2E de sessões |
 | S03 | Rejeitar gravação de uma versão antiga e acesso à sessão sob outra campanha, mantendo o texto gravado. Rejeitar data inválida sem alterar a nota. | Integração |
 | S04 | Aplicar a migração de forma transacional e reabrir o banco sem repetir a migração nem descartar registros. | Integração de sessões com banco em disco |
 

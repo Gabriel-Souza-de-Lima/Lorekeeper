@@ -28,6 +28,7 @@ test('I2-03: recupera rascunho e reenvia o UUID após o servidor perder a respos
       await route.abort()
     })
     await page.getByLabel('Anotações', { exact: true }).fill('A bússola aponta para o farol.')
+    await page.getByRole('button', { name: 'Salvar', exact: true }).click()
     await expect(page.getByRole('status')).toHaveText(/Falha ao salvar/)
     expect(originalKey).toMatch(/^[0-9a-f-]{36}$/)
     await page.close()
@@ -39,6 +40,7 @@ test('I2-03: recupera rascunho e reenvia o UUID após o servidor perder a respos
     const retry = next.waitForRequest((req) => req.url() === path && req.method() === 'PUT')
     await next.getByRole('button', { name: /Recuperar rascunho/ }).click({ timeout: 4000 })
     await expect(next.getByLabel('Anotações', { exact: true })).toHaveValue('A bússola aponta para o farol.')
+    await next.getByRole('button', { name: 'Salvar', exact: true }).click()
     const resent = await retry
     expect(resent.headers()['idempotency-key']).toBe(originalKey)
     expect(resent.postDataJSON()).toEqual(originalBody)
@@ -111,12 +113,17 @@ test('I2-04: confirmação antiga preserva edição nova em outra geração', as
     })
     const notes = page.getByLabel('Anotações', { exact: true })
     await notes.fill('O farol acendeu.')
+    await page.getByRole('button', { name: 'Salvar', exact: true }).click()
     await test.step('Aguardar a primeira gravação chegar ao servidor', async () => {
       const { failure } = await firstSaved.promise
       if (failure) throw failure
     }, { timeout: 6000 })
     await notes.fill('O farol acendeu e revelou a ponte.')
     release.resolve()
+    await expect(page.getByRole('status')).toContainText('rascunho protegido')
+    expect(attempts).toHaveLength(1)
+    expect((await (await request.get(path)).json()).body).toBe('O farol acendeu.')
+    await page.getByRole('button', { name: 'Salvar', exact: true }).click()
     await expect(page.getByRole('status')).toHaveText('Salvo no servidor')
     const saved = await (await request.get(path)).json()
     expect(saved.body).toBe('O farol acendeu e revelou a ponte.')
@@ -147,7 +154,7 @@ test('I2-03: duas abas mantêm edições offline independentes e permitem recupe
     await page.getByLabel(notes, { exact: true }).fill('Primeira aba viu estrelas.')
     await second.getByLabel(notes, { exact: true }).fill('Segunda aba desenhou o mapa.')
     for (const tab of [page, second]) {
-      await expect(tab.getByRole('status')).toHaveText(/Falha ao salvar/)
+      await expect(tab.getByRole('status')).toContainText('rascunho protegido')
       await tab.close()
     }
     await context.setOffline(false)
@@ -159,6 +166,7 @@ test('I2-03: duas abas mantêm edições offline independentes e permitem recupe
     await expect(alternatives).toHaveCount(2)
     await alternatives.filter({ hasText: 'Segunda aba desenhou o mapa.' }).click()
     await expect(reopened.getByLabel(notes, { exact: true })).toHaveValue('Segunda aba desenhou o mapa.')
+    await reopened.getByRole('button', { name: 'Salvar', exact: true }).click()
     await expect(reopened.getByRole('status')).toHaveText('Salvo no servidor')
     await expect(alternatives).toHaveCount(1)
   } finally {

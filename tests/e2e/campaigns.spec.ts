@@ -33,6 +33,7 @@ test('C01/C02/C03/S01/S02: gerencia campanha, escreve duas sessões e reabre ap�
     await notes.fill('# A descoberta\n\n- [x] Farol visto\n\n| Lugar | Estado |\n| --- | --- |\n| Farol | Ativo |')
     await expect(page.getByRole('heading', { name: 'A descoberta' })).toBeVisible()
     await expect(page.getByRole('table')).toBeVisible()
+    await page.getByRole('button', { name: 'Salvar', exact: true }).click()
     await expect(page.getByRole('status')).toHaveText('Salvo no servidor')
     await page.getByRole('button', { name: 'Voltar à campanha' }).click()
 
@@ -44,10 +45,11 @@ test('C01/C02/C03/S01/S02: gerencia campanha, escreve duas sessões e reabre ap�
     await page.route('**/api/campaigns/*/sessions/*', (route) =>
       route.request().method() === 'PUT' ? route.abort() : route.continue())
     await notes.fill('Encontramos a ponte.')
+    await page.getByRole('button', { name: 'Salvar', exact: true }).click()
     await expect(page.getByRole('status')).toHaveText(/Falha ao salvar/)
     await expect(notes).toHaveValue('Encontramos a ponte.')
     await page.unroute('**/api/campaigns/*/sessions/*')
-    await page.getByRole('button', { name: 'Tentar novamente' }).click()
+    await page.getByRole('button', { name: 'Salvar', exact: true }).click()
     await expect(page.getByRole('status')).toHaveText('Salvo no servidor')
     await page.getByRole('button', { name: 'Voltar à campanha' }).click()
     await page.getByRole('button', { name: 'Arquivar campanha' }).click()

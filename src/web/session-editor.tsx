@@ -31,7 +31,9 @@ export function SessionEditor({ campaignName, campaignUrl, session, path, archiv
 
   function leave(navigate: () => void) {
     if (saving) return
-    if (dirty && !locallySaved && !window.confirm('O rascunho ainda está apenas nesta aba. Sair do editor?')) return
+    if (dirty && !window.confirm(locallySaved
+      ? 'As alterações estão neste navegador e ainda não estão disponíveis em outros dispositivos. Sair do editor?'
+      : 'O rascunho ainda está apenas nesta aba e pode ser perdido. Sair do editor?')) return
     navigate()
   }
 
@@ -62,11 +64,12 @@ export function SessionEditor({ campaignName, campaignUrl, session, path, archiv
 
   let status = 'Salvo no servidor'
   if (storageFailed) status = 'Falha no armazenamento local. Baixe o rascunho antes de sair.'
+  else if (failure?.status === 409) status = 'Conflito de edição · resolução necessária'
   else if (failure) status = `Falha ao salvar. ${failure.message} O rascunho continua disponível neste navegador.`
   else if (!ready) status = 'Verificando rascunhos locais…'
   else if (saving) status = 'Salvando…'
-  else if (locallySaved) status = 'Rascunho local · sincronização pendente'
-  else if (dirty) status = 'Guardando rascunho local…'
+  else if (locallySaved) status = 'Alterações não salvas · rascunho protegido'
+  else if (dirty) status = 'Protegendo rascunho…'
   else if (archived) status = 'Campanha arquivada · somente leitura'
 
   return (
@@ -76,7 +79,11 @@ export function SessionEditor({ campaignName, campaignUrl, session, path, archiv
         <div><p className="context">{campaignName}</p><h1>Editor de sessão</h1></div>
         <div className="save-state">
           <span role="status" className={failure || storageFailed ? 'error' : ''}>{status}</span>
-          {(failure || storageFailed) && failure?.status !== 409 && dirty && <button onClick={retry}>Tentar novamente</button>}
+          {!archived && <button className="primary" disabled={!editor.canSave} onClick={() => void editor.save()}>Salvar</button>}
+          {!archived && dirty && failure?.status !== 409 && <button disabled={!ready || saving} onClick={() => {
+            if (window.confirm('Descartar as alterações locais e voltar à última versão confirmada?')) void editor.discard()
+          }}>Descartar alterações</button>}
+          {storageFailed && failure?.status !== 409 && dirty && <button onClick={retry}>Tentar novamente</button>}
           {(failure || storageFailed) && dirty && <button onClick={download}>Baixar rascunho</button>}
         </div>
       </header>

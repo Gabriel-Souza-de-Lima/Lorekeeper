@@ -6,7 +6,7 @@ A implementação começa após a revisão da [arquitetura](ARCHITECTURE.md) e d
 
 | Ordem | Entrega | Verificação para avançar |
 | --- | --- | --- |
-| 1 | Campanhas e editor de sessões. Estrutura web, banco com migrações, dashboard, criação e arquivamento, sessões e Markdown com gravação automática no servidor. | Criar uma campanha, escrever duas sessões, reiniciar o processo com o mesmo volume e reabrir os textos. Testar migração, isolamento entre campanhas e gravação condicionada à versão. Usar dados de teste nesta etapa. |
+| 1 | Campanhas e editor de sessões. Estrutura web, banco com migrações, dashboard, criação e arquivamento, sessões e Markdown com a política inicial de gravação automática, substituída pela confirmação explícita nas sessões existentes. | Criar uma campanha, escrever duas sessões, reiniciar o processo com o mesmo volume e reabrir os textos. Testar migração, isolamento entre campanhas e gravação condicionada à versão. Usar dados de teste nesta etapa. |
 | 2 — concluído | Integridade do editor e acesso em dois dispositivos. Rascunhos locais, reenvio idempotente, histórico, resolução de conflitos e implantação privada. | Usar dois contextos de navegador e os computadores de jogo. Testar perda de conexão, perda da resposta após a gravação, fechamento com rascunho confirmado e duas abas com edições concorrentes. Verificar bloqueio do acesso externo. |
 | 3 | Caixa de entrada, wiki e busca. Notas rápidas, cadastro básico das entidades, tags, vínculos, backlinks e busca global. | Anotar uma descoberta, vincular um NPC, recuperar a sessão pela busca e confirmar o isolamento de campanhas homônimas. Verificar o estado do índice após edição, arquivamento e restauração de texto. |
 | 4 | Portabilidade e piloto pessoal. Exportação, rotina de backup com cópia externa, ensaio de restauração e revisão da interface responsiva. | Restaurar em instância separada e completar o fluxo de criação de campanha, registro de sessões, troca de computador e busca. Medir tempo de restauração e só então iniciar o uso com o acervo real. |
@@ -45,6 +45,10 @@ A implementação começa após a revisão da [arquitetura](ARCHITECTURE.md) e d
 - A CLI gera e recupera cópias externas criptografadas. A especificação define frequência diária e retenção. A configuração no host e o ensaio em volume externo real ficam para o piloto. [Especificação](specs/19-backup-externo.md)
 
 - O ensaio automatizado registra em tela estreita, restaura uma cópia criptografada e recupera a sessão pela busca em outro contexto. A execução nos dispositivos e no volume externo reais está pendente. [Roteiro do piloto](specs/20-piloto-responsivo.md)
+
+## Controle de sessões
+
+- SC-01 separa revisão textual da versão de concorrência. SC-02 adiciona confirmação explícita no editor de sessões existentes. Criação no primeiro Salvar e lixeira seguem nas entregas SC-03 e SC-04. [Critérios](specs/22-salvamento-manual.md)
 
 ## Depois do MVP
 

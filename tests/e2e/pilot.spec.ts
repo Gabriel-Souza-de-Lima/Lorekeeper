@@ -29,6 +29,7 @@ test('I4-04a/b: registra em tela estreita e encontra a sessão em uma instância
       '| Farol vermelho | Sudoeste | Quinze quilômetros | Caminho secundário | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 |',
     ].join('\n')
     await page.getByLabel('Anotações', { exact: true }).fill(text)
+    await page.getByRole('button', { name: 'Salvar', exact: true }).click()
     await expect(page.getByRole('status')).toHaveText('Salvo no servidor')
     const preview = page.getByRole('region', { name: 'Prévia Markdown' })
     const editor = page.getByLabel('Anotações', { exact: true })

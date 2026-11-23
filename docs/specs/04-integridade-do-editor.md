@@ -1,10 +1,10 @@
 # I2 — Integridade do editor de sessões
 
-- **Estado** — proposta para implementação em entregas pequenas.
+- **Estado** — registro do Incremento 2. A confirmação explícita substitui as tentativas automáticas descritas nesta entrega. [Política atual](22-salvamento-manual.md).
 - **Objetivo** — preservar o texto durante falhas de rede e recuperar a sessão depois de trocar de aba ou dispositivo.
 - **Rastreabilidade** — MVP-01 (acesso privado), MVP-04 (histórico e estado), MVP-05, MVP-06 e MVP-07. Produto §§4.3 e 7. [Arquitetura](../ARCHITECTURE.md#salvamento-e-sincronização).
 
-## Entregas e critérios
+## Entregas e critérios originais
 
 | Ordem | ID | Cenário e critério verificável | Teste previsto |
 | --- | --- | --- | --- |
