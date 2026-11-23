@@ -71,3 +71,9 @@ export interface SearchFilters {
   campaigns: { id: string; name: string; archived: number }[]
   tags: DocumentTag[]
 }
+
+export interface CampaignRecap {
+  sessions: (SessionSummary & { excerpt: string })[]
+  entities: WikiSummary[]
+  notes: { id: string; title: string }[]
+}

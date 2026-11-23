@@ -67,3 +67,7 @@ textarea { resize: vertical; min-height: 5rem; }
   .editor-grid, .form-grid { grid-template-columns: minmax(0, 1fr); }
   .editor textarea { min-height: 40vh; }
 }
+
+.campaign-recap { display: grid; gap: 1rem; margin-top: 1rem; }
+.campaign-recap h3 { margin: 0 0 .4rem; overflow-wrap: anywhere; }
+.campaign-recap blockquote { margin: .25rem 0; padding-inline-start: .65rem; border-inline-start: 2px solid var(--border); white-space: pre-wrap; overflow-wrap: anywhere; }
