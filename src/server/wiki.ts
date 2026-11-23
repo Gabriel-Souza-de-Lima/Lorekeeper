@@ -102,6 +102,27 @@ export function registerWiki(app: FastifyInstance, db: Database.Database) {
     return details(params.campaignId, params.id.toLowerCase()) ??
       reply.code(404).send({ message: 'Página não encontrada.' })
   })
+  const updateTitle = db.prepare(`
+    UPDATE documents SET title = ?, updated_at = ?, version = version + 1
+    WHERE id = ? AND campaign_id = ?`)
+  const rename = db.transaction((campaignId: string, id: string, title: string, previousTitle: string) => {
+    const page = details(campaignId, id)
+    if (!page) return { status: 404, message: 'Página não encontrada.' }
+    if (campaign.get(campaignId)?.archivedAt) return { status: 409, message: 'Reative a campanha para renomear.' }
+    if (page.title === title) return { status: 200, page }
+    if (page.title !== previousTitle) return { status: 409, message: 'O título foi alterado. Consulte o título atual.' }
+    updateTitle.run(title, new Date().toISOString(), id, campaignId)
+    return { status: 200, page: { ...page, title } }
+  })
+  app.put<{ Params: Params & { id: string }; Body: { title: string; previousTitle: string } }>(`${path}/:id/title`, {
+    schema: { body: { type: 'object', required: ['title', 'previousTitle'], additionalProperties: false,
+      properties: { title: { type: 'string' }, previousTitle: { type: 'string' } } } },
+  }, ({ params, body }, reply) => {
+    const title = body.title.trim()
+    if (!title) return reply.code(400).send({ message: 'Informe o título da página.' })
+    const result = rename.immediate(params.campaignId, params.id.toLowerCase(), title, body.previousTitle)
+    return reply.code(result.status).send(result.page ?? { message: result.message })
+  })
   app.put<{ Params: Params & { id: string }; Body: { closed: boolean } }>(`${path}/:id/quest-state`, {
     schema: { body: { type: 'object', properties: { closed: { type: 'boolean' } }, required: ['closed'], additionalProperties: false } },
   }, ({ params, body }, reply) => {
