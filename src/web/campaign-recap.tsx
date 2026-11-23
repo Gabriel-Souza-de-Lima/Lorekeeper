@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react'
 import type { Campaign, CampaignRecap } from '../contracts.ts'
 import { api, displayDate } from './api.ts'
+import { PendingOverview } from './pending-items.tsx'
 import { WikiOverview } from './wiki-overview.tsx'
 
-export function CampaignResume({ campaign, busy, onSession, onWiki, onNote }: {
+export function CampaignResume({ campaign, busy, onSession, onWiki, onNote, onPending }: {
   campaign: Campaign
   busy: boolean
   onSession: (id: string) => void
   onWiki: (id: string) => void
+  onPending: (id?: string) => void
   onNote: (id: string) => void
 }) {
   const [data, setData] = useState<CampaignRecap | null>(null)
@@ -60,6 +62,7 @@ export function CampaignResume({ campaign, busy, onSession, onWiki, onNote }: {
         </li>)}</ul> : <p>Nenhuma anotação vinculada às sessões recentes.</p>}
       </section>
     </>}
+    <PendingOverview campaign={campaign} busy={busy} onOpen={onPending} />
     <WikiOverview campaign={campaign} busy={busy} onOpen={onWiki} />
   </section>
 }

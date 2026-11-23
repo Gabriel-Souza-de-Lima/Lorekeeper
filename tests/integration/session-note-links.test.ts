@@ -66,7 +66,7 @@ test('migration-preservation I3-02c: V4 preserva nota, sessão, revisão e compr
   legacy.close()
   const db = openDatabase(path)
   try {
-    assert.equal(db.pragma('user_version', { simple: true }), 9)
+    assert.equal(db.pragma('user_version', { simple: true }), 10)
     assert.deepEqual(snapshot(db), original)
     assert.deepEqual(db.pragma('integrity_check'), [{ integrity_check: 'ok' }])
   } finally {

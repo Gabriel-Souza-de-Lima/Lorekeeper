@@ -4,6 +4,7 @@ import staticFiles from '@fastify/static'
 import { campaignStatuses } from '../contracts.ts'
 import type { Campaign, CampaignFields, Session, SessionFields, SessionSummary } from '../contracts.ts'
 import { openDatabase } from './database.ts'
+import { registerPendingItems } from './pending-items.ts'
 import { registerCampaignRecap } from './campaign-recap.ts'
 import { registerSearch } from './search.ts'
 import { registerExport } from './export.ts'
@@ -318,6 +319,7 @@ export function createApp(database: string, webRoot?: string) {
   registerQuickNotes(app, db)
   registerWiki(app, db)
   registerCampaignRecap(app, db)
+  registerPendingItems(app, db)
   registerSearch(app, db)
   registerExport(app, db)
   registerDocumentTags(app, db)

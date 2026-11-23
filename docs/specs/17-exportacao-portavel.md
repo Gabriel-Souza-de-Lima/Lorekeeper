@@ -24,6 +24,7 @@ A API entrega o ZIP para download na rede privada com `Cache-Control: no-store`.
 | `campaigns`, `documents` | Identidades e metadados da campanha e do documento. O JSON inclui o corpo original e o estado de arquivamento da campanha. `campaign_id: null` identifica nota da caixa. |
 | `sessions`, `sessionRevisions` | Metadados da sessão e versões do texto, relacionadas por `document_id`. |
 | `links`, `tags`, `documentTags` | Vínculos direcionais com origem e associações de tags por IDs. |
+| `pendingItems`, `pendingItemEntities`, `pendingItemStates` | Pendências, entidades vinculadas e estados em ordem de gravação. Uma sessão na lixeira é representada com `session_id: null` no ZIP. O backup SQLite mantém o vínculo original. |
 
 ## Evidências de TDD
 
