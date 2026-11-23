@@ -6,6 +6,7 @@ import type { Session, WikiSummary } from '../contracts.ts'
 import { wikiMention, wikiReferenceId } from '../wiki-reference.ts'
 import { ConflictReview, RevisionHistory } from './session-review.tsx'
 import { useSessionDraft } from './use-session-draft.ts'
+import { SessionTemplates } from './session-templates.tsx'
 import { SessionWikiLinks } from './wiki-links.tsx'
 import { SessionNoteLinks } from './session-note-links.tsx'
 import { InlineWiki, inlineReference, type InlineReference } from './inline-wiki.tsx'
@@ -146,7 +147,14 @@ export function SessionEditor({ campaignName, campaignUrl, session, path, archiv
         <label>Participantes<input value={draft.participants} onChange={(e) => update('participants', e.target.value)} /></label>
       </fieldset>
       <div className="editor-grid">
-        <div className="panel editor"><label htmlFor="session-notes">Anotações</label><textarea id="session-notes" ref={notes} disabled={archived || !ready} value={draft.body}
+        <div className="panel editor">
+          {!archived && !created && <SessionTemplates body={draft.body} disabled={!ready || saving}
+            onApply={(body) => {
+              nextCaret.current = body.length
+              setReference(null)
+              update('body', body)
+            }} />}
+          <label htmlFor="session-notes">Anotações</label><textarea id="session-notes" ref={notes} disabled={archived || !ready} value={draft.body}
           placeholder="Registre o que aconteceu nesta sessão…"
           onChange={(event) => {
             update('body', event.currentTarget.value)
