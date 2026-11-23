@@ -3,6 +3,7 @@ import { expect, test } from '@playwright/test'
 import type { APIRequestContext, Page } from '@playwright/test'
 import type { Session } from '../../src/contracts.ts'
 import { createApp } from '../../src/server/app.ts'
+import { closeTestServer } from '../support/close-test-server.ts'
 
 async function seed(request: APIRequestContext, base: string) {
   const campaign = await (await request.post(`${base}/api/campaigns`, { data: { name: 'Farol' } })).json()
@@ -85,8 +86,7 @@ test('I2-05: mantém o rascunho em conflito e exige nova comparação se o servi
         await Promise.all([page.context().close(), other.close()])
       }, { timeout: 5000 })
     } finally {
-      app.server.closeAllConnections()
-      await test.step('Fechar o servidor do teste de conflito', () => app.close(), { timeout: 5000 })
+      await test.step('Fechar o servidor do teste de conflito', () => closeTestServer(app), { timeout: 5000 })
     }
   }
 })
@@ -125,6 +125,6 @@ test('I2-06: restaura título e texto em nova revisão, mantendo os metadados', 
     const revisions = await (await request.get(`${path}/revisions`)).json()
     expect(revisions.map(({ version }: { version: number }) => version)).toEqual([4, 3, 2, 1])
   } finally {
-    await app.close()
+    await test.step('Drenar conexões HTTP do teste de restauração', () => closeTestServer(app), { timeout: 5000 })
   }
 })
