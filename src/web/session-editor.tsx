@@ -7,6 +7,7 @@ import { ConflictReview, RevisionHistory } from './session-review.tsx'
 import { useSessionDraft } from './use-session-draft.ts'
 import { SessionWikiLinks } from './wiki-links.tsx'
 import { SessionNoteLinks } from './session-note-links.tsx'
+import { DocumentTags } from './document-tags.tsx'
 
 interface Props {
   campaignName: string
@@ -24,7 +25,7 @@ export function SessionEditor({ campaignName, campaignUrl, session, path, archiv
 
   const notes = useRef<HTMLTextAreaElement>(null)
   useLayoutEffect(() => {
-    if (ready && !archived) notes.current?.focus()
+    if (ready && !archived && document.activeElement === document.body) notes.current?.focus()
   }, [archived, ready])
 
   function leave(navigate: () => void) {
@@ -115,6 +116,7 @@ export function SessionEditor({ campaignName, campaignUrl, session, path, archiv
             }}>{draft.body}</Markdown>
         </section>
       </div>
+      <DocumentTags campaignUrl={campaignUrl} documentId={session.id} archived={archived} />
       <SessionWikiLinks sessionUrl={`${path}/${session.id}`} campaignUrl={campaignUrl} archived={archived}
         navigationBlocked={saving} version={editor.baseVersion} canInsert={ready && !archived}
         onInsert={insertMention} onOpen={(id) => leave(() => onOpenWiki(id))} />

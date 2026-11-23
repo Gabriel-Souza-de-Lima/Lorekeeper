@@ -28,7 +28,9 @@ A implementação começa após a revisão da [arquitetura](ARCHITECTURE.md) e d
 
 - Sessões e páginas da wiki permitem navegar por vínculos manuais nos dois sentidos. [Especificação](specs/12-vinculos-da-wiki.md)
 
-- Menções em Markdown de sessões atualizam os backlinks na gravação e ficam navegáveis na prévia. Tags e busca continuam pendentes. [Especificação](specs/13-mencoes-markdown.md)
+- Menções em Markdown de sessões atualizam os backlinks na gravação e ficam navegáveis na prévia. [Especificação](specs/13-mencoes-markdown.md)
+
+- Tags podem ser adicionadas e removidas em sessões, páginas da wiki e notas encaminhadas. A busca com filtros é a próxima entrega. [Especificação](specs/14-tags.md)
 
 ## Depois do MVP
 
