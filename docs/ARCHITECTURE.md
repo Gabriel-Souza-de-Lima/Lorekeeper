@@ -50,6 +50,8 @@ Os links escritos no Markdown apontam para IDs estáveis com rótulo legível. O
 
 ## Salvamento e sincronização
 
+Uma sessão nova começa como rascunho local com UUID estável. O primeiro **Salvar** cria o registro, a revisão inicial e o comprovante em transação. A lixeira usa marcação reversível e preserva documento, histórico e relações. Marcar ou restaurar avança a versão de concorrência sem criar revisão textual. [Controle de sessões](specs/21-controle-de-sessoes.md) · [Lixeira reversível](specs/23-lixeira-de-sessoes.md)
+
 1. O editor atualiza o texto em memória e persiste o rascunho no IndexedDB a cada alteração, com gravações ordenadas. A única indicação de rascunho local aparece após a confirmação do IndexedDB. A pequena janela anterior a essa confirmação pode perder caracteres em um fechamento abrupto.
 2. Ao acionar Salvar, o cliente envia os campos e a versão-base com um identificador de operação. Antes do envio, a operação fica registrada localmente com o conteúdo exato, separado de alterações posteriores. Há uma operação em trânsito por documento e uma geração local para impedir que uma confirmação antiga limpe um rascunho novo. Abas concorrentes mantêm rascunhos independentes.
 3. O servidor valida a versão em transação, grava a versão resultante, registra revisão textual quando título ou corpo muda, atualiza os vínculos e o índice e persiste a confirmação idempotente. Repetir a mesma operação após perda da resposta devolve a confirmação original. Reusar a chave com conteúdo diferente resulta em erro. A criação também verifica o UUID do documento. Uma operação antiga sem confirmação consultável exige reconciliação com a versão atual.

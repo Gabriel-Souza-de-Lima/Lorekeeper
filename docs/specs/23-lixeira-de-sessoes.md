@@ -19,3 +19,7 @@ A V9 adiciona a data da lixeira e uma visão de documentos ativos. O índice FTS
 - **Red** — a API retornou 404, a V9 estava ausente e o navegador não encontrou a ação Excluir sessão.
 - **Green** — testes verificam exclusão, restauração, exportação filtrada, busca, histórico e backup.
 - **Refactor** — a visão de documentos ativos centraliza o filtro para tags, busca e exportação, preservando as relações no banco.
+
+## Aceite e evidências automatizadas
+
+SC-04a a SC-04d estão aprovados na entrega do [PR #47](https://github.com/Gabriel-Souza-de-Lima/Lorekeeper/pull/47), com [CI pós-merge aprovado em 136906b](https://github.com/Gabriel-Souza-de-Lima/Lorekeeper/actions/runs/45199606694). O [E2E da lixeira](../../tests/e2e/session-trash.spec.ts) verifica confirmação e restauração na interface. A [integração SQLite](../../tests/integration/session-trash.test.ts) cobre filtros, relações, gravações pendentes, backup e os cenários de preservação, integridade e rollback da migração. O [relato manual](21-controle-de-sessoes.md#validação-manual-no-windows) confirma a exclusão e a restauração pelo navegador.
