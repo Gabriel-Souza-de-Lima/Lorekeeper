@@ -77,7 +77,7 @@ function snapshot(db: Database.Database) {
     .map((table) => {
     const columns = table === 'documents' ? 'id, campaign_id, type, title, body, version, created_at, updated_at'
       : table === 'campaigns' ? 'id, name, description, game_master, system, rules_version, notes, status, archived_at, created_at, updated_at'
-        : '*'
+        : table === 'sessions' ? 'document_id, session_date, fictional_date, participants, number' : '*'
     return db.prepare(`SELECT ${columns} FROM ${table} ORDER BY 1`).all()
   })
 }
@@ -101,7 +101,7 @@ test('migration-preservation I3-03c: V5 mantém todos os registros de V4', (t) =
   old.close()
   const db = openDatabase(path)
   try {
-    assert.equal(db.pragma('user_version', { simple: true }), 8)
+    assert.equal(db.pragma('user_version', { simple: true }), 9)
     assert.deepEqual(snapshot(db), before)
     assert.deepEqual(db.pragma('foreign_key_check'), [])
   } finally { db.close() }

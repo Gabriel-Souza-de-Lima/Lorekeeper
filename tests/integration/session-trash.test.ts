@@ -8,10 +8,14 @@ import Database from 'better-sqlite3'
 import { openDatabase } from '../../src/server/database.ts'
 import { test } from 'node:test'
 import { strFromU8, unzipSync } from 'fflate'
+import { copyDatabase } from '../../src/server/backup.ts'
 import { createApp } from '../../src/server/app.ts'
 
-test('SC-04a/b/c: lixeira filtra leituras ativas e restaura sessão sem perder relações', async () => {
-  const app = createApp(':memory:')
+test('SC-04a/b/c: lixeira filtra leituras ativas e restaura sessão sem perder relações', async (t) => {
+  const dir = mkdtempSync(join(tmpdir(), 'lorekeeper-trash-api-'))
+  t.after(() => rmSync(dir, { recursive: true, force: true }))
+  const source = join(dir, 'source.sqlite')
+  const app = createApp(source)
   try {
     async function campaign() {
       const { id } = (await app.inject({ method: 'POST', url: '/api/campaigns', payload: { name: 'Bruma' } })).json()
@@ -68,6 +72,17 @@ test('SC-04a/b/c: lixeira filtra leituras ativas e restaura sessão sem perder r
     assert.equal(exported.documentTags.some((row: { document_id: string }) => row.document_id === id), false)
     assert.equal(exported.links.some((row: { source_id: string; target_id: string }) => row.source_id === id || row.target_id === id), false)
     assert.equal((await read(`${foreign}/sessions`))[0].id, unaffected.id)
+
+    const backup = join(dir, 'backup.sqlite')
+    await copyDatabase(source, backup)
+    const replica = createApp(backup)
+    try {
+      assert.deepEqual((await replica.inject(`${base}/sessions`)).json(), [])
+      assert.equal((await replica.inject(`${base}/sessions?trashed=true`)).json()[0].id, id)
+    } finally { await replica.close() }
+    await app.inject({ method: 'PATCH', url: base, payload: { archived: true } })
+    assert.equal((await trash(false)).statusCode, 409)
+    await app.inject({ method: 'PATCH', url: base, payload: { archived: false } })
 
     assert.equal((await trash(false)).statusCode, 200)
     assert.equal((await read(path)).participants, 'Lia')

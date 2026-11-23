@@ -22,6 +22,7 @@ type View =
   | { page: 'new' }
   | { page: 'campaign' | 'edit'; campaign: Campaign }
   | { page: 'campaign-notes'; campaign: Campaign }
+  | { page: 'session-trash'; campaign: Campaign; rows: SessionSummary[] }
   | { page: 'wiki'; campaign: Campaign; initialPage?: WikiDetails }
   | { page: 'session'; campaign: Campaign; session: Session }
 
@@ -141,6 +142,19 @@ function App() {
     })
   }
 
+  function trashSession(campaign: Campaign, id: string, title: string) {
+    if (!window.confirm(`Mover a sessão “${title}” para a lixeira? Ela poderá ser restaurada.`)) return
+    void action(async () => {
+      await api(`${campaignPath}/${campaign.id}/sessions/${id}/trash`, 'PATCH', { trashed: true })
+      await openCampaign(campaign.id)
+    })
+  }
+
+  async function openTrash(campaign: Campaign) {
+    const rows = await api<SessionSummary[]>(`${campaignPath}/${campaign.id}/sessions?trashed=true`)
+    setView({ page: 'session-trash', campaign, rows })
+  }
+
   function campaignPage(campaign: Campaign) {
     const url = `${campaignPath}/${campaign.id}`
     const locked = Boolean(campaign.archivedAt)
@@ -165,6 +179,7 @@ function App() {
             <button disabled={working} onClick={() => { setError(''); setView({ page: 'wiki', campaign }) }}>
               Wiki da campanha
             </button>
+            <button disabled={working} onClick={() => void action(() => openTrash(campaign))}>Lixeira de sessões</button>
             {!locked && <button disabled={working} onClick={() => { setError(''); setView({ page: 'edit', campaign }) }}>
               Editar campanha
             </button>}
@@ -189,6 +204,8 @@ function App() {
             {sessions.map((session) => <li key={session.id} className="panel">
               <button className="quiet" disabled={working} onClick={() => openSession(session.id)}>{session.title}</button>
               <span>{session.number !== null && `Sessão ${session.number} · `}{displayDate(session.date)}</span>
+              {!locked && <button disabled={working} aria-label={`Excluir sessão ${session.title}`}
+                onClick={() => trashSession(campaign, session.id, session.title)}>Excluir sessão</button>}
             </li>)}
           </ul>
         </section>
@@ -236,6 +253,22 @@ function App() {
           setView({ page: 'session', campaign: view.campaign, session })
         })}
         onBack={() => void action(() => openCampaign(view.campaign.id))} />
+      case 'session-trash': return <>
+        <button className="quiet" disabled={working}
+          onClick={() => void action(() => openCampaign(view.campaign.id))}>Voltar à campanha</button>
+        <header className="page-header"><div>
+          <p className="context">{view.campaign.name}</p><h1>Lixeira de sessões</h1>
+        </div></header>
+        {view.rows.length === 0 && <p className="panel empty">Nenhuma sessão na lixeira.</p>}
+        {view.rows.length > 0 && <ul className="session-list">{view.rows.map((row) => <li key={row.id} className="panel">
+          <strong>{row.title}</strong><span>{displayDate(row.date)}</span>
+          {!view.campaign.archivedAt && <button disabled={working} aria-label={`Restaurar sessão ${row.title}`}
+            onClick={() => void action(async () => {
+              await api(`${campaignPath}/${view.campaign.id}/sessions/${row.id}/trash`, 'PATCH', { trashed: false })
+              await openTrash(view.campaign)
+            })}>Restaurar sessão</button>}
+        </li>)}</ul>}
+      </>
       case 'campaign-notes': return <CampaignNotes campaign={view.campaign}
         onBack={() => setView({ page: 'campaign', campaign: view.campaign })} />
       case 'session': return <SessionEditor key={view.session.id} campaignName={view.campaign.name}
@@ -243,6 +276,7 @@ function App() {
         session={view.session} archived={Boolean(view.campaign.archivedAt)}
         path={`${campaignPath}/${view.campaign.id}/sessions`}
         onOpenWiki={(id) => openWikiPage(view.campaign, id)}
+        onTrash={(id, title) => trashSession(view.campaign, id, title)}
         onBack={() => void action(() => openCampaign(view.campaign.id))} />
       case 'dashboard': return (
         <>
