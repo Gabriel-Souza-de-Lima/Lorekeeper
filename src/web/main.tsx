@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { createRoot } from 'react-dom/client'
-import type { Campaign, CampaignFields, CampaignStatus, Session, SessionSummary, WikiDetails } from '../contracts.ts'
+import type { Campaign, CampaignFields, CampaignStatus, Session, SessionSummary, WikiDetails, SearchResult } from '../contracts.ts'
 import { api, displayDate, localDate } from './api.ts'
-import { CampaignNotes } from './note-assignment.tsx'
+import { CampaignNotes, NoteList, type Note } from './note-assignment.tsx'
 import { QuickNotes } from './quick-notes.tsx'
+import { Search } from './search.tsx'
 import { SessionEditor } from './session-editor.tsx'
 import { WikiOverview } from './wiki-overview.tsx'
 import { Wiki } from './wiki.tsx'
@@ -15,6 +16,8 @@ const statusLabels: Record<CampaignStatus, string> = { active: 'Ativa', paused: 
 
 type View =
   | { page: 'dashboard' }
+  | { page: 'search' }
+  | { page: 'search-note'; note: Note; campaign: Campaign | null }
   | { page: 'quick-notes' }
   | { page: 'new' }
   | { page: 'campaign' | 'edit'; campaign: Campaign }
@@ -192,8 +195,36 @@ function App() {
     )
   }
 
+  function openSearchResult(result: SearchResult) {
+    void action(async () => {
+      const url = `${campaignPath}/${result.campaignId}`
+      const campaign = result.campaignId ? await api<Campaign>(url) : null
+      if (result.type === 'quick_note') {
+        const notes = await api<Note[]>(campaign ? `${url}/quick-notes` : '/api/quick-notes')
+        const note = notes.find((item) => item.id === result.id)
+        if (!note) throw new Error('Anotação não encontrada. Atualize a busca.')
+        setView({ page: 'search-note', note, campaign })
+      } else if (campaign && result.type === 'session') {
+        const session = await api<Session>(`${url}/sessions/${result.id}`)
+        setView({ page: 'session', campaign, session })
+      } else if (campaign) {
+        const initialPage = await api<WikiDetails>(`${url}/wiki/${result.id}`)
+        setView({ page: 'wiki', campaign, initialPage })
+      }
+    })
+  }
+
   function currentPage() {
     switch (view.page) {
+      case 'search': return <Search working={working} onBack={dashboard} onOpen={openSearchResult} />
+      case 'search-note': return <>
+        <button className="quiet" onClick={() => setView({ page: 'search' })}>Voltar à busca</button>
+        <header className="page-header"><div>
+          <p className="context">{view.campaign?.name ?? 'Caixa de entrada'}</p>
+          <h1>Anotação rápida</h1>
+        </div></header>
+        <NoteList items={[view.note]} />
+      </>
       case 'quick-notes': return <QuickNotes onBack={dashboard} />
       case 'new': return campaignForm()
       case 'edit': return campaignForm(view.campaign)
@@ -220,6 +251,7 @@ function App() {
               <button disabled={working} onClick={() => { setError(''); setView({ page: 'quick-notes' }) }}>
                 Anotações rápidas
               </button>
+              <button disabled={working} onClick={() => { setError(''); setView({ page: 'search' }) }}>Busca</button>
               <button className="primary" disabled={working} onClick={() => { setError(''); setView({ page: 'new' }) }}>
                 Nova campanha
               </button>
