@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { randomUUID } from 'node:crypto'
 import { mkdtempSync, readFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -96,4 +97,36 @@ test('I2-02: reenvio após reinício devolve o comprovante original sem repetir 
   assert.equal((await app.inject(url)).json().body, 'A ponte fechou')
   assert.deepEqual((await app.inject(`${url}/revisions`)).json()
     .map(({ version }: { version: number }) => version), [3, 2, 1])
+})
+
+test('SC-01: salva somente mudanças, separa versão de revisão textual e preserva reenvios', async () => {
+  const app = createApp(':memory:')
+  try {
+    const campaign = await app.inject({ method: 'POST', url: '/api/campaigns', payload: { name: 'Bruma' } })
+    const sessions = `/api/campaigns/${campaign.json().id}/sessions`
+    const created = await app.inject({ method: 'POST', url: sessions, payload: { date: '2026-11-03' } })
+    const { id, ...initial } = created.json()
+    const url = `${sessions}/${id}`
+    const write = (payload: object, operationId = randomUUID()) => app.inject({
+      method: 'PUT', url, payload, headers: { 'idempotency-key': operationId },
+    })
+    const readHistory = async () => (await app.inject(`${url}/revisions`)).json()
+    const noopKey = randomUUID()
+    const noop = await write(initial, noopKey)
+    assert.equal(noop.statusCode, 200)
+    assert.equal(noop.json().version, 1)
+    const metadata = { ...initial, participants: 'Lia', number: 3 }
+    const metadataKey = randomUUID()
+    const changed = await write(metadata, metadataKey)
+    assert.equal(changed.statusCode, 200)
+    assert.deepEqual(changed.json(), { id, ...metadata, version: 2 })
+    assert.deepEqual((await readHistory()).map(({ version }: { version: number }) => version), [1])
+    assert.equal((await write({ ...metadata, version: 2 })).json().version, 2)
+    assert.equal((await write(initial)).statusCode, 409)
+    const text = { ...metadata, title: 'A ponte', body: 'Encontramos o mapa.', version: 2 }
+    assert.equal((await write(text)).json().version, 3)
+    assert.deepEqual((await write(initial, noopKey)).json(), noop.json())
+    assert.deepEqual((await write(metadata, metadataKey)).json(), changed.json())
+    assert.deepEqual((await readHistory()).map(({ version }: { version: number }) => version), [3, 1])
+  } finally { await app.close() }
 })

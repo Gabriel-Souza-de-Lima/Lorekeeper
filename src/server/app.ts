@@ -170,7 +170,8 @@ export function createApp(database: string, webRoot?: string) {
     WHERE document_id = ? AND operation_id = ?`)
   const insertReceipt = db.prepare(`
     INSERT INTO session_save_receipts (document_id, operation_id, revision, request_hash, response_json)
-    VALUES (?, ?, ?, ?, ?)`)
+    SELECT @id, @operationId, MAX(version), @requestHash, @responseJson
+    FROM session_revisions WHERE document_id = @id`)
 
   function editability(campaignId: string) {
     const campaign = campaignState.get(campaignId)
@@ -189,7 +190,8 @@ export function createApp(database: string, webRoot?: string) {
   })
   const saveSession = db.transaction((params: SessionParams, draft: SaveDraft, operationId?: string) => {
     const { campaignId, sessionId: id } = params
-    if (!sessionExists.get(campaignId, id)) return { status: 404, message: 'Sessão não encontrada.' }
+    const current = selectSession.get(campaignId, id)
+    if (!current) return { status: 404, message: 'Sessão não encontrada.' }
     const requestHash = operationId ? hashDraft(draft) : null
     const receipt = operationId ? selectReceipt.get(id, operationId) : undefined
     if (receipt) {
@@ -197,14 +199,22 @@ export function createApp(database: string, webRoot?: string) {
       return { status: 200, session: JSON.parse(receipt.responseJson) as Session }
     }
     if (editability(campaignId) === 409) return { status: 409, message: 'Reative a campanha para editar.' }
-    const values = { ...draft, id, campaignId, now: new Date().toISOString() }
-    if (!updateDocument.run(values).changes) return { status: 409, message: 'A sessão foi alterada desde que você a abriu.' }
-    updateSession.run(values)
-    syncMarkdownLinks(id, campaignId, draft.body)
-    insertRevision.run(id)
-    const session = selectSession.get(campaignId, id)
-    if (!session) throw new Error('A sessão não pôde ser confirmada.')
-    if (operationId) insertReceipt.run(id, operationId, session.version, requestHash, JSON.stringify(session))
+    if (current.version !== draft.version) return { status: 409, message: 'A sessão foi alterada desde que você a abriu.' }
+    const textChanged = current.title !== draft.title || current.body !== draft.body
+    const metadataChanged = current.date !== draft.date || current.fictionalDate !== draft.fictionalDate ||
+      current.participants !== draft.participants || current.number !== draft.number
+    let session = current
+    if (textChanged || metadataChanged) {
+      const values = { ...draft, id, campaignId, now: new Date().toISOString() }
+      if (!updateDocument.run(values).changes) throw new Error('A sessão não pôde ser confirmada.')
+      if (metadataChanged) updateSession.run(values)
+      if (textChanged) {
+        syncMarkdownLinks(id, campaignId, draft.body)
+        insertRevision.run(id)
+      }
+      session = { id, ...draft, version: current.version + 1 }
+    }
+    if (operationId) insertReceipt.run({ id, operationId, requestHash, responseJson: JSON.stringify(session) })
     return { status: 200, session }
   })
 
