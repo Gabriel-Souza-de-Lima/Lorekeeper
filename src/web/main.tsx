@@ -252,6 +252,7 @@ function App() {
                 Anotações rápidas
               </button>
               <button disabled={working} onClick={() => { setError(''); setView({ page: 'search' }) }}>Busca</button>
+              <a className="quiet" href="/api/export" download>Exportar acervo</a>
               <button className="primary" disabled={working} onClick={() => { setError(''); setView({ page: 'new' }) }}>
                 Nova campanha
               </button>
