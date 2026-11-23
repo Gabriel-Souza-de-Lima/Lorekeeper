@@ -44,6 +44,8 @@ A implementação começa após a revisão da [arquitetura](ARCHITECTURE.md) e d
 
 - A CLI gera e recupera cópias externas criptografadas. A especificação define frequência diária e retenção. A configuração no host e o ensaio em volume externo real ficam para o piloto. [Especificação](specs/19-backup-externo.md)
 
+- O ensaio automatizado registra em tela estreita, restaura uma cópia criptografada e recupera a sessão pela busca em outro contexto. A execução nos dispositivos e no volume externo reais está pendente. [Roteiro do piloto](specs/20-piloto-responsivo.md)
+
 ## Depois do MVP
 
 1. **Offline e PWA.** Disponibilizar campanhas selecionadas no dispositivo, abrir o aplicativo sem rede, ampliar a fila para mais operações e evoluir a busca local. Validar cache, migrações com pendências, limites de armazenamento e atualização do service worker durante uma edição.
