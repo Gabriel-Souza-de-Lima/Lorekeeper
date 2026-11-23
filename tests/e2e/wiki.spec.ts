@@ -1,6 +1,7 @@
 import { resolve } from 'node:path'
 import { expect, test } from '@playwright/test'
 import { createApp } from '../../src/server/app.ts'
+import { closeTestServer } from '../support/close-test-server.ts'
 
 test('I3-03d: cadastra página da wiki e consulta após arquivar a campanha', async ({ page, request }) => {
   const app = createApp(':memory:', resolve('dist'))
@@ -35,5 +36,5 @@ test('I3-03d: cadastra página da wiki e consulta após arquivar a campanha', as
     await expect(page.getByRole('button', { name: 'Nova página' })).toHaveCount(0)
     await page.getByRole('button', { name: 'Guardião' }).click()
     await expect(page.getByRole('heading', { name: 'Guardião' })).toBeVisible()
-  } finally { await app.close() }
+  } finally { await closeTestServer(app) }
 })

@@ -3,6 +3,7 @@ import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { expect, test } from '@playwright/test'
 import { createApp } from '../../src/server/app.ts'
+import { closeTestServer } from '../support/close-test-server.ts'
 
 test('C01/C02/C03/S01/S02: gerencia campanha, escreve duas sessões e reabre após reiniciar', async ({ page }) => {
   const dir = mkdtempSync(join(tmpdir(), 'lorekeeper-browser-'))
@@ -52,7 +53,7 @@ test('C01/C02/C03/S01/S02: gerencia campanha, escreve duas sessões e reabre ap�
     await page.getByRole('button', { name: 'Arquivar campanha' }).click()
     await expect(page.getByRole('button', { name: 'Reativar campanha' })).toBeVisible()
 
-    await app.close()
+    await closeTestServer(app)
     app = createApp(db, resolve('dist'))
     await page.goto(await app.listen({ host: '127.0.0.1', port: 0 }))
     await page.getByRole('button', { name: 'Arquivadas' }).click()
@@ -69,7 +70,7 @@ test('C01/C02/C03/S01/S02: gerencia campanha, escreve duas sessões e reabre ap�
     await expect(newSession).toBeVisible()
     await expect(page.getByRole('listitem').getByRole('button', { name: 'Nova sessão', exact: true })).toHaveCount(1)
   } finally {
-    await app.close()
+    await closeTestServer(app)
     rmSync(dir, { recursive: true, force: true })
   }
 })

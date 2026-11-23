@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto'
 import { resolve } from 'node:path'
 import { expect, test } from '@playwright/test'
 import { createApp } from '../../src/server/app.ts'
+import { closeTestServer } from '../support/close-test-server.ts'
 
 test('I3-04a/b: opera missão e acessa destaque na visão geral', async ({ page, request }) => {
   const app = createApp(':memory:', resolve('dist'))
@@ -29,5 +30,5 @@ test('I3-04a/b: opera missão e acessa destaque na visão geral', async ({ page,
     const featured = page.getByRole('region', { name: 'Personagem em destaque' })
     await featured.getByRole('button', { name: 'Guia da Bruma' }).click()
     await expect(page.getByRole('heading', { name: 'Guia da Bruma' })).toBeVisible()
-  } finally { await app.close() }
+  } finally { await closeTestServer(app) }
 })
