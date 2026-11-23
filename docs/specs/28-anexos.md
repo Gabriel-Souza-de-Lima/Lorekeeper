@@ -1,6 +1,6 @@
 # P5 — Anexos de campanha
 
-**Estado.** Aprovado com ressalva na validação local do Windows.
+**Estado.** Aprovado na validação local do Windows e na regressão de abertura da sessão.
 
 ## Armazenamento e ciclo de vida
 
@@ -61,3 +61,15 @@ A CLI executou `backup` e `restore` sobre arquivos SQLite fictícios distintos. 
 Em outro SQLite temporário, a API rejeitou conteúdo inválido, extensão incompatível e nome com caminho (400). Rejeitou arquivo acima de 10 MiB (413), aceitou cinco PDFs fictícios de 10 MiB e rejeitou um arquivo adicional (413), mantendo cinco registros e 50 MiB.
 
 **Ressalva de navegação.** Em tentativas que iniciaram o upload logo após abrir a sessão, o ensaio não observou o POST do PDF e a lista ficou vazia. Na execução que aguardou a abertura do editor, a habilitação de Anotações e o fim do carregamento dos anexos, o POST retornou 201 e o download passou. A causa da primeira observação ficou sem confirmação. Os bancos operacionais, as chaves e o agendamento ficaram fora do ensaio. [Integração de anexos](../../tests/integration/attachments.test.ts) · [E2E de anexos](../../tests/e2e/attachments.spec.ts) · [Ambiente e regressão](24-retomar-campanha.md#ambiente-e-regressão-p1p5)
+
+### Regressão ao abrir uma sessão
+
+| Critério | Comportamento esperado | Verificação |
+| --- | --- | --- |
+| P5-01/04/07 | Ao abrir uma sessão, o formulário ainda montado da campanha fica indisponível durante a transição. O formulário da sessão permite o primeiro upload assim que os anexos estiverem carregados, com confirmação no documento correto. | E2E com respostas controladas, seleção de PDF, verificação do POST e download |
+
+Ao abrir uma sessão existente, a aplicação aguarda a leitura HTTP antes de trocar de tela. Durante essa espera, a seção de anexos ainda pertence à campanha. O ensaio anterior podia selecionar o PDF nesse formulário e encontrar um campo vazio no novo formulário após a troca. Sem arquivo no novo campo, a validação nativa impede o envio antes do manipulador e da leitura assíncrona. A investigação confirmou a janela de interação com o formulário anterior. O primeiro ensaio tinha instrumentação insuficiente para confirmar a sequência exata de eventos.
+
+- **Red** — com a resposta da sessão retida, o navegador encontrou o seletor da campanha habilitado depois do clique para abrir a sessão.
+- **Green** — a interação com o formulário da campanha fica bloqueada durante a navegação. Ao montar o editor, o formulário da sessão só aparece quando a leitura dos anexos termina. O teste controla as duas respostas, usa o primeiro seletor habilitado da sessão, confirma o POST 201 para o documento correto, verifica que a campanha continua sem anexos e baixa o PDF.
+- **Regressão** — os dois testes focados de anexos passaram em três repetições. A integração de P5-01 a P5-12 passou, incluindo exportação ZIP, restauração isolada, preservação de bytes e vínculos e rollback. O contrato e o esquema permanecem iguais. [E2E de anexos](../../tests/e2e/attachments.spec.ts) · [Integração de anexos](../../tests/integration/attachments.test.ts)

@@ -11,8 +11,8 @@ function encodeFile(file: File) {
   })
 }
 
-export function Attachments({ campaignUrl, documentId, archived }: {
-  campaignUrl: string; documentId?: string; archived: boolean
+export function Attachments({ campaignUrl, documentId, archived, navigationPending = false }: {
+  campaignUrl: string; documentId?: string; archived: boolean; navigationPending?: boolean
 }) {
   const path = `${campaignUrl}/attachments`
   const query = documentId ? `?documentId=${encodeURIComponent(documentId)}` : ''
@@ -24,6 +24,7 @@ export function Attachments({ campaignUrl, documentId, archived }: {
   const [loadFailed, setLoadFailed] = useState(false)
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
+  const blocked = busy || navigationPending
   const upload = useRef<{ id: string; file: File; source: string } | null>(null)
 
   useEffect(() => {
@@ -53,6 +54,7 @@ export function Attachments({ campaignUrl, documentId, archived }: {
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    if (blocked) return
     const form = event.currentTarget
     const input = new FormData(form)
     const file = input.get('file')
@@ -103,13 +105,13 @@ export function Attachments({ campaignUrl, documentId, archived }: {
               const name = new FormData(event.currentTarget).get('name')
               void action(async () => { await api(`${path}/${file.id}`, 'PATCH', { name }); setEditing(null) })
             }}>
-              <label>Nome de exibição<input name="name" defaultValue={file.name} required maxLength={150} disabled={busy} /></label>
-              <button disabled={busy}>Salvar nome</button>
-              <button disabled={busy} type="button" onClick={() => setEditing(null)}>Cancelar</button>
+              <label>Nome de exibição<input name="name" defaultValue={file.name} required maxLength={150} disabled={blocked} /></label>
+              <button disabled={blocked}>Salvar nome</button>
+              <button disabled={blocked} type="button" onClick={() => setEditing(null)}>Cancelar</button>
             </form> : <div className="actions">
-              <button type="button" disabled={busy} onClick={() => setEditing(file.id)}
+              <button type="button" disabled={blocked} onClick={() => setEditing(file.id)}
                 aria-label={`Renomear ${file.name}`}>Renomear</button>
-              <button type="button" disabled={busy} aria-label={`Remover vínculo de ${file.name}`} onClick={() => {
+              <button type="button" disabled={blocked} aria-label={`Remover vínculo de ${file.name}`} onClick={() => {
                 if (window.confirm(`Remover o vínculo com “${file.name}”?`)) void action(() => changeAssociation(file.id, false))
               }}>Remover vínculo</button>
             </div>)}
@@ -118,18 +120,18 @@ export function Attachments({ campaignUrl, documentId, archived }: {
       })}</ul>}
     {!archived && rows !== null && <>
       <form className="actions" onSubmit={submit}>
-        <label>Arquivo<input type="file" name="file" accept=".png,.pdf" required disabled={busy}
+        <label>Arquivo<input type="file" name="file" accept=".png,.pdf" required disabled={blocked}
           onChange={() => { upload.current = null }} /></label>
-        <label>Origem do anexo<input name="source" maxLength={500} disabled={busy} /></label>
-        <button disabled={busy}>{busy ? 'Aguarde…' : 'Enviar anexo'}</button>
+        <label>Origem do anexo<input name="source" maxLength={500} disabled={blocked} /></label>
+        <button disabled={blocked}>{busy ? 'Aguarde…' : 'Enviar anexo'}</button>
       </form>
       {available.length > 0 && <div className="actions">
-        <label>Arquivo existente<select value={selected} disabled={busy}
+        <label>Arquivo existente<select value={selected} disabled={blocked}
           onChange={(event) => setSelected(event.currentTarget.value)}>
           <option value="">Escolha um arquivo</option>
           {available.map((file) => <option value={file.id} key={file.id}>{file.name}</option>)}
         </select></label>
-        <button type="button" disabled={busy || !selected} onClick={() => void action(async () => {
+        <button type="button" disabled={blocked || !selected} onClick={() => void action(async () => {
           await changeAssociation(selected, true)
           setSelected('')
         })}>Vincular arquivo</button>

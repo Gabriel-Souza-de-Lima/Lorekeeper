@@ -23,6 +23,8 @@ A migração amplia o tipo de documento e permite campanha nula para anotações
 - I3-02a. A partir do painel, abrir Anotações rápidas, digitar sem escolher campanha, guardar e ver a nota na caixa de entrada. Ao reabrir a aplicação, a nota continua disponível.
 - I3-02b. Guardar o rascunho localmente antes do envio. Se a resposta se perder, reabrir o editor com o mesmo texto e repetir o mesmo UUID. O texto fica congelado até o servidor confirmar a captura. Uma segunda aba pode consultar a caixa, enquanto a primeira mantém a posse do rascunho.
 - I3-02c. Uma falha de armazenamento é visível e oferece download do texto. O editor indica quando a gravação permanece pendente.
+
+Na captura rápida, o rascunho e o UUID pendente ficam em `localStorage` e a posse entre abas é coordenada por Web Locks. O E2E de I3-02a/b verifica que a segunda aba fica bloqueada enquanto a primeira detém a trava. Após fechar a primeira aba, aguarda a liberação observável da trava antes de pedir para reabrir o editor. Depois confere o texto, o reenvio do mesmo UUID e a ausência de duplicatas.
 - A associação a campanhas ou sessões e a busca pertencem às etapas seguintes. O rascunho usa armazenamento local do navegador e uma trava por origem.
 
 ### Evidências de I3-02

@@ -27,7 +27,13 @@ test('I3-02a/b: reenvia o mesmo UUID ao reabrir a caixa após perder a resposta'
     await reopened.getByRole('button', { name: 'Anotações rápidas', exact: true }).click()
     await expect(reopened.getByText(/Outra aba está com o editor aberto/)).toBeVisible()
     await expect(reopened.getByRole('listitem')).toContainText(body)
+    const captureLocked = () => reopened.evaluate(async () => {
+      const { held } = await navigator.locks.query()
+      return held?.some(({ name }) => name === 'lorekeeper-draft:lorekeeper-quick-note-capture') ?? false
+    })
+    await expect.poll(captureLocked).toBe(true)
     await page.close()
+    await expect.poll(captureLocked).toBe(false)
     await reopened.getByRole('button', { name: 'Tentar abrir editor' }).click()
     await expect(reopened.getByLabel('Anotação', { exact: true })).toHaveValue(body)
     const retry = reopened.waitForRequest((request) => request.url() === api && request.method() === 'POST')
