@@ -92,27 +92,34 @@ test('I2-04: falha de armazenamento é visível e oferece download do texto', as
 test('I2-04: confirmação antiga preserva edição nova em outra geração', async ({ page, request }) => {
   const app = createApp(':memory:', resolve('dist'))
   const release = Promise.withResolvers<void>()
-  const firstSaved = Promise.withResolvers<void>()
+  const firstSaved = Promise.withResolvers<{ failure?: unknown }>()
   const attempts: { key: string; body: string; version: number }[] = []
   try {
     const base = await app.listen({ host: '127.0.0.1', port: 0 })
     const path = await seed(request, base)
     await page.goto(base)
     await page.getByRole('button', { name: 'Observatório' }).click()
-    await page.getByRole('button', { name: 'Nova sessão', exact: true }).last().click()
+    await page.getByRole('listitem').getByRole('button', { name: 'Nova sessão', exact: true }).click()
     await page.route(path, async (route) => {
       if (route.request().method() !== 'PUT') return route.continue()
       const { body, version } = route.request().postDataJSON()
       attempts.push({ key: route.request().headers()['idempotency-key'], body, version })
       if (attempts.length > 1) return route.continue()
-      const response = await route.fetch()
-      firstSaved.resolve()
+      const response = await route.fetch({ timeout: 5000 }).catch((failure: unknown) => {
+        firstSaved.resolve({ failure })
+        throw failure
+      })
+      if (!response.ok()) firstSaved.resolve({ failure: new Error(`A primeira gravação retornou HTTP ${response.status()}.`) })
+      else firstSaved.resolve({})
       await release.promise
       await route.fulfill({ response })
     })
     const notes = page.getByLabel('Anotações', { exact: true })
     await notes.fill('O farol acendeu.')
-    await firstSaved.promise
+    await test.step('Aguardar a primeira gravação chegar ao servidor', async () => {
+      const { failure } = await firstSaved.promise
+      if (failure) throw failure
+    }, { timeout: 6000 })
     await notes.fill('O farol acendeu e revelou a ponte.')
     release.resolve()
     await expect(page.getByRole('status')).toHaveText('Salvo no servidor')
@@ -125,7 +132,7 @@ test('I2-04: confirmação antiga preserva edição nova em outra geração', as
     expect(new Set(attempts.map(({ key }) => key)).size).toBe(2)
   } finally {
     release.resolve()
-    await closeTestServer(app)
+    await test.step('Drenar o servidor após confirmação atrasada', () => closeTestServer(app), { timeout: 5000 })
   }
 })
 
