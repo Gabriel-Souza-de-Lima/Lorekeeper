@@ -1,8 +1,7 @@
 import { resolve } from 'node:path'
 import { expect, test } from '@playwright/test'
 import type { APIRequestContext } from '@playwright/test'
-import { createApp } from '../../src/server/app.ts'
-import { closeTestServer } from '../support/close-test-server.ts'
+import { createE2EServer, finishE2EServer } from '../support/e2e-server.ts'
 
 async function seed(request: APIRequestContext, base: string) {
   const campaign = await (await request.post(`${base}/api/campaigns`, { data: { name: 'Observatório' } })).json()
@@ -12,7 +11,7 @@ async function seed(request: APIRequestContext, base: string) {
 }
 
 test('I2-03: recupera rascunho e reenvia o UUID após o servidor perder a resposta', async ({ page, context, request }) => {
-  const app = createApp(':memory:', resolve('dist'))
+  const app = createE2EServer(':memory:', resolve('dist'))
   try {
     const base = await app.listen({ host: '127.0.0.1', port: 0 })
     const path = await seed(request, base)
@@ -47,12 +46,12 @@ test('I2-03: recupera rascunho e reenvia o UUID após o servidor perder a respos
     const revisions = await (await request.get(`${path}/revisions`)).json()
     expect(revisions.map(({ version }: { version: number }) => version)).toEqual([2, 1])
   } finally {
-    await closeTestServer(app)
+    await finishE2EServer(app, [page.context()], request)
   }
 })
 
 test('I2-04: falha de armazenamento é visível e oferece download do texto', async ({ page, request }) => {
-  const app = createApp(':memory:', resolve('dist'))
+  const app = createE2EServer(':memory:', resolve('dist'))
   try {
     const base = await app.listen({ host: '127.0.0.1', port: 0 })
     await seed(request, base)
@@ -81,38 +80,41 @@ test('I2-04: falha de armazenamento é visível e oferece download do texto', as
     await expect(page.locator('html')).toHaveAttribute('data-downloaded-draft', 'Registro ainda disponível na aba.')
     await expect(page.getByLabel('Anotações', { exact: true })).toHaveValue('Registro ainda disponível na aba.')
   } finally {
-    try {
-      await page.close()
-    } finally {
-      await closeTestServer(app)
-    }
+    await finishE2EServer(app, [page.context()], request)
   }
 })
 
 test('I2-04: confirmação antiga preserva edição nova em outra geração', async ({ page, request }) => {
-  const app = createApp(':memory:', resolve('dist'))
+  const app = createE2EServer(':memory:', resolve('dist'))
   const release = Promise.withResolvers<void>()
-  const firstSaved = Promise.withResolvers<void>()
+  const firstSaved = Promise.withResolvers<{ failure?: unknown }>()
   const attempts: { key: string; body: string; version: number }[] = []
   try {
     const base = await app.listen({ host: '127.0.0.1', port: 0 })
     const path = await seed(request, base)
     await page.goto(base)
     await page.getByRole('button', { name: 'Observatório' }).click()
-    await page.getByRole('button', { name: 'Nova sessão', exact: true }).last().click()
+    await page.getByRole('listitem').getByRole('button', { name: 'Nova sessão', exact: true }).click()
     await page.route(path, async (route) => {
       if (route.request().method() !== 'PUT') return route.continue()
       const { body, version } = route.request().postDataJSON()
       attempts.push({ key: route.request().headers()['idempotency-key'], body, version })
       if (attempts.length > 1) return route.continue()
-      const response = await route.fetch()
-      firstSaved.resolve()
+      const response = await route.fetch({ timeout: 5000 }).catch((failure: unknown) => {
+        firstSaved.resolve({ failure })
+        throw failure
+      })
+      if (!response.ok()) firstSaved.resolve({ failure: new Error(`A primeira gravação retornou HTTP ${response.status()}.`) })
+      else firstSaved.resolve({})
       await release.promise
       await route.fulfill({ response })
     })
     const notes = page.getByLabel('Anotações', { exact: true })
     await notes.fill('O farol acendeu.')
-    await firstSaved.promise
+    await test.step('Aguardar a primeira gravação chegar ao servidor', async () => {
+      const { failure } = await firstSaved.promise
+      if (failure) throw failure
+    }, { timeout: 6000 })
     await notes.fill('O farol acendeu e revelou a ponte.')
     release.resolve()
     await expect(page.getByRole('status')).toHaveText('Salvo no servidor')
@@ -125,12 +127,12 @@ test('I2-04: confirmação antiga preserva edição nova em outra geração', as
     expect(new Set(attempts.map(({ key }) => key)).size).toBe(2)
   } finally {
     release.resolve()
-    await closeTestServer(app)
+    await finishE2EServer(app, [page.context()], request)
   }
 })
 
 test('I2-03: duas abas mantêm edições offline independentes e permitem recuperá-las', async ({ page, context, request }) => {
-  const app = createApp(':memory:', resolve('dist'))
+  const app = createE2EServer(':memory:', resolve('dist'))
   try {
     const base = await app.listen({ host: '127.0.0.1', port: 0 })
     await seed(request, base)
@@ -160,10 +162,6 @@ test('I2-03: duas abas mantêm edições offline independentes e permitem recupe
     await expect(reopened.getByRole('status')).toHaveText('Salvo no servidor')
     await expect(alternatives).toHaveCount(1)
   } finally {
-    try {
-      await test.step('Encerrar o contexto de abas de teste', () => context.close(), { timeout: 5000 })
-    } finally {
-      await test.step('Encerrar o servidor de teste', () => closeTestServer(app), { timeout: 5000 })
-    }
+    await finishE2EServer(app, [context], request)
   }
 })

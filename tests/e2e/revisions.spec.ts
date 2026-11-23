@@ -2,8 +2,7 @@ import { resolve } from 'node:path'
 import { expect, test } from '@playwright/test'
 import type { APIRequestContext, Page } from '@playwright/test'
 import type { Session } from '../../src/contracts.ts'
-import { createApp } from '../../src/server/app.ts'
-import { closeTestServer } from '../support/close-test-server.ts'
+import { createE2EServer, finishE2EServer } from '../support/e2e-server.ts'
 
 async function seed(request: APIRequestContext, base: string) {
   const campaign = await (await request.post(`${base}/api/campaigns`, { data: { name: 'Farol' } })).json()
@@ -22,7 +21,7 @@ async function openEditor(page: Page, base: string, sessionTitle = 'Nova sessão
 }
 
 test('I2-05: mantém o rascunho em conflito e exige nova comparação se o servidor mudar', async ({ page, browser, request }) => {
-  const app = createApp(':memory:', resolve('dist'))
+  const app = createE2EServer(':memory:', resolve('dist'))
   const other = await browser.newContext()
   try {
     const base = await app.listen({ host: '127.0.0.1', port: 0 })
@@ -81,18 +80,12 @@ test('I2-05: mantém o rascunho em conflito e exige nova comparação se o servi
     await expect(recovered).toHaveValue('A ponte leva à praça, onde está o mapa.')
     expect((await (await request.get(path)).json()).version).toBe(4)
   } finally {
-    try {
-      await test.step('Fechar os contextos do teste de conflito', async () => {
-        await Promise.all([page.context().close(), other.close()])
-      }, { timeout: 5000 })
-    } finally {
-      await test.step('Fechar o servidor do teste de conflito', () => closeTestServer(app), { timeout: 5000 })
-    }
+    await finishE2EServer(app, [page.context(), other], request)
   }
 })
 
 test('I2-06: restaura título e texto em nova revisão, mantendo os metadados', async ({ page, request }) => {
-  const app = createApp(':memory:', resolve('dist'))
+  const app = createE2EServer(':memory:', resolve('dist'))
   try {
     const base = await app.listen({ host: '127.0.0.1', port: 0 })
     const path = await seed(request, base)
@@ -125,6 +118,6 @@ test('I2-06: restaura título e texto em nova revisão, mantendo os metadados', 
     const revisions = await (await request.get(`${path}/revisions`)).json()
     expect(revisions.map(({ version }: { version: number }) => version)).toEqual([4, 3, 2, 1])
   } finally {
-    await test.step('Drenar conexões HTTP do teste de restauração', () => closeTestServer(app), { timeout: 5000 })
+    await finishE2EServer(app, [page.context()], request)
   }
 })

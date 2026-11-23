@@ -10,3 +10,22 @@ export async function closeTestServer(app: FastifyInstance) {
     clearInterval(reapIdle)
   }
 }
+
+export function monitorTestResponses(app: FastifyInstance) {
+  const pending = new Set<Promise<void>>()
+  app.server.prependListener('request', (_request, response) => {
+    const completion = Promise.withResolvers<void>()
+    pending.add(completion.promise)
+    function finish() {
+      response.off('finish', finish)
+      response.off('close', finish)
+      pending.delete(completion.promise)
+      completion.resolve()
+    }
+    response.once('finish', finish)
+    response.once('close', finish)
+  })
+  return async () => {
+    while (pending.size) await Promise.all([...pending])
+  }
+}

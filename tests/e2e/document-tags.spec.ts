@@ -1,11 +1,10 @@
 import { randomUUID } from 'node:crypto'
 import { resolve } from 'node:path'
 import { expect, test } from '@playwright/test'
-import { createApp } from '../../src/server/app.ts'
-import { closeTestServer } from '../support/close-test-server.ts'
+import { createE2EServer, finishE2EServer } from '../support/e2e-server.ts'
 
 test('I3-07d: adiciona uma tag, reabre a sessão e remove a associação', async ({ page, request }) => {
-  const app = createApp(':memory:', resolve('dist'))
+  const app = createE2EServer(':memory:', resolve('dist'))
   try {
     const origin = await app.listen({ host: '127.0.0.1', port: 0 })
     const response = await request.post(`${origin}/api/campaigns`, { data: { name: 'Bruma' } })
@@ -23,13 +22,12 @@ test('I3-07d: adiciona uma tag, reabre a sessão e remove a associação', async
     await panel.getByRole('button', { name: 'Remover tag Pista náutica' }).click()
     await expect(panel.getByText('Nenhuma tag.')).toBeVisible()
   } finally {
-    await page.close()
-    await closeTestServer(app)
+    await finishE2EServer(app, [page.context()], request)
   }
 })
 
 test('I3-07d: anotações e páginas da wiki compartilham tags e arquivamento preserva consulta', async ({ page, request }) => {
-  const app = createApp(':memory:', resolve('dist'))
+  const app = createE2EServer(':memory:', resolve('dist'))
   try {
     const origin = await app.listen({ host: '127.0.0.1', port: 0 })
     const campaign = await (await request.post(`${origin}/api/campaigns`, { data: { name: 'Bruma' } })).json()
@@ -63,7 +61,6 @@ test('I3-07d: anotações e páginas da wiki compartilham tags e arquivamento pr
     await expect(panel.getByRole('button', { name: /Remover/ })).toHaveCount(0)
     await expect(panel.getByLabel('Nome da tag')).toHaveCount(0)
   } finally {
-    await page.close()
-    await closeTestServer(app)
+    await finishE2EServer(app, [page.context()], request)
   }
 })

@@ -2,13 +2,13 @@ import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { expect, test } from '@playwright/test'
-import { createApp } from '../../src/server/app.ts'
 import { closeTestServer } from '../support/close-test-server.ts'
+import { createE2EServer, finishE2EServer } from '../support/e2e-server.ts'
 
 test('C01/C02/C03/S01/S02: gerencia campanha, escreve duas sessões e reabre após reiniciar', async ({ page }) => {
   const dir = mkdtempSync(join(tmpdir(), 'lorekeeper-browser-'))
   const db = join(dir, 'test.sqlite')
-  let app = createApp(db, resolve('dist'))
+  let app = createE2EServer(db, resolve('dist'))
   try {
     const url = await app.listen({ host: '127.0.0.1', port: 0 })
     await page.setViewportSize({ width: 390, height: 844 })
@@ -54,7 +54,7 @@ test('C01/C02/C03/S01/S02: gerencia campanha, escreve duas sessões e reabre ap�
     await expect(page.getByRole('button', { name: 'Reativar campanha' })).toBeVisible()
 
     await closeTestServer(app)
-    app = createApp(db, resolve('dist'))
+    app = createE2EServer(db, resolve('dist'))
     await page.goto(await app.listen({ host: '127.0.0.1', port: 0 }))
     await page.getByRole('button', { name: 'Arquivadas' }).click()
     await page.getByRole('button', { name: 'Costa da Bruma' }).click()
@@ -70,7 +70,7 @@ test('C01/C02/C03/S01/S02: gerencia campanha, escreve duas sessões e reabre ap�
     await expect(newSession).toBeVisible()
     await expect(page.getByRole('listitem').getByRole('button', { name: 'Nova sessão', exact: true })).toHaveCount(1)
   } finally {
-    await closeTestServer(app)
+    await finishE2EServer(app, [page.context()])
     rmSync(dir, { recursive: true, force: true })
   }
 })

@@ -1,11 +1,10 @@
 import { randomUUID } from 'node:crypto'
 import { resolve } from 'node:path'
 import { expect, test } from '@playwright/test'
-import { createApp } from '../../src/server/app.ts'
-import { closeTestServer } from '../support/close-test-server.ts'
+import { createE2EServer, finishE2EServer } from '../support/e2e-server.ts'
 
 test('I3-09c: renomeia a página e reencontra o destino pela menção, backlink e busca', async ({ page, request }) => {
-  const app = createApp(':memory:', resolve('dist'))
+  const app = createE2EServer(':memory:', resolve('dist'))
   try {
     const origin = await app.listen({ host: '127.0.0.1', port: 0 })
     const campaign = await (await request.post(`${origin}/api/campaigns`, { data: { name: 'Bruma' } })).json()
@@ -53,7 +52,6 @@ test('I3-09c: renomeia a página e reencontra o destino pela menção, backlink 
     await page.getByRole('button', { name: 'Cartógrafa da névoa', exact: true }).click()
     await expect(page.getByRole('heading', { name: 'Cartógrafa da névoa' })).toBeVisible()
   } finally {
-    await page.close()
-    await closeTestServer(app)
+    await finishE2EServer(app, [page.context()], request)
   }
 })
