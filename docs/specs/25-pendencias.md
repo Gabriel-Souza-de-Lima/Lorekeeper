@@ -1,6 +1,6 @@
 # P2 — Pendências e pistas
 
-- **Estado** — implementado após a validação de P1.
+- **Estado** — aprovado na validação local do Windows.
 - **Objetivo** — acompanhar perguntas, pistas, promessas e tarefas sem alterar o modelo de missões.
 - **Rastreabilidade** — Pós-MVP P2 e produto §4.10.
 
@@ -39,4 +39,10 @@ A migração V10 cria `pending_items`, `pending_item_entities` e `pending_item_s
 - **Red** — a rota ainda retornava 404, a migração V10 não existia, o ZIP não incluía as novas coleções e o navegador não encontrava a ação de pendências.
 - **Green** — os testes verificam o cadastro, o isolamento, o histórico, a navegação e as coleções no ZIP.
 - **Refactor** — a leitura de detalhes usa uma transação e o painel usa o mesmo endpoint da consulta contextual, com filtro de estados ativos.
+
+## Validação local no Windows
+
+Revisão `523a5f8`. [PR #50](https://github.com/Gabriel-Souza-de-Lima/Lorekeeper/pull/50) · [CI pós-merge aprovado](https://github.com/Gabriel-Souza-de-Lima/Lorekeeper/actions/runs/45240842135)
+
+**Aprovado (P2-01 a P2-08).** A navegação criou pista, pergunta, promessa e tarefa, com sessão de origem e NPC, e exibiu os vínculos. A pista passou por **Em investigação** e **Resolvida**, com histórico. A retomada mostrou registros abertos e a listagem geral manteve a pista resolvida. A API rejeitou vínculo externo com 404 e transição concorrente com 409. Após reinício do servidor sobre o mesmo SQLite temporário, a leitura da pendência devolveu os mesmos dados e histórico. Exportação, restauração, isolamento e migração foram exercitados pela integração. A interface permite atualizar o estado; a edição posterior de título, descrição, origem, observações e vínculos está fora do fluxo implementado. [Integração](../../tests/integration/pending-items.test.ts) · [E2E](../../tests/e2e/pending-items.spec.ts)
 

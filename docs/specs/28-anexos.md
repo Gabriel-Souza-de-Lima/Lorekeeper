@@ -1,6 +1,6 @@
 # P5 — Anexos de campanha
 
-**Estado.** Implementação em revisão como incremento independente.
+**Estado.** Aprovado com ressalva na validação local do Windows.
 
 ## Armazenamento e ciclo de vida
 
@@ -49,3 +49,15 @@ O backup SQLite mantém associações removidas e anexos sem vínculos. O ensaio
 ## Limitações
 
 A primeira versão aceita PNG e PDF. A remoção de vínculo conserva os bytes no acervo e conta para o limite de 50 MiB. A remoção definitiva e a importação de ZIP permanecem fora desta etapa.
+
+## Validação local no Windows
+
+Revisão `523a5f8`. [PR #53](https://github.com/Gabriel-Souza-de-Lima/Lorekeeper/pull/53) · [CI pós-merge aprovado](https://github.com/Gabriel-Souza-de-Lima/Lorekeeper/actions/runs/45246088986)
+
+**P5-01 a P5-12 exercitados.** Na instância isolada, o Chromium enviou e exibiu o PNG da campanha, renomeou-o e baixou o PDF anexado à sessão. O mesmo PNG permaneceu associado à campanha após desvinculação da sessão e pôde ser reassociado. A consulta de bytes pela outra campanha retornou 404. Após reiniciar o servidor, os dois arquivos continuaram acessíveis. O ZIP continha os binários, hashes e associações correspondentes.
+
+A CLI executou `backup` e `restore` sobre arquivos SQLite fictícios distintos. No restaurado, `integrity_check` retornou `ok` e `foreign_key_check` ficou vazio. A API da instância restaurada devolveu PNG e PDF com SHA-256 idêntico ao dos originais e os vínculos esperados. A integração também exercitou rollback entre a gravação dos bytes e a criação do vínculo.
+
+Em outro SQLite temporário, a API rejeitou conteúdo inválido, extensão incompatível e nome com caminho (400). Rejeitou arquivo acima de 10 MiB (413), aceitou cinco PDFs fictícios de 10 MiB e rejeitou um arquivo adicional (413), mantendo cinco registros e 50 MiB.
+
+**Ressalva de navegação.** Em tentativas que iniciaram o upload logo após abrir a sessão, o ensaio não observou o POST do PDF e a lista ficou vazia. Na execução que aguardou a abertura do editor, a habilitação de Anotações e o fim do carregamento dos anexos, o POST retornou 201 e o download passou. A causa da primeira observação ficou sem confirmação. Os bancos operacionais, as chaves e o agendamento ficaram fora do ensaio. [Integração de anexos](../../tests/integration/attachments.test.ts) · [E2E de anexos](../../tests/e2e/attachments.spec.ts) · [Ambiente e regressão](24-retomar-campanha.md#ambiente-e-regressão-p1p5)

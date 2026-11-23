@@ -1,6 +1,6 @@
 # P1 — Retomar campanha
 
-- **Estado** — implementada, com CI remoto pendente.
+- **Estado** — aprovada na validação local do Windows.
 - **Objetivo** — recuperar o contexto registrado ao voltar a uma campanha.
 - **Rastreabilidade** — Pós-MVP P1 e produto §§4.3, 4.5 e 4.10.
 
@@ -25,3 +25,15 @@ Em caso de falha de rede, o painel oferece nova consulta. As pistas estruturadas
 - **Red** — a consulta retornou 404 e o painel não existia no navegador.
 - **Green** — a integração confirmou trecho, vínculos, isolamento e lixeira. O E2E navegou por uma campanha a 320 px.
 - **Refactor** — consultas ficam em uma transação de leitura; a interface reaproveita missões abertas e confere recuperação de falha de rede.
+
+## Validação local no Windows
+
+Revisão `523a5f8`. [PR #49](https://github.com/Gabriel-Souza-de-Lima/Lorekeeper/pull/49) · [CI pós-merge aprovado](https://github.com/Gabriel-Souza-de-Lima/Lorekeeper/actions/runs/45238444663)
+
+**Aprovado (P1-01 a P1-07).** No Chromium a 320 px, a campanha vazia mostrou o estado esperado. Três sessões em SQLite em disco apareceram em ordem cronológica inversa com seus trechos. NPC, localidade e missão abriram os respectivos documentos. O trecho mudou apenas após **Salvar** e a sessão deixou o painel ao ir para a lixeira, voltando após restauração. A campanha de controle ficou isolada e a largura do documento permaneceu em 320 px. O painel é uma leitura do SQLite, sem estado próprio a persistir. [Integração](../../tests/integration/campaign-recap.test.ts) · [E2E](../../tests/e2e/campaign-recap.spec.ts)
+
+### Ambiente e regressão P1–P5
+
+O checkout Windows estava limpo na `main` em `523a5f8`, igual à referência remota. Node.js `24.22.3` e npm `11.19.1`. `npm run build` gerou `index-jcdjAc2l.js`, recebido pelo Chromium na instância isolada e conferido byte a byte com `dist/`. A porta 3000 já servia o mesmo bundle e respondeu como a instância isolada à consulta de anexos de uma campanha fictícia inexistente. A instância normal ficou em execução; os ensaios usaram `LOREKEEPER_DB_PATH` em diretórios temporários e portas próprias.
+
+`npm run lint` e `npm run typecheck` passaram. `npm run test:unit` aprovou 2 testes e `npm run test:integration` aprovou 57. Na primeira execução de `npm run test:e2e`, 29 passaram e 1 falhou em [I3-02a/b](../../tests/e2e/quick-notes.spec.ts), ao tentar reabrir o editor de anotações após perda simulada da resposta e fechamento da outra aba. O campo esperado não apareceu em 5 segundos. O arquivo passou 9/9 em três repetições com um worker, e a suíte completa passou 30/30 com `npm exec -- playwright test --workers=1`. Nenhum teste foi ignorado. A falha foi intermitente e sua causa ficou sem confirmação. A navegação complementar foi automatizada em Chromium real via Playwright; não houve ensaio humano nesta atualização.
