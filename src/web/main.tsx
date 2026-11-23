@@ -1,3 +1,4 @@
+import { Attachments } from './attachments.tsx'
 import { PendingItems } from './pending-items.tsx'
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
@@ -200,6 +201,7 @@ function App() {
           onWiki={(id) => openWikiPage(campaign, id)}
           onPending={(itemId) => setView({ page: 'pending-items', campaign, itemId })}
           onNote={(noteId) => setView({ page: 'campaign-notes', campaign, noteId })} />
+        <Attachments key={url} campaignUrl={url} archived={locked} />
         <section>
           <header className="page-header"><h2>Sessões</h2>
             {!locked && <button className="primary" disabled={working} onClick={() => openSession()}>Nova sessão</button>}

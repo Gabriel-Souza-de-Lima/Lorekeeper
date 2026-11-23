@@ -1,3 +1,4 @@
+import { Attachments } from './attachments.tsx'
 import { Fragment, useEffect, useState, type FormEvent } from 'react'
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
@@ -153,6 +154,7 @@ export function Wiki({ campaign, initialPage, onOpenSession, onBack }: {
     <div className="panel preview"><Markdown skipHtml remarkPlugins={[remarkGfm]}
       components={{ ...markdownLayout, img: ({ alt }) => <span>{alt}</span> }}>{page.body}</Markdown></div>
     <Fragment key={page.id}>
+      <Attachments campaignUrl={`/api/campaigns/${campaign.id}`} documentId={page.id} archived={Boolean(campaign.archivedAt)} />
       <DocumentTags campaignUrl={`/api/campaigns/${campaign.id}`} documentId={page.id} archived={Boolean(campaign.archivedAt)} />
       <WikiBacklinks url={`${url}/${page.id}/backlinks`} busy={busy || title !== null} onOpen={onOpenSession} />
     </Fragment>

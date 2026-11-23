@@ -89,7 +89,7 @@ function v9(t: TestContext, collision = false) {
 test('migration-preservation P2: V10 preserva a campanha de V9', (t) => {
   const db = openDatabase(v9(t))
   try {
-    assert.equal(db.pragma('user_version', { simple: true }), 10)
+    assert.equal(db.pragma('user_version', { simple: true }), 11)
     assert.equal(db.prepare('SELECT name FROM campaigns').pluck().get(), 'Bruma')
     assert.equal(db.prepare('SELECT count(*) FROM pending_items').pluck().get(), 0)
   } finally { db.close() }

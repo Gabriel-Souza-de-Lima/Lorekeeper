@@ -99,3 +99,16 @@ export interface PendingItem extends PendingItemSummary {
   updatedAt: string
   history: { state: PendingState; createdAt: string }[]
 }
+
+export const maxAttachmentBytes = 10 * 1024 * 1024
+
+export type Attachment = {
+  id: string
+  name: string
+  filename: string
+  source: string
+  mime: 'image/png' | 'application/pdf'
+  size: number
+  sha256: string
+  createdAt: string
+}
