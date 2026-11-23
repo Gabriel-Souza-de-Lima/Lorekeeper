@@ -51,6 +51,7 @@ textarea { resize: vertical; min-height: 5rem; }
 .editor textarea { min-height: 55vh; font: .96rem/1.55 ui-monospace, monospace; }
 .preview { min-height: 10rem; overflow-x: auto; overflow-wrap: anywhere; }
 .preview a { color: var(--accent); }
+.markdown-scroll { max-width: 100%; overflow-x: auto; }
 .preview table { border-collapse: collapse; }
 .preview td, .preview th { border: 1px solid var(--border); padding: .3rem .55rem; }
 .preview input { width: auto; }

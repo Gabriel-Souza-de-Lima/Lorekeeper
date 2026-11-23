@@ -1,6 +1,7 @@
 import { useLayoutEffect, useRef } from 'react'
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import { markdownLayout } from './markdown-layout.tsx'
 import type { Session, WikiSummary } from '../contracts.ts'
 import { wikiMention, wikiReferenceId } from '../wiki-reference.ts'
 import { ConflictReview, RevisionHistory } from './session-review.tsx'
@@ -106,6 +107,7 @@ export function SessionEditor({ campaignName, campaignUrl, session, path, archiv
           <p className="context">Prévia Markdown</p>
           <Markdown skipHtml remarkPlugins={[remarkGfm]}
             components={{
+              ...markdownLayout,
               img: ({ alt }) => <span>{alt}</span>,
               a: ({ href, title, children }) => {
                 const id = wikiReferenceId(href ?? '')

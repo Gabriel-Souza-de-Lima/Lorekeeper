@@ -1,6 +1,7 @@
 import { Fragment, useEffect, useState, type FormEvent } from 'react'
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import { markdownLayout } from './markdown-layout.tsx'
 import { wikiTypes, type Campaign, type WikiDetails, type WikiPage, type WikiSummary, type WikiType } from '../contracts.ts'
 import { WikiBacklinks } from './wiki-links.tsx'
 import { DocumentTags } from './document-tags.tsx'
@@ -150,7 +151,7 @@ export function Wiki({ campaign, initialPage, onOpenSession, onBack }: {
       </button>}
     {feedback}
     <div className="panel preview"><Markdown skipHtml remarkPlugins={[remarkGfm]}
-      components={{ img: ({ alt }) => <span>{alt}</span> }}>{page.body}</Markdown></div>
+      components={{ ...markdownLayout, img: ({ alt }) => <span>{alt}</span> }}>{page.body}</Markdown></div>
     <Fragment key={page.id}>
       <DocumentTags campaignUrl={`/api/campaigns/${campaign.id}`} documentId={page.id} archived={Boolean(campaign.archivedAt)} />
       <WikiBacklinks url={`${url}/${page.id}/backlinks`} busy={busy || title !== null} onOpen={onOpenSession} />
