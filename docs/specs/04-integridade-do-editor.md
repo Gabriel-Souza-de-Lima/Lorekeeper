@@ -72,3 +72,5 @@ O ensaio de acesso HTTPS privado em dispositivos reais (I2-07) permanece pendent
 Após a restauração e a confirmação do histórico, o servidor de teste deve parar de aceitar conexões, concluir respostas HTTP em andamento e recolher as conexões persistentes quando ficarem ociosas. O teste de integração usa uma requisição em andamento para verificar a entrega integral da resposta e o término do servidor.
 
 **Red → Green → Refactor.** Com apenas `app.close()`, a reprodução entregou a resposta, mas manteve aberta a conexão que ficou ociosa depois do início do fechamento. Com a drenagem compartilhada, a resposta continuou íntegra e o servidor fechou sem esperar o keep-alive. I2-05 e I2-06 usam o mesmo procedimento no encerramento.
+
+Todos os cenários E2E que iniciam Fastify usam a drenagem compartilhada, inclusive quando o cenário reinicia o servidor. Ela preserva respostas ativas e evita que uma conexão HTTP já ociosa bloqueie o fechamento.

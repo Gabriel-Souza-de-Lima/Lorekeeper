@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto'
 import { resolve } from 'node:path'
 import { expect, test } from '@playwright/test'
 import { createApp } from '../../src/server/app.ts'
+import { closeTestServer } from '../support/close-test-server.ts'
 
 test('I3-05c: vincula página no editor e retorna pelo backlink', async ({ page, request }) => {
   const app = createApp(':memory:', resolve('dist'))
@@ -23,5 +24,5 @@ test('I3-05c: vincula página no editor e retorna pelo backlink', async ({ page,
     await page.getByRole('region', { name: 'Sessões relacionadas' }).getByRole('button', { name: 'Nova sessão' }).click()
     await expect(page.getByRole('heading', { name: 'Editor de sessão' })).toBeVisible()
     await expect(wiki.getByRole('button', { name: 'Guia do farol' })).toBeVisible()
-  } finally { await app.close() }
+  } finally { await closeTestServer(app) }
 })

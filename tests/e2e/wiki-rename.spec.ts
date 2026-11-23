@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto'
 import { resolve } from 'node:path'
 import { expect, test } from '@playwright/test'
 import { createApp } from '../../src/server/app.ts'
+import { closeTestServer } from '../support/close-test-server.ts'
 
 test('I3-09c: renomeia a página e reencontra o destino pela menção, backlink e busca', async ({ page, request }) => {
   const app = createApp(':memory:', resolve('dist'))
@@ -53,7 +54,6 @@ test('I3-09c: renomeia a página e reencontra o destino pela menção, backlink 
     await expect(page.getByRole('heading', { name: 'Cartógrafa da névoa' })).toBeVisible()
   } finally {
     await page.close()
-    app.server.closeAllConnections()
-    await app.close()
+    await closeTestServer(app)
   }
 })

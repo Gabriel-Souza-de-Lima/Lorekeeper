@@ -2,6 +2,7 @@ import { resolve } from 'node:path'
 import { expect, test } from '@playwright/test'
 import type { APIRequestContext } from '@playwright/test'
 import { createApp } from '../../src/server/app.ts'
+import { closeTestServer } from '../support/close-test-server.ts'
 
 async function seed(request: APIRequestContext, base: string) {
   const campaign = await (await request.post(`${base}/api/campaigns`, { data: { name: 'Observatório' } })).json()
@@ -46,7 +47,7 @@ test('I2-03: recupera rascunho e reenvia o UUID após o servidor perder a respos
     const revisions = await (await request.get(`${path}/revisions`)).json()
     expect(revisions.map(({ version }: { version: number }) => version)).toEqual([2, 1])
   } finally {
-    await app.close()
+    await closeTestServer(app)
   }
 })
 
@@ -83,8 +84,7 @@ test('I2-04: falha de armazenamento é visível e oferece download do texto', as
     try {
       await page.close()
     } finally {
-      app.server.closeAllConnections()
-      await app.close()
+      await closeTestServer(app)
     }
   }
 })
@@ -125,7 +125,7 @@ test('I2-04: confirmação antiga preserva edição nova em outra geração', as
     expect(new Set(attempts.map(({ key }) => key)).size).toBe(2)
   } finally {
     release.resolve()
-    await app.close()
+    await closeTestServer(app)
   }
 })
 
@@ -163,8 +163,7 @@ test('I2-03: duas abas mantêm edições offline independentes e permitem recupe
     try {
       await test.step('Encerrar o contexto de abas de teste', () => context.close(), { timeout: 5000 })
     } finally {
-      app.server.closeAllConnections()
-      await test.step('Encerrar o servidor de teste', () => app.close(), { timeout: 5000 })
+      await test.step('Encerrar o servidor de teste', () => closeTestServer(app), { timeout: 5000 })
     }
   }
 })

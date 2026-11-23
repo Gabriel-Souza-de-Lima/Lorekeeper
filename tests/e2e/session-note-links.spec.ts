@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto'
 import { resolve } from 'node:path'
 import { expect, test } from '@playwright/test'
 import { createApp } from '../../src/server/app.ts'
+import { closeTestServer } from '../support/close-test-server.ts'
 
 test('I3-02d/e: vincula e remove notas no editor, recupera resposta perdida e respeita arquivamento', async ({ page, request }) => {
   const app = createApp(':memory:', resolve('dist'))
@@ -56,6 +57,6 @@ test('I3-02d/e: vincula e remove notas no editor, recupera resposta perdida e re
     await expect(picker).toHaveCount(0)
     await expect(panel.getByRole('button', { name: /Remover vínculo/ })).toHaveCount(0)
   } finally {
-    await app.close()
+    await closeTestServer(app)
   }
 })

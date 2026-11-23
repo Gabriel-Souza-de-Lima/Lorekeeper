@@ -1,6 +1,7 @@
 import { resolve } from 'node:path'
 import { expect, test } from '@playwright/test'
 import { createApp } from '../../src/server/app.ts'
+import { closeTestServer } from '../support/close-test-server.ts'
 
 test('I3-08d: filtra pela tag e abre a sessão encontrada', async ({ page, request }) => {
   const app = createApp(':memory:', resolve('dist'))
@@ -26,7 +27,6 @@ test('I3-08d: filtra pela tag e abre a sessão encontrada', async ({ page, reque
     await expect(page.getByLabel('Anotações', { exact: true })).toHaveValue('A bússola apontou para o norte.')
   } finally {
     await page.close()
-    app.server.closeAllConnections()
-    await app.close()
+    await closeTestServer(app)
   }
 })

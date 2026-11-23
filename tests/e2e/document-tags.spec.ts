@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto'
 import { resolve } from 'node:path'
 import { expect, test } from '@playwright/test'
 import { createApp } from '../../src/server/app.ts'
+import { closeTestServer } from '../support/close-test-server.ts'
 
 test('I3-07d: adiciona uma tag, reabre a sessão e remove a associação', async ({ page, request }) => {
   const app = createApp(':memory:', resolve('dist'))
@@ -23,8 +24,7 @@ test('I3-07d: adiciona uma tag, reabre a sessão e remove a associação', async
     await expect(panel.getByText('Nenhuma tag.')).toBeVisible()
   } finally {
     await page.close()
-    app.server.closeAllConnections()
-    await app.close()
+    await closeTestServer(app)
   }
 })
 
@@ -64,7 +64,6 @@ test('I3-07d: anotações e páginas da wiki compartilham tags e arquivamento pr
     await expect(panel.getByLabel('Nome da tag')).toHaveCount(0)
   } finally {
     await page.close()
-    app.server.closeAllConnections()
-    await app.close()
+    await closeTestServer(app)
   }
 })
