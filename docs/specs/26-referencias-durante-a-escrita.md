@@ -31,3 +31,9 @@ A criação exige ação explícita, título e categoria. Usa `POST /api/campaig
 - **Refactor** — a busca normaliza o catálogo uma vez por atualização e filtra em memória. O fluxo reaproveita a serialização de vínculos e o rascunho existentes.
 
 O catálogo é carregado ao usar a referência pela primeira vez na sessão do editor. Alterações feitas em outro dispositivo aparecem ao reabrir o editor. Referências que ficarem como texto literal não entram no índice como vínculos.
+
+## Validação local no Windows
+
+Revisão `523a5f8`. [PR #51](https://github.com/Gabriel-Souza-de-Lima/Lorekeeper/pull/51) · [CI pós-merge aprovado](https://github.com/Gabriel-Souza-de-Lima/Lorekeeper/actions/runs/45242921046)
+
+**Aprovado (P3-01 a P3-10).** No Chromium, `[[` abriu o seletor, a busca sem acento mostrou homônimos e a categoria permitiu escolher o NPC. O ensaio preservou o texto antes e depois da referência, cancelou uma criação sem gravar página, preservou foco com Escape e fechou uma referência incompleta ao trocar de linha. A localidade com acento e asteriscos foi criada na wiki e a sessão permaneceu ausente até **Salvar**. A referência por UUID abriu o destino renomeado, e a filtragem após carregar o catálogo emitiu zero consultas adicionais. O fluxo combinado com P4 recuperou o Markdown do IndexedDB e confirmou uma única revisão inicial. O E2E existente de menções cobre a compatibilidade Markdown e a atualização transacional da busca e dos backlinks. [Referências inline](../../tests/e2e/inline-wiki.spec.ts) · [Menções Markdown](../../tests/e2e/markdown-links.spec.ts)
