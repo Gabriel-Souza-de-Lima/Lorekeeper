@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef } from 'react'
+import { useLayoutEffect, useRef, useState } from 'react'
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { markdownLayout } from './markdown-layout.tsx'
@@ -8,6 +8,7 @@ import { ConflictReview, RevisionHistory } from './session-review.tsx'
 import { useSessionDraft } from './use-session-draft.ts'
 import { SessionWikiLinks } from './wiki-links.tsx'
 import { SessionNoteLinks } from './session-note-links.tsx'
+import { InlineWiki, inlineReference, type InlineReference } from './inline-wiki.tsx'
 import { DocumentTags } from './document-tags.tsx'
 
 interface Props {
@@ -26,6 +27,16 @@ export function SessionEditor({ campaignName, campaignUrl, session, path, archiv
   const { draft, documentId, created, ready, dirty, locallySaved, storageFailed, saving, failure, recoverable, recover, update, retry } = editor
 
   const notes = useRef<HTMLTextAreaElement>(null)
+  const [reference, setReference] = useState<InlineReference | null>(null)
+  const dismissed = useRef<InlineReference | null>(null)
+  const nextCaret = useRef<number | null>(null)
+
+  useLayoutEffect(() => {
+    if (nextCaret.current === null) return
+    notes.current?.focus()
+    notes.current?.setSelectionRange(nextCaret.current, nextCaret.current)
+    nextCaret.current = null
+  }, [draft.body])
   useLayoutEffect(() => {
     if (ready && !archived && document.activeElement === document.body) notes.current?.focus()
   }, [archived, ready])
@@ -52,6 +63,30 @@ export function SessionEditor({ campaignName, campaignUrl, session, path, archiv
     const start = label ? selectionStart : selectionEnd
     update('body', draft.body.slice(0, start) + leading + mention + trailing + draft.body.slice(selectionEnd))
     field.focus()
+  }
+
+  function trackReference(field: HTMLTextAreaElement) {
+    const candidate = inlineReference(field)
+    if (candidate && dismissed.current?.start === candidate.start && dismissed.current.text === candidate.text) return
+    dismissed.current = null
+    setReference(candidate)
+  }
+
+  function cancelReference() {
+    dismissed.current = reference
+    setReference(null)
+    notes.current?.focus()
+  }
+
+  function insertInline(entry: InlineReference, page: WikiSummary) {
+    const field = notes.current
+    const current = field && inlineReference(field)
+    if (!field || archived || !current || current.start !== entry.start || current.end !== entry.end || current.text !== entry.text) return
+    const mention = wikiMention(page.title, page.id)
+    const { value } = field
+    nextCaret.current = entry.start + mention.length
+    update('body', value.slice(0, entry.start) + mention + value.slice(entry.end))
+    setReference(null)
   }
 
   function download() {
@@ -112,7 +147,21 @@ export function SessionEditor({ campaignName, campaignUrl, session, path, archiv
       </fieldset>
       <div className="editor-grid">
         <div className="panel editor"><label htmlFor="session-notes">Anotações</label><textarea id="session-notes" ref={notes} disabled={archived || !ready} value={draft.body}
-          placeholder="Registre o que aconteceu nesta sessão…" onChange={(e) => update('body', e.target.value)} /></div>
+          placeholder="Registre o que aconteceu nesta sessão…"
+          onChange={(event) => {
+            update('body', event.currentTarget.value)
+            if (!('isComposing' in event.nativeEvent) || !event.nativeEvent.isComposing) {
+              trackReference(event.currentTarget)
+            }
+          }}
+          onSelect={(event) => trackReference(event.currentTarget)}
+          onCompositionEnd={(event) => trackReference(event.currentTarget)}
+          onKeyDown={(event) => {
+            if (event.key === 'Escape' && reference) { event.preventDefault(); cancelReference() }
+          }} />
+          <InlineWiki campaignUrl={campaignUrl} reference={archived || !ready ? null : reference}
+            onInsert={insertInline} onCancel={cancelReference} />
+        </div>
         <section className="panel preview" aria-label="Prévia Markdown">
           <p className="context">Prévia Markdown</p>
           <Markdown skipHtml remarkPlugins={[remarkGfm]}
