@@ -147,7 +147,8 @@ function App() {
     const openSession = (id?: string) => void action(async () => {
       const session = id
         ? await api<Session>(`${url}/sessions/${id}`)
-        : await api<Session>(`${url}/sessions`, 'POST', { date: localDate() })
+        : { id: crypto.randomUUID(), version: 0, title: 'Nova sessão', date: localDate(),
+          fictionalDate: '', participants: '', number: null, body: '' }
       setView({ page: 'session', campaign, session })
     })
 

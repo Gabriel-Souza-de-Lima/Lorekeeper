@@ -12,7 +12,11 @@ interface DraftStorage {
 
 export function useSessionDraft(path: string, session: Session, archived: boolean) {
   const { id, version: initialVersion, ...initialFields } = session
-  const url = `${path}/${id}`
+  const scope = initialVersion === 0 ? `${path}/rascunhos-novos` : `${path}/${id}`
+  const [documentId, setDocumentId] = useState(id)
+  const [created, setCreated] = useState(initialVersion > 0)
+  const url = `${path}/${documentId}`
+  const draftPath = created ? url : scope
   const [saved, setSaved] = useState(initialFields)
   const [record, setRecord] = useState<LocalDraft | null>(null)
   const [persisted, setPersisted] = useState<LocalDraft | null>(null)
@@ -66,10 +70,10 @@ export function useSessionDraft(path: string, session: Session, archived: boolea
       const db = await openDraftStore()
       let release: (() => void) | null = null
       try {
-        const key = crypto.randomUUID()
+        const key = initialVersion === 0 ? id : crypto.randomUUID()
         release = await claimDraft(key)
         if (!release) throw new Error('Rascunho indisponível.')
-        const drafts = await recoverableDrafts(db, url)
+        const drafts = await recoverableDrafts(db, scope)
         if (cancelled) {
           release()
           db.close()
@@ -100,7 +104,7 @@ export function useSessionDraft(path: string, session: Session, archived: boolea
         active.db.close()
       })
     }
-  }, [archived, openAttempt, persist, url])
+  }, [archived, id, initialVersion, openAttempt, persist, scope])
 
   function hasChanges(fields: SessionFields) {
     return (Object.keys(fields) as (keyof SessionFields)[]).some((key) =>
@@ -110,7 +114,7 @@ export function useSessionDraft(path: string, session: Session, archived: boolea
   async function save() {
     const current = working.current
     if (!ready || archived || !current || sending.current || recovering || discarding ||
-        storageFailed || failure?.status === 409 || (!current.operation && !hasChanges(current.fields))) return
+        storageFailed || (created && failure?.status === 409) || (!current.operation && !hasChanges(current.fields))) return
     sending.current = true
     setSaving(true)
     setFailure(null)
@@ -119,8 +123,16 @@ export function useSessionDraft(path: string, session: Session, archived: boolea
         key: crypto.randomUUID(), version: current.version, generation: current.generation, fields: current.fields,
       }
       if (!await persist({ ...current, operation })) return
-      const result = await api<Session>(url, 'PUT', { ...operation.fields, version: operation.version },
-        { 'Idempotency-Key': operation.key })
+      const creating = operation.version === 0
+      const headers = { 'Idempotency-Key': operation.key }
+      const result = creating
+        ? await api<Session>(path, 'POST', { ...operation.fields, id: current.id }, headers)
+        : await api<Session>(url, 'PUT', { ...operation.fields, version: operation.version }, headers)
+      if (creating) {
+        setDocumentId(result.id)
+        setCreated(true)
+        setRecoverable([])
+      }
       const version = result.version
       const fields = { ...operation.fields, title: result.title }
       confirmed.current = { fields, version }
@@ -129,7 +141,7 @@ export function useSessionDraft(path: string, session: Session, archived: boolea
       if (!latest || latest.generation === operation.generation || !hasChanges(latest.fields)) {
         await persist(null)
       } else {
-        await persist({ ...latest, version, operation: null })
+        await persist({ ...latest, path: `${path}/${result.id}`, version, operation: null })
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Tente novamente.'
@@ -159,7 +171,7 @@ export function useSessionDraft(path: string, session: Session, archived: boolea
     if (baseVersion === undefined && !current?.operation && !sending.current && !hasChanges(fields)) return persist(null)
     return persist({
       id: current?.id ?? storage.current?.id ?? '',
-      path: url,
+      path: draftPath,
       fields,
       version: baseVersion ?? current?.version ?? confirmed.current.version,
       generation: (current?.generation ?? 0) + 1,
@@ -175,7 +187,7 @@ export function useSessionDraft(path: string, session: Session, archived: boolea
   function resolveConflict(server: Session) {
     const current = working.current
     const { id: serverId, version, ...fields } = server
-    if (failure?.status !== 409 || !current || serverId !== id || version <= current.version) return
+    if (failure?.status !== 409 || !current || serverId !== documentId || version <= current.version) return
     confirmed.current = { fields, version }
     setSaved(fields)
     void replaceDraft(current.fields, version)
@@ -184,7 +196,7 @@ export function useSessionDraft(path: string, session: Session, archived: boolea
   async function discardConflict(server: Session) {
     const current = working.current
     const { id: serverId, version, ...fields } = server
-    if (failure?.status !== 409 || !current || serverId !== id || version <= current.version || discarding) return
+    if (failure?.status !== 409 || !current || serverId !== documentId || version <= current.version || discarding) return
     setDiscarding(true)
     try {
       if (!await persist(null, true)) return
@@ -201,9 +213,15 @@ export function useSessionDraft(path: string, session: Session, archived: boolea
     if (!current || sending.current || discarding) return
     setDiscarding(true)
     try {
-      const server = current.operation ? await api<Session>(url) : null
+      const server = current.operation ? await api<Session>(`${path}/${created ? documentId : current.id}`).catch((error) => {
+        if (!created && error instanceof ApiError && error.status === 404) return null
+        throw error
+      }) : null
       if (!await persist(null, true)) return
       if (server) {
+        setDocumentId(server.id)
+        setCreated(true)
+        setRecoverable([])
         const { date, title, body, number, participants, fictionalDate, version } = server
         const fields = { date, title, body, number, participants, fictionalDate }
         confirmed.current = { version, fields }
@@ -231,7 +249,7 @@ export function useSessionDraft(path: string, session: Session, archived: boolea
     try {
       release = await claimDraft(candidate.id)
       if (!release) {
-        setRecoverable(await recoverableDrafts(active.db, url))
+        setRecoverable(await recoverableDrafts(active.db, draftPath))
         return
       }
       const latest = await readDraft(active.db, candidate.id)
@@ -256,7 +274,7 @@ export function useSessionDraft(path: string, session: Session, archived: boolea
   }
 
   function retry() {
-    if (failure?.status === 409) return
+    if (created && failure?.status === 409) return
     if (storageFailed && working.current) {
       if (storage.current) void persist(working.current)
       else {
@@ -268,9 +286,9 @@ export function useSessionDraft(path: string, session: Session, archived: boolea
   }
 
   return {
-    draft, ready: ready && !recovering && !discarding, dirty: record !== null, locallySaved, storageFailed, saving,
+    draft, documentId, created, ready: ready && !recovering && !discarding, dirty: record !== null, locallySaved, storageFailed, saving,
     canSave: ready && !archived && !saving && !recovering && !discarding && !storageFailed &&
-      failure?.status !== 409 && record !== null && (record.operation !== null || hasChanges(record.fields)),
+      (!created || failure?.status !== 409) && record !== null && (record.operation !== null || hasChanges(record.fields)),
     failure, recoverable, recover, update, save, discard, retry, resolveConflict, discardConflict, restoreRevision,
     baseVersion: record?.version ?? confirmed.current.version,
   }

@@ -24,7 +24,7 @@ test('C01/C02/C03/S01/S02: gerencia campanha, escreve duas sessões e reabre ap�
       .filter({ has: page.getByRole('heading', { name: 'Sessões', exact: true }) })
       .getByRole('button', { name: 'Nova sessão', exact: true })
     await newSession.click()
-    // Uma sessão sem título personalizado também aparece como «Nova sessão».
+    // Sair de uma sessão ainda local não cria uma entrada.
     await page.getByRole('button', { name: 'Voltar à campanha' }).click()
     await newSession.click()
     await page.getByLabel('Título').fill('O farol')
@@ -42,13 +42,13 @@ test('C01/C02/C03/S01/S02: gerencia campanha, escreve duas sessões e reabre ap�
     await title.fill('A ponte')
     await expect(title).toHaveValue('A ponte')
     await page.getByLabel('Data real').fill('2026-02-02')
-    await page.route('**/api/campaigns/*/sessions/*', (route) =>
-      route.request().method() === 'PUT' ? route.abort() : route.continue())
+    await page.route('**/api/campaigns/*/sessions', (route) =>
+      route.request().method() === 'POST' ? route.abort() : route.continue())
     await notes.fill('Encontramos a ponte.')
     await page.getByRole('button', { name: 'Salvar', exact: true }).click()
     await expect(page.getByRole('status')).toHaveText(/Falha ao salvar/)
     await expect(notes).toHaveValue('Encontramos a ponte.')
-    await page.unroute('**/api/campaigns/*/sessions/*')
+    await page.unroute('**/api/campaigns/*/sessions')
     await page.getByRole('button', { name: 'Salvar', exact: true }).click()
     await expect(page.getByRole('status')).toHaveText('Salvo no servidor')
     await page.getByRole('button', { name: 'Voltar à campanha' }).click()
@@ -70,7 +70,7 @@ test('C01/C02/C03/S01/S02: gerencia campanha, escreve duas sessões e reabre ap�
     await page.getByRole('button', { name: 'Voltar à campanha' }).click()
     await page.getByRole('button', { name: 'Reativar campanha' }).click()
     await expect(newSession).toBeVisible()
-    await expect(page.getByRole('listitem').getByRole('button', { name: 'Nova sessão', exact: true })).toHaveCount(1)
+    await expect(page.getByRole('listitem').getByRole('button', { name: 'Nova sessão', exact: true })).toHaveCount(0)
   } finally {
     await finishE2EServer(app, [page.context()])
     rmSync(dir, { recursive: true, force: true })

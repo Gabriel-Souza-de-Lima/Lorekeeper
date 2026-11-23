@@ -148,9 +148,12 @@ export function createApp(database: string, webRoot?: string) {
     `SELECT 1 ${sessionSelect} AND d.id = ?`,
   )
   const insertDocument = db.prepare(`
-    INSERT INTO documents (id, campaign_id, type, title, created_at, updated_at)
-    VALUES (@id, @campaignId, 'session', 'Nova sessão', @now, @now)`)
-  const insertSession = db.prepare('INSERT INTO sessions (document_id, session_date) VALUES (?, ?)')
+    INSERT INTO documents (id, campaign_id, type, title, body, created_at, updated_at)
+    VALUES (@id, @campaignId, 'session', @title, @body, @now, @now)
+    ON CONFLICT (id) DO NOTHING`)
+  const insertSession = db.prepare(`
+    INSERT INTO sessions (document_id, session_date, fictional_date, participants, number)
+    VALUES (@id, @date, @fictionalDate, @participants, @number)`)
   const updateDocument = db.prepare(`
     UPDATE documents SET title = @title, body = @body, version = version + 1, updated_at = @now
     WHERE id = @id AND campaign_id = @campaignId AND version = @version`)
@@ -179,14 +182,24 @@ export function createApp(database: string, webRoot?: string) {
     return campaign.archivedAt ? 409 : 200
   }
 
-  const createSession = db.transaction((campaignId: string, date: string) => {
+  const createSession = db.transaction((campaignId: string, id: string, fields: SessionFields, operationId?: string) => {
+    const requestHash = operationId ? hashDraft({ ...fields, version: 0 }) : null
+    const receipt = operationId && selectSession.get(campaignId, id) ? selectReceipt.get(id, operationId) : undefined
+    if (receipt) {
+      if (receipt.requestHash !== requestHash) return { status: 409, message: 'O identificador já foi usado.' }
+      return { status: 200, session: JSON.parse(receipt.responseJson) as Session }
+    }
     const status = editability(campaignId)
-    if (status !== 200) return { status }
-    const id = randomUUID()
-    insertDocument.run({ id, campaignId, now: new Date().toISOString() })
-    insertSession.run(id, date)
+    if (status === 404) return { status, message: 'Campanha não encontrada.' }
+    if (status === 409) return { status, message: 'Reative a campanha para criar sessões.' }
+    const values = { ...fields, id, campaignId, now: new Date().toISOString() }
+    if (!insertDocument.run(values).changes) return { status: 409, message: 'O identificador já foi usado.' }
+    insertSession.run(values)
+    if (fields.body) syncMarkdownLinks(id, campaignId, fields.body)
     insertRevision.run(id)
-    return { status: 201, session: selectSession.get(campaignId, id) }
+    const session = { ...fields, id, version: 1 }
+    if (operationId) insertReceipt.run({ id, operationId, requestHash, responseJson: JSON.stringify(session) })
+    return { status: 201, session }
   })
   const saveSession = db.transaction((params: SessionParams, draft: SaveDraft, operationId?: string) => {
     const { campaignId, sessionId: id } = params
@@ -223,13 +236,33 @@ export function createApp(database: string, webRoot?: string) {
     if (!campaignState.get(id)) return reply.code(404).send({ message: 'Campanha não encontrada.' })
     return listSessions.all(id)
   })
-  app.post<{ Params: CampaignParams; Body: { date: string } }>(
-    sessionsPath, { schema: bodySchema({ date }) }, (request, reply) => {
-      if (!validDate(request.body.date)) return reply.code(400).send({ message: 'Informe uma data válida.' })
-      const result = createSession.immediate(request.params.campaignId, request.body.date)
-      if (result.status === 404) return reply.code(404).send({ message: 'Campanha não encontrada.' })
-      if (result.status === 409) return reply.code(409).send({ message: 'Reative a campanha para criar sessões.' })
-      return reply.code(201).send(result.session)
+  const creationFields = Object.fromEntries(Object.entries(sessionFields).filter(([field]) => field !== 'version'))
+  app.post<{ Params: CampaignParams; Body: { date: string } | (SessionFields & { id: string }) }>(
+    sessionsPath, { schema: { body: { oneOf: [
+      bodySchema({ date }).body,
+      bodySchema({ ...creationFields, id: { type: 'string', pattern: '^[0-9a-fA-F]{8}(?:-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}$' } }).body,
+    ] } } }, (request, reply) => {
+      const body = request.body
+      if (!validDate(body.date)) return reply.code(400).send({ message: 'Informe uma data válida.' })
+      let id: string
+      let fields: SessionFields
+      let operationId: string | undefined
+      if ('id' in body) {
+        const key = request.headers['idempotency-key']
+        if (typeof key !== 'string' || !operationIdPattern.test(key)) {
+          return reply.code(400).send({ message: 'Chave de criação inválida.' })
+        }
+        const { id: clientId, ...submitted } = body
+        id = clientId.toLowerCase()
+        fields = { ...submitted, title: submitted.title.trim() }
+        operationId = key.toLowerCase()
+      } else {
+        id = randomUUID()
+        fields = { date: body.date, title: 'Nova sessão', body: '', fictionalDate: '', participants: '', number: null }
+      }
+      if (!fields.title) return reply.code(400).send({ message: 'Informe o título da sessão.' })
+      const result = createSession.immediate(request.params.campaignId, id, fields, operationId)
+      return reply.code(result.status).send(result.session ?? { message: result.message })
     })
   app.get<{ Params: SessionParams }>(sessionPath, (request, reply) => {
     const { campaignId, sessionId } = request.params

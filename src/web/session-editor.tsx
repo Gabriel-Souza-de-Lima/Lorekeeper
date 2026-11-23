@@ -22,7 +22,7 @@ interface Props {
 
 export function SessionEditor({ campaignName, campaignUrl, session, path, archived, onOpenWiki, onBack }: Props) {
   const editor = useSessionDraft(path, session, archived)
-  const { draft, ready, dirty, locallySaved, storageFailed, saving, failure, recoverable, recover, update, retry } = editor
+  const { draft, documentId, created, ready, dirty, locallySaved, storageFailed, saving, failure, recoverable, recover, update, retry } = editor
 
   const notes = useRef<HTMLTextAreaElement>(null)
   useLayoutEffect(() => {
@@ -62,9 +62,9 @@ export function SessionEditor({ campaignName, campaignUrl, session, path, archiv
     window.setTimeout(() => URL.revokeObjectURL(url), 1000)
   }
 
-  let status = 'Salvo no servidor'
+  let status = created ? 'Salvo no servidor' : 'Sessão ainda não criada'
   if (storageFailed) status = 'Falha no armazenamento local. Baixe o rascunho antes de sair.'
-  else if (failure?.status === 409) status = 'Conflito de edição · resolução necessária'
+  else if (created && failure?.status === 409) status = 'Conflito de edição · resolução necessária'
   else if (failure) status = `Falha ao salvar. ${failure.message} O rascunho continua disponível neste navegador.`
   else if (!ready) status = 'Verificando rascunhos locais…'
   else if (saving) status = 'Salvando…'
@@ -80,16 +80,16 @@ export function SessionEditor({ campaignName, campaignUrl, session, path, archiv
         <div className="save-state">
           <span role="status" className={failure || storageFailed ? 'error' : ''}>{status}</span>
           {!archived && <button className="primary" disabled={!editor.canSave} onClick={() => void editor.save()}>Salvar</button>}
-          {!archived && dirty && failure?.status !== 409 && <button disabled={!ready || saving} onClick={() => {
+          {!archived && dirty && (!created || failure?.status !== 409) && <button disabled={!ready || saving} onClick={() => {
             if (window.confirm('Descartar as alterações locais e voltar à última versão confirmada?')) void editor.discard()
           }}>Descartar alterações</button>}
-          {storageFailed && failure?.status !== 409 && dirty && <button onClick={retry}>Tentar novamente</button>}
+          {storageFailed && (!created || failure?.status !== 409) && dirty && <button onClick={retry}>Tentar novamente</button>}
           {(failure || storageFailed) && dirty && <button onClick={download}>Baixar rascunho</button>}
         </div>
       </header>
-      <RevisionHistory url={`${path}/${session.id}`} canRestore={!archived && ready && !dirty}
-        onRestore={editor.restoreRevision} />
-      {failure?.status === 409 && <ConflictReview url={`${path}/${session.id}`}
+      {created && <RevisionHistory url={`${path}/${documentId}`} canRestore={!archived && ready && !dirty}
+        onRestore={editor.restoreRevision} />}
+      {created && failure?.status === 409 && <ConflictReview url={`${path}/${documentId}`}
         draft={draft} baseVersion={editor.baseVersion} busy={!ready || saving} canKeep={locallySaved}
         onKeep={back} onResolve={editor.resolveConflict} onDiscard={(server) => void editor.discardConflict(server)} />}
       {!archived && !dirty && recoverable.length > 0 && <div className="actions">
@@ -125,11 +125,11 @@ export function SessionEditor({ campaignName, campaignUrl, session, path, archiv
             }}>{draft.body}</Markdown>
         </section>
       </div>
-      <DocumentTags campaignUrl={campaignUrl} documentId={session.id} archived={archived} />
-      <SessionWikiLinks sessionUrl={`${path}/${session.id}`} campaignUrl={campaignUrl} archived={archived}
+      {created && <DocumentTags campaignUrl={campaignUrl} documentId={documentId} archived={archived} />}
+      <SessionWikiLinks draftOnly={!created} sessionUrl={`${path}/${documentId}`} campaignUrl={campaignUrl} archived={archived}
         navigationBlocked={saving} version={editor.baseVersion} canInsert={ready && !archived}
         onInsert={insertMention} onOpen={(id) => leave(() => onOpenWiki(id))} />
-      <SessionNoteLinks sessionUrl={`${path}/${session.id}`} campaignUrl={campaignUrl} archived={archived} />
+      {created && <SessionNoteLinks sessionUrl={`${path}/${documentId}`} campaignUrl={campaignUrl} archived={archived} />}
     </>
   )
 }
