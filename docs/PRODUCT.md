@@ -144,7 +144,7 @@ Ao criar uma sessão, quero poder informar:
 
 O editor deve permitir escrever livremente, com recursos como:
 
-- Salvamento automático.
+- Confirmação explícita no servidor e proteção automática do rascunho no navegador.
 - Suporte a Markdown ou editor de texto rico.
 - Títulos e subtítulos.
 - Listas e checklists.
@@ -465,7 +465,7 @@ Os requisitos técnicos são:
 
 - Armazenamento persistente.
 - Sincronização entre dispositivos.
-- Salvamento automático.
+- Confirmação explícita no servidor e proteção automática do rascunho no navegador.
 - Funcionamento offline para conteúdo previamente disponibilizado.
 - Sincronização posterior quando houver conexão.
 - Tratamento de conflitos de edição.
@@ -511,7 +511,7 @@ O MVP deve conter:
 3. Dashboard de campanhas.
 4. Criação, edição e arquivamento de campanhas.
 5. Criação e edição de sessões.
-6. Editor de anotações com salvamento automático.
+6. Editor de anotações com rascunho local automático e confirmação explícita no servidor.
 7. Sincronização entre dispositivos.
 8. Anotações rápidas.
 9. Busca global e filtros por campanha.

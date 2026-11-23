@@ -22,6 +22,7 @@ test('I3-06c: vincula trecho no Markdown e retorna pelo backlink', async ({ page
     await notes.evaluate((field: HTMLTextAreaElement) => field.setSelectionRange(2, 6))
     await wiki.getByRole('button', { name: 'Inserir no Markdown' }).click()
     await expect(notes).toHaveValue(/O \[guia\]\(#wiki-[^)]*\) chegou\./)
+    await page.getByRole('button', { name: 'Salvar', exact: true }).click()
     await expect(page.getByRole('status')).toHaveText('Salvo no servidor')
     await page.getByRole('region', { name: 'Prévia Markdown' }).getByRole('button', { name: 'guia' }).click()
     await expect(page.getByRole('heading', { name: 'Guia do farol' })).toBeVisible()
