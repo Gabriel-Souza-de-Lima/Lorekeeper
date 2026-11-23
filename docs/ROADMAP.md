@@ -36,6 +36,10 @@ A implementação começa após a revisão da [arquitetura](ARCHITECTURE.md) e d
 
 - O título das páginas da wiki pode ser corrigido sem alterar o destino das menções. Os testes percorrem pesquisa, navegação, backlinks e o isolamento entre campanhas. [Especificação](specs/16-renomeia-pagina.md)
 
+## Entregas do Incremento 4
+
+- O painel exporta o acervo salvo em ZIP com Markdown e JSON versionado. Backup operacional e ensaio de restauração seguem como entregas separadas. [Especificação](specs/17-exportacao-portavel.md)
+
 ## Depois do MVP
 
 1. **Offline e PWA.** Disponibilizar campanhas selecionadas no dispositivo, abrir o aplicativo sem rede, ampliar a fila para mais operações e evoluir a busca local. Validar cache, migrações com pendências, limites de armazenamento e atualização do service worker durante uma edição.
