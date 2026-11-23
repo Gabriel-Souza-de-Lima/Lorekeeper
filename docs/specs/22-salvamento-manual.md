@@ -18,6 +18,21 @@
 
 As especificações do editor e de integridade registram a política anterior como histórico. Captura rápida, wiki e ações independentes mantêm seus próprios controles explícitos.
 
+## Aceite e evidências automatizadas
+
+SAVE-01 a SAVE-15 estão aprovados no escopo integrado em `136906b`. As linhas indicam as suítes que sustentam o aceite. Os resultados de CI por entrega e os comportamentos confirmados manualmente estão no [aceite de controle de sessões](21-controle-de-sessoes.md#aceite-e-rastreabilidade).
+
+| Critério | Suíte existente |
+| --- | --- |
+| SAVE-01/02 | [E2E de salvamento](../../tests/e2e/manual-save.spec.ts) |
+| SAVE-03/04 | [E2E de salvamento](../../tests/e2e/manual-save.spec.ts), [rascunhos](../../tests/e2e/drafts.spec.ts) e [conflito](../../tests/e2e/revisions.spec.ts) |
+| SAVE-05/06 | [E2E de salvamento](../../tests/e2e/manual-save.spec.ts) e [integração de revisões](../../tests/integration/session-revisions.test.ts) |
+| SAVE-07/08 | [E2E de rascunhos](../../tests/e2e/drafts.spec.ts) e [integração de revisões](../../tests/integration/session-revisions.test.ts) |
+| SAVE-09/10 | [E2E de salvamento](../../tests/e2e/manual-save.spec.ts) e [rascunhos](../../tests/e2e/drafts.spec.ts) |
+| SAVE-11/12 | [E2E de conflito e restauração](../../tests/e2e/revisions.spec.ts) |
+| SAVE-13 | [E2E de criação](../../tests/e2e/session-create-on-save.spec.ts) e [integração de criação](../../tests/integration/session-creation.test.ts) |
+| SAVE-14 | [Integração de campanhas](../../tests/integration/campaigns.test.ts) e [lixeira](../../tests/integration/session-trash.test.ts) |
+| SAVE-15 | [E2E de menções](../../tests/e2e/markdown-links.spec.ts) e [integração de menções](../../tests/integration/markdown-links.test.ts) |
 
 ## Evidências de TDD
 

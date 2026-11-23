@@ -1,6 +1,6 @@
 # I2 — Integridade do editor de sessões
 
-- **Estado** — registro do Incremento 2. A confirmação explícita substitui as tentativas automáticas descritas nesta entrega. [Política atual](22-salvamento-manual.md).
+- **Estado** — registro histórico do Incremento 2. A confirmação explícita substituiu o envio automático ao servidor. O IndexedDB continua protegendo rascunhos automaticamente e o reenvio de operação já confirmada pelo usuário preserva a chave idempotente. Restaurar uma revisão prepara o texto para o próximo **Salvar**. [Política atual](22-salvamento-manual.md) · [Aceite de controle de sessões](21-controle-de-sessoes.md#aceite-e-rastreabilidade)
 - **Objetivo** — preservar o texto durante falhas de rede e recuperar a sessão depois de trocar de aba ou dispositivo.
 - **Rastreabilidade** — MVP-01 (acesso privado), MVP-04 (histórico e estado), MVP-05, MVP-06 e MVP-07. Produto §§4.3 e 7. [Arquitetura](../ARCHITECTURE.md#salvamento-e-sincronização).
 

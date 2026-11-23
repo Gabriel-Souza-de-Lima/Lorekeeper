@@ -1,6 +1,6 @@
 # I1-S — Sessões e editor Markdown
 
-- **Estado** — entregue no Incremento 1. A política atual de gravação está no [salvamento manual](22-salvamento-manual.md).
+- **Estado** — entregue no Incremento 1. A política atual cria a sessão no primeiro **Salvar**, confirma as edições por ação explícita e protege rascunhos automaticamente no IndexedDB. [Salvamento manual](22-salvamento-manual.md) · [Aceite de controle de sessões](21-controle-de-sessoes.md#aceite-e-rastreabilidade)
 - **Objetivo** — registrar uma sessão rapidamente e encontrar o texto ao reabrir a campanha.
 - **Rastreabilidade** — MVP-03, MVP-04 (editor e gravação no servidor), MVP-07 (checagem de versão), Produto §4.3.
 

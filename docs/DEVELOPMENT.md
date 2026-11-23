@@ -53,6 +53,21 @@ No Codex Cloud, use o Chromium disponível na imagem quando a política de rede 
 - `LOREKEEPER_CHROMIUM_PATH` é opcional e seleciona um Chromium já instalado. O padrão é o navegador do Playwright.
 - `PLAYWRIGHT_BROWSERS_PATH` é opcional e seleciona o diretório de instalação e execução dos navegadores do Playwright.
 
+## Atualizar a interface local após receber mudanças
+
+O Git ignora `dist/`. `npm start` inicia a API e serve os arquivos compilados já presentes nesse diretório. Atualizar o checkout exige recompilar a interface para que o navegador receba o frontend correspondente.
+
+1. Confira `git status --short --branch`, preserve alterações locais e atualize a `main` com `git switch main` e `git pull --ff-only`.
+2. Compare `git rev-parse HEAD` e `git rev-parse origin/main` com o commit esperado.
+3. Execute `npm run build` na raiz do checkout.
+4. Inicie com `npm start`. Se a porta estiver ocupada, identifique a instância antes de reiniciá-la.
+5. Atualize a página em `http://127.0.0.1:3000` e confira o JavaScript em `/assets/` na aba **Rede** do navegador. O HTML servido deve apontar para o bundle referenciado no novo `dist/index.html`.
+6. Confirme as ações esperadas da versão integrada. Use uma campanha fictícia em um banco separado para testar criação, confirmação, lixeira e recuperação de rascunho.
+
+Na investigação de `136906b`, a porta 3000 já entregava o bundle atualizado quando foi inspecionada. O estado anterior de `dist/` ficou sem confirmação. Se a interface ainda divergir após a compilação, compare a URL, o processo e o JavaScript recebido antes de investigar cache. Preserve os rascunhos no IndexedDB.
+
+Recomendação pendente: adicionar um comando optativo `start:local` que execute `npm run build && npm start`. `npm start` continua adequado para servir um build já preparado.
+
 ## GitHub Actions
 
 O [workflow](../.github/workflows/ci.yml) roda nas PRs, nos pushes para `main` e nas filas de merge. O job `validar` falha quando um comando obrigatório falha. Após a primeira execução, quem administra o repositório deve selecionar esse status check em uma regra para `main` que exija PR e verificações aprovadas antes do merge. A aplicação da regra depende do plano, das permissões e das configurações do repositório privado. O workflow já fornece o status que a regra deve exigir.

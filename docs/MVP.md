@@ -19,6 +19,10 @@ Escopo proposto para revisão com base no [documento de produto](PRODUCT.md). A 
 | MVP-11 | Busca | Encontrar um termo no corpo de uma sessão antiga, com ou sem acentos. Filtrar por campanha, categoria e tag, ler trecho destacado e abrir o documento correspondente. |
 | MVP-12 | Exportação e backup | Abrir o Markdown e o JSON exportados fora do Lorekeeper. Restaurar uma cópia operacional separada e recuperar campanhas, textos, revisões e vínculos. Conferir que a busca retorna resultados coerentes após a restauração. |
 
+## Validação do controle de sessões
+
+O [aceite de SC-01 a SC-04 e SAVE-01 a SAVE-15](specs/21-controle-de-sessoes.md#aceite-e-rastreabilidade) registra a cobertura de criação, confirmação manual, histórico, rascunhos e lixeira. A validação operacional de troca de dispositivos e backup externo do [piloto do Incremento 4](specs/20-piloto-responsivo.md) é acompanhada separadamente.
+
 ## Incremento posterior ao MVP
 
 A proposta deixa para os próximos incrementos a abertura a frio sem rede, a seleção de campanhas para disponibilidade offline e a instalação como PWA. Também ficam para depois capas e anexos, PDFs, editor rico, sintaxe `[[Nome]]`, atalhos avançados, linha do tempo ficcional, marcações de fatos e rumores, facções, itens, tela dedicada de preparação, histórico narrativo estruturado e exclusão definitiva. A visão geral inicial usa as sessões recentes e as missões abertas para retomar o contexto. Recursos de IA, importações, grafo e biblioteca de regras estão no [roadmap](ROADMAP.md).
