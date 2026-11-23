@@ -64,5 +64,5 @@ A implementação começa após a revisão da [arquitetura](ARCHITECTURE.md) e d
 | P1 | Retomar campanha com sessões e vínculos já registrados. | Navegação, vazio, lixeira, isolamento e rascunhos. [Especificação](specs/24-retomar-campanha.md) |
 | P2 | Pendências, pistas e perguntas com histórico de estado. | Cadastro, vínculos, consulta contextual e complemento do painel P1. [Especificação](specs/25-pendencias.md) |
 | P3 | Selecionar e criar entidades no editor com `[[Nome]]`. | Cancelamento preserva texto e confirmação usa IDs estáveis. [Especificação](specs/26-referencias-durante-a-escrita.md) |
-| P4 | Templates opcionais de sessão. | Aplicação local e confirmação para substituir texto. |
+| P4 | Templates opcionais de sessão. | Aplicação local e confirmação para substituir texto. [Especificação](specs/27-modelos-de-sessao.md) |
 | P5 | Anexos de imagens e PDFs. | Definir armazenamento local e validar exportação, backup e restauração isolada antes do aceite. |
