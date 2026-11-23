@@ -30,7 +30,9 @@ A implementação começa após a revisão da [arquitetura](ARCHITECTURE.md) e d
 
 - Menções em Markdown de sessões atualizam os backlinks na gravação e ficam navegáveis na prévia. [Especificação](specs/13-mencoes-markdown.md)
 
-- Tags podem ser adicionadas e removidas em sessões, páginas da wiki e notas encaminhadas. A busca com filtros é a próxima entrega. [Especificação](specs/14-tags.md)
+- Tags podem ser adicionadas e removidas em sessões, páginas da wiki e notas encaminhadas. [Especificação](specs/14-tags.md)
+
+- A busca global indexa títulos e textos e combina filtros de campanha, categoria e tag. [Especificação](specs/15-busca-global.md)
 
 ## Depois do MVP
 

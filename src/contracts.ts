@@ -53,3 +53,21 @@ export interface DocumentTag {
   id: string
   name: string
 }
+
+export const searchTypes = ['session', 'quick_note', ...wikiTypes] as const
+export type SearchType = typeof searchTypes[number]
+
+export interface SearchResult {
+  id: string
+  campaignId: string | null
+  campaignName: string | null
+  archived: boolean
+  type: SearchType
+  title: string
+  snippet: { text: string; match: boolean }[]
+}
+
+export interface SearchFilters {
+  campaigns: { id: string; name: string; archived: number }[]
+  tags: DocumentTag[]
+}
