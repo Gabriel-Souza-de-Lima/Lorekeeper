@@ -7,7 +7,7 @@ import { CampaignNotes, NoteList, type Note } from './note-assignment.tsx'
 import { QuickNotes } from './quick-notes.tsx'
 import { Search } from './search.tsx'
 import { SessionEditor } from './session-editor.tsx'
-import { WikiOverview } from './wiki-overview.tsx'
+import { CampaignResume } from './campaign-recap.tsx'
 import { Wiki } from './wiki.tsx'
 import './style.css'
 
@@ -21,7 +21,7 @@ type View =
   | { page: 'quick-notes' }
   | { page: 'new' }
   | { page: 'campaign' | 'edit'; campaign: Campaign }
-  | { page: 'campaign-notes'; campaign: Campaign }
+  | { page: 'campaign-notes'; campaign: Campaign; noteId?: string }
   | { page: 'session-trash'; campaign: Campaign; rows: SessionSummary[] }
   | { page: 'wiki'; campaign: Campaign; initialPage?: WikiDetails }
   | { page: 'session'; campaign: Campaign; session: Session }
@@ -194,7 +194,9 @@ function App() {
           <span>{campaign.sessionCount} {campaign.sessionCount === 1 ? 'sessão' : 'sessões'}</span>
           <span>{campaign.lastSessionDate ? `Última sessão em ${displayDate(campaign.lastSessionDate)}` : 'Nenhuma sessão registrada'}</span>
         </div>
-        <WikiOverview key={campaign.id} campaign={campaign} busy={working} onOpen={(id) => openWikiPage(campaign, id)} />
+        <CampaignResume key={campaign.id} campaign={campaign} busy={working} onSession={openSession}
+          onWiki={(id) => openWikiPage(campaign, id)}
+          onNote={(noteId) => setView({ page: 'campaign-notes', campaign, noteId })} />
         <section>
           <header className="page-header"><h2>Sessões</h2>
             {!locked && <button className="primary" disabled={working} onClick={() => openSession()}>Nova sessão</button>}
@@ -269,7 +271,7 @@ function App() {
             })}>Restaurar sessão</button>}
         </li>)}</ul>}
       </>
-      case 'campaign-notes': return <CampaignNotes campaign={view.campaign}
+      case 'campaign-notes': return <CampaignNotes campaign={view.campaign} noteId={view.noteId}
         onBack={() => setView({ page: 'campaign', campaign: view.campaign })} />
       case 'session': return <SessionEditor key={view.session.id} campaignName={view.campaign.name}
         campaignUrl={`${campaignPath}/${view.campaign.id}`}

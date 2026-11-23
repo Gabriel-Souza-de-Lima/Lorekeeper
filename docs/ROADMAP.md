@@ -56,3 +56,13 @@ A implementação começa após a revisão da [arquitetura](ARCHITECTURE.md) e d
 2. **Organização de campanhas.** Acrescentar facções, itens, linha do tempo real e ficcional, pendências próprias e preparação de sessão. Registrar origem, grau de certeza e perspectiva de jogador ou personagem, preservando afirmações anteriores quando forem corrigidas. Evoluir a apresentação do histórico, atalhos e links por nome.
 3. **Arquivos, importação e regras.** Incorporar imagens, capas e anexos com backup que inclua os arquivos. Importar TXT, Markdown, PDF e dados exportados de outras ferramentas, com origem e revisão prévia. Criar a biblioteca de regras da casa e distinguir D&D 5e 2014 de 2024, respeitando as licenças das fontes. Avaliar integrações diretas com Google Drive e Discord depois de validar o fluxo de importação.
 4. **Grafo e assistência opcional.** Usar os vínculos existentes para visualização do grafo. Avaliar resumos e consultas com IA apenas com fontes citadas, separação entre fatos e hipóteses, originais preservados e confirmação explícita para qualquer alteração sugerida.
+
+## Pós-MVP — Organização e experiência de campanha
+
+| Ordem | Entrega | Validação |
+| --- | --- | --- |
+| P1 | Retomar campanha com sessões e vínculos já registrados. | Navegação, vazio, lixeira, isolamento e rascunhos. [Especificação](specs/24-retomar-campanha.md) |
+| P2 | Pendências, pistas e perguntas com histórico de estado. | Cadastro, vínculos, consulta e complemento do painel P1. |
+| P3 | Selecionar e criar entidades no editor com `[[Nome]]`. | Cancelamento preserva texto; confirmação usa IDs estáveis. |
+| P4 | Templates opcionais de sessão. | Aplicação local e confirmação para substituir texto. |
+| P5 | Anexos de imagens e PDFs. | Definir armazenamento local e validar exportação, backup e restauração isolada antes do aceite. |

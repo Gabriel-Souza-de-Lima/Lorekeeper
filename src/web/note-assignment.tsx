@@ -63,7 +63,7 @@ export function AssignNote({ noteId, campaigns, onAssigned }: {
   </div>
 }
 
-export function CampaignNotes({ campaign, onBack }: { campaign: Campaign; onBack: () => void }) {
+export function CampaignNotes({ campaign, noteId, onBack }: { campaign: Campaign; noteId?: string; onBack: () => void }) {
   const [notes, setNotes] = useState<Note[] | null>(null)
   const [error, setError] = useState(false)
   const [attempt, setAttempt] = useState(0)
@@ -71,11 +71,11 @@ export function CampaignNotes({ campaign, onBack }: { campaign: Campaign; onBack
   useEffect(() => {
     let active = true
     void api<Note[]>(`/api/campaigns/${campaign.id}/quick-notes`).then(
-      (items) => { if (active) setNotes(items) },
+      (items) => { if (active) setNotes(noteId ? items.filter((item) => item.id === noteId) : items) },
       () => { if (active) setError(true) },
     )
     return () => { active = false }
-  }, [attempt, campaign.id])
+  }, [attempt, campaign.id, noteId])
 
   return <>
     <button className="quiet" onClick={onBack}>Voltar à campanha</button>
