@@ -1,11 +1,10 @@
 import { randomUUID } from 'node:crypto'
 import { resolve } from 'node:path'
 import { expect, test } from '@playwright/test'
-import { createApp } from '../../src/server/app.ts'
-import { closeTestServer } from '../support/close-test-server.ts'
+import { createE2EServer, finishE2EServer } from '../support/e2e-server.ts'
 
 test('I3-02d/e: vincula e remove notas no editor, recupera resposta perdida e respeita arquivamento', async ({ page, request }) => {
-  const app = createApp(':memory:', resolve('dist'))
+  const app = createE2EServer(':memory:', resolve('dist'))
   try {
     const base = await app.listen({ host: '127.0.0.1', port: 0 })
     const campaign = async (name: string) => (await (await request.post(`${base}/api/campaigns`, { data: { name } })).json()).id
@@ -57,6 +56,6 @@ test('I3-02d/e: vincula e remove notas no editor, recupera resposta perdida e re
     await expect(picker).toHaveCount(0)
     await expect(panel.getByRole('button', { name: /Remover vínculo/ })).toHaveCount(0)
   } finally {
-    await closeTestServer(app)
+    await finishE2EServer(app, [page.context()], request)
   }
 })

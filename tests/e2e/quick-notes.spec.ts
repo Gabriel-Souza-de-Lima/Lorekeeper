@@ -1,10 +1,9 @@
 import { resolve } from 'node:path'
 import { expect, test } from '@playwright/test'
-import { createApp } from '../../src/server/app.ts'
-import { closeTestServer } from '../support/close-test-server.ts'
+import { createE2EServer, finishE2EServer } from '../support/e2e-server.ts'
 
 test('I3-02a/b: reenvia o mesmo UUID ao reabrir a caixa após perder a resposta', async ({ page, context }) => {
-  const app = createApp(':memory:', resolve('dist'))
+  const app = createE2EServer(':memory:', resolve('dist'))
   try {
     const base = await app.listen({ host: '127.0.0.1', port: 0 })
     const api = `${base}/api/quick-notes`
@@ -38,12 +37,12 @@ test('I3-02a/b: reenvia o mesmo UUID ao reabrir a caixa após perder a resposta'
     await expect(reopened.getByRole('listitem')).toHaveCount(1)
     await expect(reopened.getByRole('listitem')).toContainText(body)
   } finally {
-    await closeTestServer(app)
+    await finishE2EServer(app, [page.context()])
   }
 })
 
 test('I3-02c: preserva o texto editável e oferece download quando o armazenamento falha', async ({ page }) => {
-  const app = createApp(':memory:', resolve('dist'))
+  const app = createE2EServer(':memory:', resolve('dist'))
   try {
     const base = await app.listen({ host: '127.0.0.1', port: 0 })
     await page.addInitScript(() => {
@@ -57,12 +56,12 @@ test('I3-02c: preserva o texto editável e oferece download quando o armazenamen
     await page.getByRole('button', { name: 'Baixar rascunho' }).click()
     expect((await download).suggestedFilename()).toBe('anotacao-rapida.md')
   } finally {
-    await closeTestServer(app)
+    await finishE2EServer(app, [page.context()])
   }
 })
 
 test('I3-04: encaminha para campanha e reconcilia a perda de resposta', async ({ page, request }) => {
-  const app = createApp(':memory:', resolve('dist'))
+  const app = createE2EServer(':memory:', resolve('dist'))
   try {
     const base = await app.listen({ host: '127.0.0.1', port: 0 })
     const active = await (await request.post(`${base}/api/campaigns`, { data: { name: 'Observatório' } })).json()
@@ -99,6 +98,6 @@ test('I3-04: encaminha para campanha e reconcilia a perda de resposta', async ({
     await page.getByRole('button', { name: 'Anotações da campanha' }).click()
     await expect(page.getByRole('listitem')).toContainText(text)
   } finally {
-    await closeTestServer(app)
+    await finishE2EServer(app, [page.context()], request)
   }
 })

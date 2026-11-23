@@ -1,10 +1,9 @@
 import { resolve } from 'node:path'
 import { expect, test } from '@playwright/test'
-import { createApp } from '../../src/server/app.ts'
-import { closeTestServer } from '../support/close-test-server.ts'
+import { createE2EServer, finishE2EServer } from '../support/e2e-server.ts'
 
 test('I3-03d: cadastra página da wiki e consulta após arquivar a campanha', async ({ page, request }) => {
-  const app = createApp(':memory:', resolve('dist'))
+  const app = createE2EServer(':memory:', resolve('dist'))
   try {
     const base = await app.listen({ host: '127.0.0.1', port: 0 })
     const campaign = await (await request.post(`${base}/api/campaigns`, { data: { name: 'Bruma' } })).json()
@@ -36,5 +35,5 @@ test('I3-03d: cadastra página da wiki e consulta após arquivar a campanha', as
     await expect(page.getByRole('button', { name: 'Nova página' })).toHaveCount(0)
     await page.getByRole('button', { name: 'Guardião' }).click()
     await expect(page.getByRole('heading', { name: 'Guardião' })).toBeVisible()
-  } finally { await closeTestServer(app) }
+  } finally { await finishE2EServer(app, [page.context()], request) }
 })

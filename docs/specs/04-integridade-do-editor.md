@@ -76,3 +76,5 @@ Após a restauração e a confirmação do histórico, o servidor de teste deve 
 Todos os cenários E2E que iniciam Fastify usam a drenagem compartilhada, inclusive quando o cenário reinicia o servidor. Ela preserva respostas ativas e evita que uma conexão HTTP já ociosa bloqueie o fechamento.
 
 Ao concluir o I2-06, o navegador confirma que os painéis terminaram as leituras. O contexto e o cliente da API são encerrados antes do Fastify. As etapas dos clientes e do servidor têm nomes distintos no relatório de CI.
+
+O encerramento E2E aguarda respostas HTTP iniciadas, libera os contextos de navegador e o cliente de API do teste e, por último, fecha o servidor. Um teste de integração usa o cliente real do Playwright para verificar que a conexão persiste após a resposta e é liberada ao descartar o cliente. Cada fase aparece separadamente nos diagnósticos.
