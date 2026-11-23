@@ -47,7 +47,7 @@ A navegação principal oferece Dashboard, Campanhas, Personagens, Anotações r
 
 Usar UUIDs estáveis gerados no cliente para documentos e operações, inclusive quando a criação é reenviada. Guardar instantes em UTC e a data civil da sessão separadamente. Usar restrições de unicidade, chaves estrangeiras e validação transacional para assegurar coerência de tipo e campanha. O MVP arquiva campanhas de forma reversível. A exclusão definitiva exige um fluxo posterior com confirmação e regras explícitas para dependências.
 
-Os links escritos no Markdown apontam para IDs estáveis com rótulo legível. O editor oferece seleção de destino e preserva o rótulo escrito mesmo se a página mudar de nome. A sintaxe `[[Nome]]` pode ser introduzida depois com seleção explícita quando houver nomes iguais. Vínculos derivados do corpo são atualizados na mesma transação da gravação. Vínculos manuais têm origem própria. Links históricos podem apontar para documentos arquivados e indicar seu estado.
+Os links escritos no Markdown apontam para IDs estáveis com rótulo legível. O editor oferece seleção de destino e preserva o rótulo escrito mesmo se a página mudar de nome. A sintaxe `[[Nome]]` no editor de sessões permite localizar ou criar o destino por ação explícita. A seleção converte a referência em Markdown por UUID no rascunho. Vínculos derivados do corpo são atualizados na mesma transação da gravação. Vínculos manuais têm origem própria. Links históricos podem apontar para documentos arquivados e indicar seu estado.
 
 ## Salvamento e sincronização
 
