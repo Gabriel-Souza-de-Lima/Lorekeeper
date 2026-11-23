@@ -20,6 +20,8 @@ export function Wiki({ campaign, initialPage, onOpenSession, onBack }: {
   const [pages, setPages] = useState<WikiSummary[] | null>(null)
   const [page, setPage] = useState<WikiDetails | null>(initialPage ?? null)
   const [draft, setDraft] = useState<WikiPage | null>(null)
+  const [title, setTitle] = useState<string | null>(null)
+  const [titleConflict, setTitleConflict] = useState(false)
   const [busy, setBusy] = useState(false)
   const [uncertain, setUncertain] = useState(false)
   const [error, setError] = useState('')
@@ -87,12 +89,61 @@ export function Wiki({ campaign, initialPage, onOpenSession, onBack }: {
     }
   }
 
+  async function saveTitle(event: FormEvent<HTMLFormElement>, current: WikiDetails) {
+    event.preventDefault()
+    if (!title?.trim() || busy || titleConflict) return
+    setBusy(true)
+    setError('')
+    try {
+      const updated = await api<WikiDetails>(`${url}/${current.id}/title`, 'PUT', {
+        title, previousTitle: current.title,
+      })
+      setPage(updated)
+      setPages((items) => items?.map((item) => item.id === updated.id ? { ...item, title: updated.title } : item) ?? null)
+      setRefresh((value) => value + 1)
+      setTitle(null)
+    } catch (failure) {
+      setTitleConflict(failure instanceof ApiError && failure.status === 409)
+      setError(failure instanceof Error ? failure.message : 'Não foi possível renomear a página.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function readCurrentTitle(id: string) {
+    setBusy(true)
+    setError('')
+    try {
+      const latest = await api<WikiDetails>(`${url}/${id}`)
+      setPage(latest)
+      setRefresh((value) => value + 1)
+      setTitleConflict(false)
+    } catch (failure) {
+      setError(failure instanceof Error ? failure.message : 'Não foi possível consultar o título.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
   const feedback = error && <p className="error" role="alert">{error}</p>
   if (page) return <>
-    <button className="quiet" disabled={busy} onClick={() => { setError(''); setPage(null) }}>Voltar à wiki</button>
+    <button className="quiet" disabled={busy || title !== null} onClick={() => { setError(''); setPage(null) }}>Voltar à wiki</button>
     <header className="page-header"><div><p className="context">{labels[page.type]}</p><h1>{page.title}</h1></div></header>
+    {!campaign.archivedAt && (title === null
+      ? <button type="button" disabled={busy} onClick={() => { setError(''); setTitle(page.title) }}>Renomear página</button>
+      : <form className="panel campaign-form" onSubmit={(event) => void saveTitle(event, page)}>
+        <label>Novo título<input required disabled={busy} value={title} onChange={(event) => setTitle(event.target.value)} /></label>
+        <div className="actions">
+          <button type="submit" disabled={busy || titleConflict || !title.trim()}>Salvar título</button>
+          {titleConflict && <button type="button" disabled={busy}
+            onClick={() => void readCurrentTitle(page.id)}>Consultar título atual</button>}
+          <button type="button" disabled={busy} onClick={() => {
+            setError(''); setTitleConflict(false); setTitle(null)
+          }}>Cancelar</button>
+        </div>
+      </form>)}
     {page.type === 'quest' && <p>{page.closed ? 'Missão concluída' : 'Missão aberta'}</p>}
-    {!campaign.archivedAt && (page.type === 'quest' || page.type === 'character') &&
+    {!campaign.archivedAt && title === null && (page.type === 'quest' || page.type === 'character') &&
       <button disabled={busy} onClick={() => void updatePage(page)}>
         {page.type === 'quest' ? (page.closed ? 'Reabrir missão' : 'Concluir missão')
           : featuredId === page.id ? 'Remover destaque' : 'Destacar personagem'}
@@ -102,7 +153,7 @@ export function Wiki({ campaign, initialPage, onOpenSession, onBack }: {
       components={{ img: ({ alt }) => <span>{alt}</span> }}>{page.body}</Markdown></div>
     <Fragment key={page.id}>
       <DocumentTags campaignUrl={`/api/campaigns/${campaign.id}`} documentId={page.id} archived={Boolean(campaign.archivedAt)} />
-      <WikiBacklinks url={`${url}/${page.id}/backlinks`} busy={busy} onOpen={onOpenSession} />
+      <WikiBacklinks url={`${url}/${page.id}/backlinks`} busy={busy || title !== null} onOpen={onOpenSession} />
     </Fragment>
   </>
   if (draft) return <>

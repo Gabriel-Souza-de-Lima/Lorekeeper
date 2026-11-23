@@ -34,6 +34,8 @@ A implementação começa após a revisão da [arquitetura](ARCHITECTURE.md) e d
 
 - A busca global indexa títulos e textos e combina filtros de campanha, categoria e tag. [Especificação](specs/15-busca-global.md)
 
+- O título das páginas da wiki pode ser corrigido sem alterar o destino das menções. Os testes percorrem pesquisa, navegação, backlinks e o isolamento entre campanhas. [Especificação](specs/16-renomeia-pagina.md)
+
 ## Depois do MVP
 
 1. **Offline e PWA.** Disponibilizar campanhas selecionadas no dispositivo, abrir o aplicativo sem rede, ampliar a fila para mais operações e evoluir a busca local. Validar cache, migrações com pendências, limites de armazenamento e atualização do service worker durante uma edição.
