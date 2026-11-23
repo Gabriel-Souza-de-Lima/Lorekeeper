@@ -69,7 +69,7 @@ export function createApp(database: string, webRoot?: string) {
       COUNT(s.document_id) AS sessionCount, MAX(s.session_date) AS lastSessionDate
     FROM campaigns c
     LEFT JOIN documents d ON d.campaign_id = c.id AND d.type = 'session'
-    LEFT JOIN sessions s ON s.document_id = d.id`
+    LEFT JOIN sessions s ON s.document_id = d.id AND s.trashed_at IS NULL`
   const listCampaigns = db.prepare<[booleanAsInt: number], Campaign>(`
     ${campaignSelect} WHERE (c.archived_at IS NOT NULL) = ? GROUP BY c.id ORDER BY c.name, c.id`)
   const campaignState = db.prepare<[id: string], { archivedAt: string | null }>(
@@ -137,7 +137,7 @@ export function createApp(database: string, webRoot?: string) {
 
   const sessionSelect = `
     FROM documents d JOIN sessions s ON s.document_id = d.id
-    WHERE d.campaign_id = ? AND d.type = 'session'`
+    WHERE d.campaign_id = ? AND d.type = 'session' AND s.trashed_at IS NULL`
   const listSessions = db.prepare<[id: string], SessionSummary>(`
     SELECT d.id, d.title, s.session_date AS date, s.number ${sessionSelect}
     ORDER BY s.session_date DESC, d.created_at DESC, d.id DESC`)
@@ -231,10 +231,38 @@ export function createApp(database: string, webRoot?: string) {
     return { status: 200, session }
   })
 
-  app.get<{ Params: CampaignParams }>(sessionsPath, (request, reply) => {
+  const listTrash = db.prepare<[string], SessionSummary>(`
+    SELECT d.id, d.title, s.session_date AS date, s.number
+    FROM sessions s JOIN documents d ON d.id = s.document_id
+    WHERE d.campaign_id = ? AND s.trashed_at IS NOT NULL
+    ORDER BY s.trashed_at DESC, d.id`)
+  const trashState = db.prepare<[string, string], { trashedAt: string | null }>(`
+    SELECT s.trashed_at AS trashedAt FROM sessions s JOIN documents d ON d.id = s.document_id
+    WHERE d.campaign_id = ? AND d.id = ?`)
+  const setTrashedAt = db.prepare('UPDATE sessions SET trashed_at = ? WHERE document_id = ?')
+  const advanceSessionVersion = db.prepare('UPDATE documents SET version = version + 1, updated_at = ? WHERE id = ?')
+  const changeTrash = db.transaction(({ campaignId, sessionId }: SessionParams, trashed: boolean) => {
+    const target = trashState.get(campaignId, sessionId)
+    if (!target) return { status: 404, message: 'Sessão não encontrada.' }
+    if (editability(campaignId) === 409) return { status: 409, message: 'Reative a campanha para alterar a lixeira.' }
+    if ((target.trashedAt !== null) !== trashed) {
+      const now = new Date().toISOString()
+      setTrashedAt.run(trashed ? now : null, sessionId)
+      advanceSessionVersion.run(now, sessionId)
+    }
+    return { status: 200 }
+  })
+
+  app.get<{ Params: CampaignParams; Querystring: { trashed?: string } }>(sessionsPath, (request, reply) => {
     const id = request.params.campaignId
     if (!campaignState.get(id)) return reply.code(404).send({ message: 'Campanha não encontrada.' })
-    return listSessions.all(id)
+    return request.query.trashed === 'true' ? listTrash.all(id) : listSessions.all(id)
+  })
+  app.patch<{ Params: SessionParams; Body: { trashed: boolean } }>(`${sessionPath}/trash`, {
+    schema: bodySchema({ trashed: { type: 'boolean' } }),
+  }, (request, reply) => {
+    const result = changeTrash.immediate(request.params, request.body.trashed)
+    return reply.code(result.status).send(result.message ? { message: result.message } : { trashed: request.body.trashed })
   })
   const creationFields = Object.fromEntries(Object.entries(sessionFields).filter(([field]) => field !== 'version'))
   app.post<{ Params: CampaignParams; Body: { date: string } | (SessionFields & { id: string }) }>(

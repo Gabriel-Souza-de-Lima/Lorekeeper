@@ -62,7 +62,7 @@ export function registerQuickNotes(app: FastifyInstance, db: Database.Database) 
 
   const sessionInCampaign = db.prepare<[campaignId: string, sessionId: string]>(`
     SELECT 1 FROM sessions s JOIN documents d ON d.id = s.document_id
-    WHERE d.campaign_id = ? AND d.id = ? AND d.type = 'session'`)
+    WHERE d.campaign_id = ? AND d.id = ? AND d.type = 'session' AND s.trashed_at IS NULL`)
   const linkedNotes = db.prepare<[campaignId: string, sessionId: string], QuickNote>(`
     ${quickNotes} AND campaign_id = ?
       AND id IN (SELECT source_id FROM document_links WHERE target_id = ? AND origin = 'manual')

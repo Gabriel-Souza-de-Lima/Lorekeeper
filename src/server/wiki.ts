@@ -54,7 +54,7 @@ export function registerWiki(app: FastifyInstance, db: Database.Database) {
 
   const sessionInCampaign = db.prepare<[string, string]>(`
     SELECT 1 FROM sessions s JOIN documents d ON d.id = s.document_id
-    WHERE d.campaign_id = ? AND d.id = ? AND d.type = 'session'`)
+    WHERE d.campaign_id = ? AND d.id = ? AND d.type = 'session' AND s.trashed_at IS NULL`)
   const linkedPages = db.prepare<[string, ...string[]], WikiSummary>(`
     SELECT id, type, title ${wikiDocuments}
     AND id IN (SELECT target_id FROM document_links WHERE source_id = ?)
@@ -62,7 +62,7 @@ export function registerWiki(app: FastifyInstance, db: Database.Database) {
   const backlinks = db.prepare<[string, string], SessionSummary>(`
     SELECT d.id, d.title, s.session_date AS date, s.number
     FROM sessions s JOIN documents d ON d.id = s.document_id
-    WHERE d.campaign_id = ? AND d.type = 'session'
+    WHERE d.campaign_id = ? AND d.type = 'session' AND s.trashed_at IS NULL
       AND d.id IN (SELECT source_id FROM document_links WHERE target_id = ?)
     ORDER BY s.session_date DESC, d.id`)
   const insertLink = db.prepare(`

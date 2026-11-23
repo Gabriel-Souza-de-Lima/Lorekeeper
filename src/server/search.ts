@@ -18,7 +18,7 @@ export function registerSearch(app: FastifyInstance, db: Database.Database) {
   }, SearchRow>(`
     SELECT d.id, d.campaign_id AS campaignId, c.name AS campaignName, c.archived_at IS NOT NULL AS archived,
       d.type, d.title, snippet(document_search, -1, @start, @end, '…', 24) AS excerpt
-    FROM document_search JOIN documents d ON d.id = document_search.document_id
+    FROM document_search JOIN active_documents d ON d.id = document_search.document_id
     LEFT JOIN campaigns c ON c.id = d.campaign_id
     WHERE document_search MATCH @terms
       AND (@type IS NULL OR d.type = @type)
@@ -31,7 +31,7 @@ export function registerSearch(app: FastifyInstance, db: Database.Database) {
     SELECT id, name, archived_at IS NOT NULL AS archived FROM campaigns ORDER BY name COLLATE NOCASE, id`)
   const tags = db.prepare<[], SearchFilters['tags'][number]>(`
     SELECT id, name FROM tags WHERE EXISTS (
-      SELECT 1 FROM document_tags WHERE tag_id = tags.id
+      SELECT 1 FROM document_tags JOIN active_documents d ON d.id = document_tags.document_id WHERE tag_id = tags.id
     ) ORDER BY normalized_name, id`)
 
   app.get('/api/search/filters', () => ({ campaigns: campaigns.all(), tags: tags.all() }))

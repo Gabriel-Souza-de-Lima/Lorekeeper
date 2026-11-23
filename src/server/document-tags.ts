@@ -8,7 +8,7 @@ const path = '/api/campaigns/:campaignId/documents/:documentId/tags'
 
 export function registerDocumentTags(app: FastifyInstance, db: Database.Database) {
   const document = db.prepare<[string, string], { archivedAt: string | null }>(`
-    SELECT c.archived_at AS archivedAt FROM documents d JOIN campaigns c ON c.id = d.campaign_id
+    SELECT c.archived_at AS archivedAt FROM active_documents d JOIN campaigns c ON c.id = d.campaign_id
     WHERE d.id = ? AND d.campaign_id = ?`)
   const list = db.prepare<[string], DocumentTag>(`
     SELECT t.id, t.name FROM tags t JOIN document_tags dt ON dt.tag_id = t.id

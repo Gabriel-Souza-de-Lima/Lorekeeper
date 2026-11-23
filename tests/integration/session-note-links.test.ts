@@ -58,7 +58,7 @@ test('migration-preservation I3-02c: V4 preserva nota, sessão, revisão e compr
     .map((table) => {
     const columns = table === 'documents' ? 'id, campaign_id, type, title, body, version, created_at, updated_at'
       : table === 'campaigns' ? 'id, name, description, game_master, system, rules_version, notes, status, archived_at, created_at, updated_at'
-        : '*'
+        : table === 'sessions' ? 'document_id, session_date, fictional_date, participants, number' : '*'
     return db.prepare(`SELECT ${columns} FROM ${table} ORDER BY 1`).all()
   })
   const legacy = new Database(path, { readonly: true })
@@ -66,7 +66,7 @@ test('migration-preservation I3-02c: V4 preserva nota, sessão, revisão e compr
   legacy.close()
   const db = openDatabase(path)
   try {
-    assert.equal(db.pragma('user_version', { simple: true }), 8)
+    assert.equal(db.pragma('user_version', { simple: true }), 9)
     assert.deepEqual(snapshot(db), original)
     assert.deepEqual(db.pragma('integrity_check'), [{ integrity_check: 'ok' }])
   } finally {

@@ -17,10 +17,11 @@ interface Props {
   path: string
   archived: boolean
   onOpenWiki: (id: string) => void
+  onTrash: (id: string, title: string) => void
   onBack: () => void
 }
 
-export function SessionEditor({ campaignName, campaignUrl, session, path, archived, onOpenWiki, onBack }: Props) {
+export function SessionEditor({ campaignName, campaignUrl, session, path, archived, onOpenWiki, onTrash, onBack }: Props) {
   const editor = useSessionDraft(path, session, archived)
   const { draft, documentId, created, ready, dirty, locallySaved, storageFailed, saving, failure, recoverable, recover, update, retry } = editor
 
@@ -80,6 +81,8 @@ export function SessionEditor({ campaignName, campaignUrl, session, path, archiv
         <div className="save-state">
           <span role="status" className={failure || storageFailed ? 'error' : ''}>{status}</span>
           {!archived && <button className="primary" disabled={!editor.canSave} onClick={() => void editor.save()}>Salvar</button>}
+          {!archived && created && !dirty && <button type="button" disabled={!ready || saving}
+            onClick={() => onTrash(documentId, draft.title)}>Excluir sessão</button>}
           {!archived && dirty && (!created || failure?.status !== 409) && <button disabled={!ready || saving} onClick={() => {
             if (window.confirm('Descartar as alterações locais e voltar à última versão confirmada?')) void editor.discard()
           }}>Descartar alterações</button>}
