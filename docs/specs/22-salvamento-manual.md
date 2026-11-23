@@ -28,3 +28,5 @@ As especificações do editor e de integridade registram a política anterior co
 ## SAVE-13 — Primeira confirmação
 
 O editor de sessão nova tem versão local zero e UUID estável. Rascunhos novos são recuperáveis na mesma campanha antes de existir um registro oficial. O primeiro POST com todos os campos grava documento, metadados, primeira revisão, vínculos e comprovante na mesma transação. O servidor só reconhece uma tentativa repetida quando o identificador e o conteúdo correspondem ao comprovante da criação na mesma campanha. Após a confirmação, gravações seguintes usam o controle de versão normal.
+
+Os testes SAVE-13 começaram em Red porque abrir o editor criava um registro e o POST rejeitava os campos completos. Em Green, a criação ocorreu somente em Salvar. O E2E confirmou a recuperação do rascunho, a perda da primeira resposta e o reenvio sem duplicata. Em Refactor, a rota anterior com apenas data foi mantida para compatibilidade, enquanto o editor usa o contrato idempotente com UUID do cliente.

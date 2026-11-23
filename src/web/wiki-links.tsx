@@ -2,10 +2,11 @@ import { useEffect, useId, useState } from 'react'
 import type { SessionSummary, WikiSummary } from '../contracts.ts'
 import { api, displayDate } from './api.ts'
 
-export function SessionWikiLinks({ sessionUrl, campaignUrl, archived, navigationBlocked, version, canInsert, onInsert, onOpen }: {
+export function SessionWikiLinks({ sessionUrl, campaignUrl, archived, draftOnly, navigationBlocked, version, canInsert, onInsert, onOpen }: {
   sessionUrl: string
   campaignUrl: string
   archived: boolean
+  draftOnly: boolean
   navigationBlocked: boolean
   version: number
   canInsert: boolean
@@ -24,7 +25,7 @@ export function SessionWikiLinks({ sessionUrl, campaignUrl, archived, navigation
 
   useEffect(() => {
     let active = true
-    void api<WikiSummary[]>(url).then(async (rows) => {
+    void (draftOnly ? Promise.resolve<WikiSummary[]>([]) : api<WikiSummary[]>(url)).then(async (rows) => {
       if (!active) return
       setLinked(rows)
       if (!archived) {
@@ -33,7 +34,7 @@ export function SessionWikiLinks({ sessionUrl, campaignUrl, archived, navigation
       }
     }).catch(() => { if (active) setFailed(true) })
     return () => { active = false }
-  }, [archived, attempt, campaignUrl, url, version])
+  }, [archived, attempt, campaignUrl, draftOnly, url, version])
 
   async function link() {
     const page = pages.find((item) => item.id === selected)
@@ -66,7 +67,7 @@ export function SessionWikiLinks({ sessionUrl, campaignUrl, archived, navigation
         <option value="">Escolha uma página</option>
         {pages.map((page) => <option key={page.id} value={page.id}>{page.title}</option>)}
       </select>
-      <button disabled={!selected || busy || linkedIds.has(selected)} onClick={() => void link()}>Vincular página</button>
+      {!draftOnly && <button disabled={!selected || busy || linkedIds.has(selected)} onClick={() => void link()}>Vincular página</button>}
       <button disabled={!selectedPage || !canInsert || busy} onClick={() => {
         if (selectedPage) onInsert(selectedPage)
       }}>Inserir no Markdown</button>

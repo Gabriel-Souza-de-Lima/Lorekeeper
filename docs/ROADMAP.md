@@ -48,7 +48,7 @@ A implementação começa após a revisão da [arquitetura](ARCHITECTURE.md) e d
 
 ## Controle de sessões
 
-- SC-01 separa revisão textual da versão de concorrência. SC-02 adiciona confirmação explícita no editor de sessões existentes. Criação no primeiro Salvar e lixeira seguem nas entregas SC-03 e SC-04. [Critérios](specs/22-salvamento-manual.md)
+- SC-01 separa revisão textual da versão de concorrência. SC-02 adiciona confirmação explícita no editor de sessões existentes. SC-03 cria a sessão no primeiro Salvar. A lixeira segue na entrega SC-04. [Critérios](specs/22-salvamento-manual.md)
 
 ## Depois do MVP
 
