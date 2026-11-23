@@ -71,3 +71,8 @@ textarea { resize: vertical; min-height: 5rem; }
 .campaign-recap { display: grid; gap: 1rem; margin-top: 1rem; }
 .campaign-recap h3 { margin: 0 0 .4rem; overflow-wrap: anywhere; }
 .campaign-recap blockquote { margin: .25rem 0; padding-inline-start: .65rem; border-inline-start: 2px solid var(--border); white-space: pre-wrap; overflow-wrap: anywhere; }
+
+.attachments { margin-block: 1rem; overflow-wrap: anywhere; }
+.attachments .attachment { justify-content: flex-start; align-items: flex-start; }
+.attachment img { width: auto; max-width: min(100%, 9rem); max-height: 8rem; object-fit: contain; }
+.attachments input[type="file"] { max-width: 100%; }

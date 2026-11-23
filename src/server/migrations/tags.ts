@@ -3,7 +3,7 @@ import type Database from 'better-sqlite3'
 export function migrateTags(db: Database.Database) {
   db.transaction(() => {
     const version = db.pragma('user_version', { simple: true })
-    if (version === 7 || version === 8 || version === 9 || version === 10) return
+    if (version === 7 || version === 8 || version === 9 || version === 10 || version === 11) return
     if (version !== 6) throw new Error('Versão de banco incompatível.')
     db.exec(`
       CREATE TABLE tags (

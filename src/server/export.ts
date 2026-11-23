@@ -1,6 +1,7 @@
 import type Database from 'better-sqlite3'
 import type { FastifyInstance } from 'fastify'
-import { strToU8, zipSync } from 'fflate'
+import { strToU8, zipSync, type Zippable } from 'fflate'
+import { activeAttachmentAssociations } from './attachments.ts'
 
 type ExportDocument = {
   id: string
@@ -39,6 +40,26 @@ export function registerExport(app: FastifyInstance, db: Database.Database) {
   const pendingItemEntities = db.prepare('SELECT item_id, document_id FROM pending_item_entities ORDER BY item_id, document_id')
   const pendingItemStates = db.prepare('SELECT item_id, state, created_at FROM pending_item_states ORDER BY id')
 
+  const attachmentAssociations = db.prepare(`
+    SELECT attachment_id, campaign_id, document_id FROM attachment_associations
+    WHERE ${activeAttachmentAssociations} ORDER BY attachment_id, target_key`)
+  const attachments = db.prepare<[], {
+    id: string
+    campaign_id: string
+    name: string
+    filename: string
+    origin: string
+    mime: string
+    size: number
+    bytes: Buffer
+    sha256: string
+    created_at: string
+  }>(`
+    SELECT id, campaign_id, name, filename, origin, mime, length(bytes) AS size, bytes, sha256, created_at
+    FROM attachments WHERE id IN (
+      SELECT attachment_id FROM attachment_associations WHERE ${activeAttachmentAssociations}
+    ) ORDER BY id`)
+
   const snapshot = db.transaction(() => ({
     formatVersion: 1,
     exportedAt: new Date().toISOString(),
@@ -54,12 +75,20 @@ export function registerExport(app: FastifyInstance, db: Database.Database) {
     pendingItems: pendingItems.all(),
     pendingItemEntities: pendingItemEntities.all(),
     pendingItemStates: pendingItemStates.all(),
+    attachments: attachments.all().map((file) => ({
+      ...file, path: `attachments/${encodeURIComponent(file.id)}.${file.mime === 'image/png' ? 'png' : 'pdf'}`,
+    })),
+    attachmentAssociations: attachmentAssociations.all(),
   }))
 
   app.get('/api/export', (_request, reply) => {
-    const data = snapshot()
-    const files = Object.fromEntries(data.documents.map(({ markdownPath, body }) => [markdownPath, strToU8(body)]))
-    files['lorekeeper.json'] = strToU8(JSON.stringify(data, null, 2))
+    const { attachments: binary, ...data } = snapshot()
+    const files: Zippable = Object.fromEntries(data.documents.map(({ markdownPath, body }) => [markdownPath, strToU8(body)]))
+    const manifest = binary.map(({ bytes, ...file }) => {
+      files[file.path] = [bytes, { level: 0 }]
+      return file
+    })
+    files['lorekeeper.json'] = strToU8(JSON.stringify({ ...data, attachments: manifest }, null, 2))
     const zip = zipSync(files, { level: 3 })
     return reply.type('application/zip')
       .header('Content-Disposition', `attachment; filename="lorekeeper-export-${data.exportedAt.slice(0, 10)}.zip"`)
