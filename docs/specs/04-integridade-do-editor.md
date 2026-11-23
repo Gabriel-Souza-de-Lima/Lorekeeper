@@ -66,3 +66,9 @@ A fila do navegador depende da integração dos comprovantes idempotentes da pri
 - **Refactor** — a combinação e a restauração reaproveitam a fila durável. O descarte adota a versão do servidor apenas após confirmar a exclusão local. A regressão cobre sair com o rascunho, reencontrá-lo, cancelar o descarte e manter o texto se o IndexedDB falhar.
 
 O ensaio de acesso HTTPS privado em dispositivos reais (I2-07) permanece pendente.
+
+### Encerramento do servidor no teste I2-06
+
+Após a restauração e a confirmação do histórico, o servidor de teste deve parar de aceitar conexões, concluir respostas HTTP em andamento e recolher as conexões persistentes quando ficarem ociosas. O teste de integração usa uma requisição em andamento para verificar a entrega integral da resposta e o término do servidor.
+
+**Red → Green → Refactor.** Com apenas `app.close()`, a reprodução entregou a resposta, mas manteve aberta a conexão que ficou ociosa depois do início do fechamento. Com a drenagem compartilhada, a resposta continuou íntegra e o servidor fechou sem esperar o keep-alive. I2-05 e I2-06 usam o mesmo procedimento no encerramento.
