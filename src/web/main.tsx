@@ -1,3 +1,4 @@
+import { PendingItems } from './pending-items.tsx'
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { createRoot } from 'react-dom/client'
@@ -21,6 +22,7 @@ type View =
   | { page: 'quick-notes' }
   | { page: 'new' }
   | { page: 'campaign' | 'edit'; campaign: Campaign }
+  | { page: 'pending-items'; campaign: Campaign; itemId?: string }
   | { page: 'campaign-notes'; campaign: Campaign; noteId?: string }
   | { page: 'session-trash'; campaign: Campaign; rows: SessionSummary[] }
   | { page: 'wiki'; campaign: Campaign; initialPage?: WikiDetails }
@@ -196,6 +198,7 @@ function App() {
         </div>
         <CampaignResume key={campaign.id} campaign={campaign} busy={working} onSession={openSession}
           onWiki={(id) => openWikiPage(campaign, id)}
+          onPending={(itemId) => setView({ page: 'pending-items', campaign, itemId })}
           onNote={(noteId) => setView({ page: 'campaign-notes', campaign, noteId })} />
         <section>
           <header className="page-header"><h2>Sessões</h2>
@@ -271,6 +274,13 @@ function App() {
             })}>Restaurar sessão</button>}
         </li>)}</ul>}
       </>
+      case 'pending-items': return <PendingItems campaign={view.campaign} itemId={view.itemId}
+        onBack={() => void action(() => openCampaign(view.campaign.id))}
+        onSession={(id) => void action(async () => {
+          const session = await api<Session>(`${campaignPath}/${view.campaign.id}/sessions/${id}`)
+          setView({ page: 'session', campaign: view.campaign, session })
+        })}
+        onWiki={(id) => openWikiPage(view.campaign, id)} />
       case 'campaign-notes': return <CampaignNotes campaign={view.campaign} noteId={view.noteId}
         onBack={() => setView({ page: 'campaign', campaign: view.campaign })} />
       case 'session': return <SessionEditor key={view.session.id} campaignName={view.campaign.name}

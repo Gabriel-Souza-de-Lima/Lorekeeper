@@ -33,6 +33,12 @@ export function registerExport(app: FastifyInstance, db: Database.Database) {
     SELECT document_id, tag_id FROM document_tags
     WHERE document_id IN (SELECT id FROM active_documents) ORDER BY document_id, tag_id`)
 
+  const pendingItems = db.prepare(`
+    SELECT id, campaign_id, CASE WHEN session_id IN (SELECT id FROM active_documents) THEN session_id END AS session_id,
+      title, type, description, origin, notes, state, created_at, updated_at FROM pending_items ORDER BY id`)
+  const pendingItemEntities = db.prepare('SELECT item_id, document_id FROM pending_item_entities ORDER BY item_id, document_id')
+  const pendingItemStates = db.prepare('SELECT item_id, state, created_at FROM pending_item_states ORDER BY id')
+
   const snapshot = db.transaction(() => ({
     formatVersion: 1,
     exportedAt: new Date().toISOString(),
@@ -45,6 +51,9 @@ export function registerExport(app: FastifyInstance, db: Database.Database) {
     links: links.all(),
     tags: tags.all(),
     documentTags: documentTags.all(),
+    pendingItems: pendingItems.all(),
+    pendingItemEntities: pendingItemEntities.all(),
+    pendingItemStates: pendingItemStates.all(),
   }))
 
   app.get('/api/export', (_request, reply) => {

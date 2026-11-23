@@ -77,3 +77,25 @@ export interface CampaignRecap {
   entities: WikiSummary[]
   notes: { id: string; title: string }[]
 }
+
+export const pendingTypes = ['clue', 'question', 'promise', 'task', 'other'] as const
+export const pendingStates = ['open', 'investigating', 'resolved', 'discarded'] as const
+export type PendingType = typeof pendingTypes[number]
+export type PendingState = typeof pendingStates[number]
+
+export interface PendingItemSummary {
+  id: string
+  title: string
+  type: PendingType
+  state: PendingState
+}
+export interface PendingItem extends PendingItemSummary {
+  description: string
+  origin: string
+  notes: string
+  sessionId: string | null
+  entityIds: string[]
+  createdAt: string
+  updatedAt: string
+  history: { state: PendingState; createdAt: string }[]
+}

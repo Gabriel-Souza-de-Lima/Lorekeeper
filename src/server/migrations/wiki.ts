@@ -2,14 +2,14 @@ import type Database from 'better-sqlite3'
 
 export function migrateWiki(db: Database.Database) {
   const currentVersion = db.pragma('user_version', { simple: true })
-  if (currentVersion === 5 || currentVersion === 6 || currentVersion === 7 || currentVersion === 8 || currentVersion === 9) return
+  if (currentVersion === 5 || currentVersion === 6 || currentVersion === 7 || currentVersion === 8 || currentVersion === 9 || currentVersion === 10) return
   // The SQLite table-rebuild procedure requires disabling checks on this connection
   // before the transaction and checking the entire schema before committing.
   db.pragma('foreign_keys = OFF')
   try {
     db.transaction(() => {
       const version = db.pragma('user_version', { simple: true })
-      if (version === 5 || version === 6 || version === 7 || version === 8 || version === 9) return
+      if (version === 5 || version === 6 || version === 7 || version === 8 || version === 9 || version === 10) return
       if (version !== 4) throw new Error('Versão de banco incompatível.')
       db.exec(`
         CREATE TABLE documents_v5 (
