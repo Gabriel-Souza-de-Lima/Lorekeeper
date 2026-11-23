@@ -124,6 +124,16 @@ test('I2-06: restaura título e texto em nova revisão, mantendo os metadados', 
     await expect(page.getByLabel('Participantes')).toHaveValue('Lia')
     const revisions = await (await request.get(`${path}/revisions`)).json()
     expect(revisions.map(({ version }: { version: number }) => version)).toEqual([4, 3, 2, 1])
+
+    // These panels perform independent reads, including a refresh after autosave.
+    await expect(page.getByRole('region', { name: 'Páginas vinculadas' }))
+      .toContainText('Nenhuma página vinculada.')
+    await expect(page.getByRole('region', { name: 'Anotações vinculadas' }))
+      .toContainText('Nenhuma anotação vinculada.')
+    await expect(page.getByRole('region', { name: 'Tags' })).toContainText('Nenhuma tag.')
+    await test.step('Encerrar clientes HTTP após as verificações', async () => {
+      await Promise.all([page.context().close(), request.dispose()])
+    }, { timeout: 5000 })
   } finally {
     await test.step('Drenar conexões HTTP do teste de restauração', () => closeTestServer(app), { timeout: 5000 })
   }
