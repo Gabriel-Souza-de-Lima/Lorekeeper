@@ -24,3 +24,7 @@ As especificações do editor e de integridade registram a política anterior co
 - **Red** — o navegador não encontrou Salvar na sessão existente.
 - **Green** — os cenários focados verificaram confirmação única, descarte, perda de resposta e recuperação de conflito.
 - **Refactor** — a confirmação usa um único fluxo, com trava por operação e preservação da geração posterior. O teste de menções verifica que busca e backlinks permanecem inalterados antes de Salvar.
+
+## SAVE-13 — Primeira confirmação
+
+O editor de sessão nova tem versão local zero e UUID estável. Rascunhos novos são recuperáveis na mesma campanha antes de existir um registro oficial. O primeiro POST com todos os campos grava documento, metadados, primeira revisão, vínculos e comprovante na mesma transação. O servidor só reconhece uma tentativa repetida quando o identificador e o conteúdo correspondem ao comprovante da criação na mesma campanha. Após a confirmação, gravações seguintes usam o controle de versão normal.
