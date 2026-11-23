@@ -34,7 +34,7 @@ test('I2-05: mantém o rascunho em conflito e exige nova comparação se o servi
     await expect(remote.getByRole('status')).toHaveText('Salvo no servidor')
     await localNotes.fill('A ponte passa sob a torre.')
     await page.getByRole('button', { name: 'Salvar', exact: true }).click()
-    await expect(page.getByRole('status')).toHaveText(/Falha ao salvar/)
+    await expect(page.getByRole('status')).toHaveText(/Conflito de edição/)
     await page.getByRole('button', { name: 'Comparar versões' }).click({ timeout: 3000 })
     const server = page.getByRole('region', { name: 'Versão do servidor' })
     await expect(server).toContainText('O mapa está na torre.')

@@ -23,9 +23,9 @@ export function useSessionDraft(path: string, session: Session, archived: boolea
   const [discarding, setDiscarding] = useState(false)
   const [storageFailed, setStorageFailed] = useState(false)
   const [saving, setSaving] = useState(false)
-  const [failure, setFailure] = useState<{ message: string; status: number; attempts: number } | null>(null)
+  const [failure, setFailure] = useState<{ message: string; status: number } | null>(null)
   const confirmed = useRef({ fields: initialFields, version: initialVersion })
-  const retryCount = useRef(0)
+  const sending = useRef(false)
   const working = useRef<LocalDraft | null>(null)
   const stored = useRef<LocalDraft | null>(null)
   const storage = useRef<DraftStorage | null>(null)
@@ -102,49 +102,44 @@ export function useSessionDraft(path: string, session: Session, archived: boolea
     }
   }, [archived, openAttempt, persist, url])
 
-  useEffect(() => {
-    if (!ready || archived || !record || saving || failure || storageFailed || recovering) return
-    const timeout = window.setTimeout(async () => {
-      if (working.current !== record) return
-      setSaving(true)
-      try {
-        const operation = record.operation ?? {
-          key: crypto.randomUUID(), version: record.version, generation: record.generation, fields: record.fields,
-        }
-        if (!await persist({ ...record, operation })) return
-        const result = await api<Session>(url, 'PUT', { ...operation.fields, version: operation.version },
-          { 'Idempotency-Key': operation.key })
-        const fields = { ...operation.fields, title: result.title }
-        confirmed.current = { fields, version: result.version }
-        setSaved(fields)
-        retryCount.current = 0
-        const latest = working.current
-        if (!latest || latest.generation === operation.generation) {
-          await persist(null)
-        } else {
-          await persist({ ...latest, version: result.version, operation: null })
-        }
-      } catch (error) {
-        const message = error instanceof Error ? error.message : 'Tente novamente.'
-        const status = error instanceof ApiError ? error.status : 0
-        setFailure({ message, status, attempts: retryCount.current++ })
-      } finally {
-        setSaving(false)
-      }
-    }, 450)
-    return () => window.clearTimeout(timeout)
-  }, [archived, failure, persist, ready, record, recovering, saving, storageFailed, url])
+  function hasChanges(fields: SessionFields) {
+    return (Object.keys(fields) as (keyof SessionFields)[]).some((key) =>
+      key === 'title' ? fields.title.trim() !== confirmed.current.fields.title : fields[key] !== confirmed.current.fields[key])
+  }
 
-  useEffect(() => {
-    if (!failure || (failure.status !== 0 && failure.status < 500)) return
-    const retry = () => setFailure(null)
-    window.addEventListener('online', retry)
-    const timer = window.setTimeout(retry, Math.min(2000 * 2 ** failure.attempts, 30000))
-    return () => {
-      window.removeEventListener('online', retry)
-      window.clearTimeout(timer)
+  async function save() {
+    const current = working.current
+    if (!ready || archived || !current || sending.current || recovering || discarding ||
+        storageFailed || failure?.status === 409 || (!current.operation && !hasChanges(current.fields))) return
+    sending.current = true
+    setSaving(true)
+    setFailure(null)
+    try {
+      const operation = current.operation ?? {
+        key: crypto.randomUUID(), version: current.version, generation: current.generation, fields: current.fields,
+      }
+      if (!await persist({ ...current, operation })) return
+      const result = await api<Session>(url, 'PUT', { ...operation.fields, version: operation.version },
+        { 'Idempotency-Key': operation.key })
+      const version = result.version
+      const fields = { ...operation.fields, title: result.title }
+      confirmed.current = { fields, version }
+      setSaved(fields)
+      const latest = working.current
+      if (!latest || latest.generation === operation.generation || !hasChanges(latest.fields)) {
+        await persist(null)
+      } else {
+        await persist({ ...latest, version, operation: null })
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Tente novamente.'
+      const status = error instanceof ApiError ? error.status : 0
+      setFailure({ message, status })
+    } finally {
+      sending.current = false
+      setSaving(false)
     }
-  }, [failure])
+  }
 
   useEffect(() => {
     const warn = (event: BeforeUnloadEvent) => {
@@ -161,6 +156,7 @@ export function useSessionDraft(path: string, session: Session, archived: boolea
     const invalid = failure?.status === 400 || failure?.status === 413
     const replaceOperation = invalid || baseVersion !== undefined
     if (replaceOperation) setFailure(null)
+    if (baseVersion === undefined && !current?.operation && !sending.current && !hasChanges(fields)) return persist(null)
     return persist({
       id: current?.id ?? storage.current?.id ?? '',
       path: url,
@@ -178,8 +174,11 @@ export function useSessionDraft(path: string, session: Session, archived: boolea
 
   function resolveConflict(server: Session) {
     const current = working.current
-    if (failure?.status !== 409 || !current || server.id !== id || server.version <= current.version) return
-    void replaceDraft(current.fields, server.version)
+    const { id: serverId, version, ...fields } = server
+    if (failure?.status !== 409 || !current || serverId !== id || version <= current.version) return
+    confirmed.current = { fields, version }
+    setSaved(fields)
+    void replaceDraft(current.fields, version)
   }
 
   async function discardConflict(server: Session) {
@@ -192,6 +191,28 @@ export function useSessionDraft(path: string, session: Session, archived: boolea
       confirmed.current = { fields, version }
       setSaved(fields)
       setFailure(null)
+    } finally {
+      setDiscarding(false)
+    }
+  }
+
+  async function discard() {
+    const current = working.current
+    if (!current || sending.current || discarding) return
+    setDiscarding(true)
+    try {
+      const server = current.operation ? await api<Session>(url) : null
+      if (!await persist(null, true)) return
+      if (server) {
+        const { date, title, body, number, participants, fictionalDate, version } = server
+        const fields = { date, title, body, number, participants, fictionalDate }
+        confirmed.current = { version, fields }
+        setSaved(fields)
+      }
+      setFailure(null)
+    } catch (error) {
+      setFailure({ status: error instanceof ApiError ? error.status : 0,
+        message: error instanceof Error ? error.message : 'Não foi possível descartar as alterações.' })
     } finally {
       setDiscarding(false)
     }
@@ -248,7 +269,9 @@ export function useSessionDraft(path: string, session: Session, archived: boolea
 
   return {
     draft, ready: ready && !recovering && !discarding, dirty: record !== null, locallySaved, storageFailed, saving,
-    failure, recoverable, recover, update, retry, resolveConflict, discardConflict, restoreRevision,
+    canSave: ready && !archived && !saving && !recovering && !discarding && !storageFailed &&
+      failure?.status !== 409 && record !== null && (record.operation !== null || hasChanges(record.fields)),
+    failure, recoverable, recover, update, save, discard, retry, resolveConflict, discardConflict, restoreRevision,
     baseVersion: record?.version ?? confirmed.current.version,
   }
 }

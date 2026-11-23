@@ -17,3 +17,10 @@
 | SAVE-15 | MVP-04/10 | Índice e backlinks são atualizados apenas pela transação de confirmação. |
 
 As especificações do editor e de integridade registram a política anterior como histórico. Captura rápida, wiki e ações independentes mantêm seus próprios controles explícitos.
+
+
+## Evidências de TDD
+
+- **Red** — o navegador não encontrou Salvar na sessão existente.
+- **Green** — os cenários focados verificaram confirmação única, descarte, perda de resposta e recuperação de conflito.
+- **Refactor** — a confirmação usa um único fluxo, com trava por operação e preservação da geração posterior. O teste de menções verifica que busca e backlinks permanecem inalterados antes de Salvar.

@@ -49,13 +49,13 @@ export function ConflictReview({ url, draft, baseVersion, busy, canKeep, onKeep,
     </div>
     {error && <p className="error" role="alert">{error}</p>}
     {server && <>
-      <p>Edite a versão local nos campos da sessão. Ao salvar a combinação, o editor usa como base a versão exibida do servidor.</p>
+      <p>Edite a versão local nos campos da sessão. Prepare a combinação sobre a versão exibida e clique em Salvar para confirmá-la.</p>
       <div className="editor-grid">
         <VersionText name="Versão local" fields={draft} />
         <VersionText name="Versão do servidor" fields={server} version={server.version} />
       </div>
       <div className="actions">
-        <button className="primary" disabled={busy} onClick={() => onResolve(server)}>Salvar combinação</button>
+        <button className="primary" disabled={busy} onClick={() => onResolve(server)}>Preparar combinação</button>
         <button disabled={busy} onClick={() => {
           if (window.confirm('Descartar o rascunho local e usar a versão exibida do servidor?')) onDiscard(server)
         }}>Descartar rascunho</button>
@@ -113,7 +113,7 @@ export function RevisionHistory({ url, canRestore, onRestore }: {
         <h2>{selected.title}</h2>
         <p style={{ whiteSpace: 'pre-wrap' }}>{selected.body}</p>
         <button disabled={!canRestore} onClick={() => {
-          if (!window.confirm('Restaurar título e anotações como uma nova revisão?')) return
+          if (!window.confirm('Carregar título e anotações da revisão? Use Salvar para confirmar.')) return
           onRestore(selected)
           setOpen(false)
         }}>Restaurar como nova revisão</button>

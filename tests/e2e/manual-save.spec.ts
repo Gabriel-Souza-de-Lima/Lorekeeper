@@ -46,6 +46,13 @@ test('SAVE-01/02/03/05/09/10: protege localmente, salva uma vez e descarta sem g
     next.once('dialog', (dialog) => void dialog.accept())
     await next.getByRole('button', { name: 'Descartar alterações' }).click()
     await expect(next.getByLabel('Anotações', { exact: true })).toHaveValue('A bússola girou.')
+    const nextSave = next.getByRole('button', { name: 'Salvar', exact: true })
+    const title = next.getByLabel('Título', { exact: true })
+    await title.fill('Mudança desfeita')
+    await expect(nextSave).toBeEnabled()
+    await title.fill('Farol')
+    await expect(nextSave).toBeDisabled()
     expect(writes).toBe(1)
+    expect((await (await request.get(`${path}/revisions`)).json()).map(({ version }: { version: number }) => version)).toEqual([2, 1])
   } finally { await finishE2EServer(app, [context], request) }
 })
