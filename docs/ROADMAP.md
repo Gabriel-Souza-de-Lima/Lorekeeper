@@ -38,7 +38,9 @@ A implementação começa após a revisão da [arquitetura](ARCHITECTURE.md) e d
 
 ## Entregas do Incremento 4
 
-- O painel exporta o acervo salvo em ZIP com Markdown e JSON versionado. Backup operacional e ensaio de restauração seguem como entregas separadas. [Especificação](specs/17-exportacao-portavel.md)
+- O painel exporta o acervo salvo em ZIP com Markdown e JSON versionado. [Especificação](specs/17-exportacao-portavel.md)
+
+- O comando de cópia verifica a integridade do SQLite e permite ensaiar a restauração em outra instância. Criptografia, destino externo, agendamento e retenção seguem pendentes. [Especificação](specs/18-backup-sqlite.md)
 
 ## Depois do MVP
 
