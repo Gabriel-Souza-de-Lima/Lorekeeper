@@ -1,6 +1,6 @@
 import { Attachments } from './attachments.tsx'
 import { PendingItems } from './pending-items.tsx'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { createRoot } from 'react-dom/client'
 import type { Campaign, CampaignFields, CampaignStatus, Session, SessionSummary, WikiDetails, SearchResult } from '../contracts.ts'
@@ -9,7 +9,8 @@ import { CampaignNotes, NoteList, type Note } from './note-assignment.tsx'
 import { QuickNotes } from './quick-notes.tsx'
 import { TextImport } from './text-import.tsx'
 import { Search } from './search.tsx'
-import { SessionEditor } from './session-editor.tsx'
+import { QuickNavigation, type QuickDestination } from './quick-navigation.tsx'
+import { SessionEditor, type SessionNavigation } from './session-editor.tsx'
 import { CampaignResume } from './campaign-recap.tsx'
 import { Wiki } from './wiki.tsx'
 import './style.css'
@@ -89,6 +90,28 @@ function App() {
   const [loading, setLoading] = useState(true)
   const [working, setWorking] = useState(false)
   const [error, setError] = useState('')
+
+  const [quickOpen, setQuickOpen] = useState(false)
+  const quickOrigin = useRef<HTMLElement | null>(null)
+  const sessionNavigation = useRef<SessionNavigation>(null)
+  const shortcutAvailable = !['text-import', 'pending-items', 'edit', 'new', 'quick-notes', 'campaign-notes', 'wiki'].includes(view.page)
+
+  const openQuick = useCallback(() => {
+    quickOrigin.current = document.activeElement instanceof HTMLElement ? document.activeElement : null
+    setQuickOpen(true)
+  }, [])
+
+  useEffect(() => {
+    if (!shortcutAvailable || quickOpen || working) return
+    const shortcut = (event: KeyboardEvent) => {
+      if (event.defaultPrevented || event.isComposing || event.altKey || event.shiftKey ||
+          !(event.ctrlKey || event.metaKey) || event.key.toLowerCase() !== 'k') return
+      event.preventDefault()
+      openQuick()
+    }
+    window.addEventListener('keydown', shortcut)
+    return () => window.removeEventListener('keydown', shortcut)
+  }, [shortcutAvailable, quickOpen, openQuick, working])
 
   useEffect(() => {
     if (view.page !== 'dashboard') return
@@ -241,6 +264,13 @@ function App() {
     })
   }
 
+  function navigateQuick(destination: QuickDestination) {
+    if (sessionNavigation.current && !sessionNavigation.current.canLeave()) return
+    setQuickOpen(false)
+    if (destination.kind === 'campaign') void action(() => openCampaign(destination.campaign.id))
+    else openSearchResult(destination.result)
+  }
+
   function currentPage() {
     switch (view.page) {
       case 'text-import': return <TextImport onBack={dashboard}
@@ -289,7 +319,7 @@ function App() {
         onWiki={(id) => openWikiPage(view.campaign, id)} />
       case 'campaign-notes': return <CampaignNotes campaign={view.campaign} noteId={view.noteId}
         onBack={() => setView({ page: 'campaign', campaign: view.campaign })} />
-      case 'session': return <SessionEditor key={view.session.id} campaignName={view.campaign.name}
+      case 'session': return <SessionEditor key={view.session.id} navigationRef={sessionNavigation} campaignName={view.campaign.name}
         campaignUrl={`${campaignPath}/${view.campaign.id}`}
         session={view.session} archived={Boolean(view.campaign.archivedAt)}
         path={`${campaignPath}/${view.campaign.id}/sessions`}
@@ -343,6 +373,12 @@ function App() {
     <aside className="sidebar"><span className="brand">Lorekeeper</span>
       <span className="sidebar-section">Diário de campanhas</span></aside>
     <main>
+      {shortcutAvailable && <button className="quiet" type="button" disabled={working}
+        aria-keyshortcuts="Control+K Meta+K" onClick={openQuick}>Navegação rápida</button>}
+      {quickOpen && <QuickNavigation onNavigate={navigateQuick} onClose={() => {
+        setQuickOpen(false)
+        window.requestAnimationFrame(() => quickOrigin.current?.focus())
+      }} />}
       {error && <p role="alert" className="error panel">{error}</p>}
       {currentPage()}
     </main>

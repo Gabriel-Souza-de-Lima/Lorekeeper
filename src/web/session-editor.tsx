@@ -1,5 +1,5 @@
 import { Attachments } from './attachments.tsx'
-import { useLayoutEffect, useRef, useState } from 'react'
+import { useImperativeHandle, useLayoutEffect, useRef, useState, type Ref } from 'react'
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { markdownLayout } from './markdown-layout.tsx'
@@ -14,7 +14,10 @@ import { SessionNoteLinks } from './session-note-links.tsx'
 import { InlineWiki, inlineReference, type InlineReference } from './inline-wiki.tsx'
 import { DocumentTags } from './document-tags.tsx'
 
+export type SessionNavigation = { canLeave: () => boolean }
+
 interface Props {
+  navigationRef?: Ref<SessionNavigation>
   campaignName: string
   campaignUrl: string
   session: Session
@@ -25,7 +28,7 @@ interface Props {
   onBack: () => void
 }
 
-export function SessionEditor({ campaignName, campaignUrl, session, path, archived, onOpenWiki, onTrash, onBack }: Props) {
+export function SessionEditor({ navigationRef, campaignName, campaignUrl, session, path, archived, onOpenWiki, onTrash, onBack }: Props) {
   const editor = useSessionDraft(path, session, archived)
   const { draft, documentId, created, ready, dirty, locallySaved, storageFailed, saving, failure, recoverable, recover, update, retry } = editor
 
@@ -44,12 +47,17 @@ export function SessionEditor({ campaignName, campaignUrl, session, path, archiv
     if (ready && !archived && document.activeElement === document.body) notes.current?.focus()
   }, [archived, ready])
 
-  function leave(navigate: () => void) {
-    if (saving) return
-    if (dirty && !window.confirm(locallySaved
+  function canLeave() {
+    if (saving) return false
+    return !dirty || window.confirm(locallySaved
       ? 'As alterações estão neste navegador e ainda não estão disponíveis em outros dispositivos. Sair do editor?'
-      : 'O rascunho ainda está apenas nesta aba e pode ser perdido. Sair do editor?')) return
-    navigate()
+      : 'O rascunho ainda está apenas nesta aba e pode ser perdido. Sair do editor?')
+  }
+
+  useImperativeHandle(navigationRef, () => ({ canLeave }))
+
+  function leave(navigate: () => void) {
+    if (canLeave()) navigate()
   }
 
   const back = () => leave(onBack)
