@@ -70,5 +70,10 @@ A implementação começa após a revisão da [arquitetura](ARCHITECTURE.md) e d
 | P7 | Resumo de sessão e destaques escritos pelo usuário. | Preservar salvamento manual, retomada e portabilidade. [Especificação](specs/30-resumo-de-sessao.md) |
 | P8 | Importação de TXT e Markdown. | Prévia, confirmação, idempotência e busca. [Especificação](specs/31-importacao-de-texto.md) |
 | P9 | Navegação rápida e favoritos. | Teclado, foco, rascunhos e persistência. [Especificação](specs/32-navegacao-rapida.md) |
+| P10 | Fatos, rumores e teorias. | [Proposta de SDD](specs/33-fatos-rumores-e-teorias.md) para aprovação pessoal antes de qualquer implementação. |
 
-P10 encerra o ciclo com uma proposta de SDD para avaliação. A reformulação visual depende de aprovação pessoal da direção de design em uma etapa separada.
+### Encerramento do ciclo funcional
+
+P6–P9 foram integrados com validação pós-merge. O acervo existente foi verificado com migrações aditivas V12–V15 em bancos temporários, usando testes de preservação, integridade e rollback. A importação inicial tem sessão como destino editável e limite de 512 KiB em UTF-8. O resumo e os destaques são escritos pelo usuário, e os favoritos incluem sessões e páginas da wiki.
+
+O ciclo encerra com a proposta P10. A próxima etapa planejada é avaliar alternativas para a reformulação visual. A implementação permanece condicionada à aprovação pessoal da direção estética, navegação, cores, tipografia e componentes principais.
