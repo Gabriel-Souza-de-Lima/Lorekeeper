@@ -3,7 +3,7 @@ import type Database from 'better-sqlite3'
 export function migratePendingItems(db: Database.Database) {
   db.transaction(() => {
     const version = db.pragma('user_version', { simple: true })
-    if (version === 10 || version === 11 || version === 12 || version === 13 || version === 14) return
+    if (version === 10 || version === 11 || version === 12 || version === 13 || version === 14 || version === 15) return
     if (version !== 9) throw new Error('Versão de banco incompatível.')
     db.exec(`
       CREATE TABLE pending_items (

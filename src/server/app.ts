@@ -8,6 +8,7 @@ import { openDatabase } from './database.ts'
 import { registerAttachments } from './attachments.ts'
 import { registerPendingItems } from './pending-items.ts'
 import { registerCampaignRecap } from './campaign-recap.ts'
+import { registerFavorites } from './favorites.ts'
 import { registerSearch } from './search.ts'
 import { registerExport } from './export.ts'
 import { registerDocumentTags } from './document-tags.ts'
@@ -379,6 +380,7 @@ export function createApp(database: string, webRoot?: string) {
   registerPendingItems(app, db)
   registerAttachments(app, db)
   registerSearch(app, db)
+  registerFavorites(app, db)
   registerExport(app, db)
   registerDocumentTags(app, db)
   return app

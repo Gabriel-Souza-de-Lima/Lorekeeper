@@ -28,6 +28,9 @@ export function registerExport(app: FastifyInstance, db: Database.Database) {
     WHERE document_id IN (SELECT id FROM active_documents) ORDER BY document_id`)
   const sessionRevisions = db.prepare(`
     SELECT document_id, version, title, body, created_at FROM session_revisions WHERE document_id IN (SELECT id FROM active_documents) ORDER BY document_id, version`)
+  const favorites = db.prepare(`
+    SELECT document_id FROM document_favorites WHERE favorite = 1
+    AND document_id IN (SELECT id FROM active_documents) ORDER BY document_id`)
   const links = db.prepare(`
     SELECT source_id, target_id, origin FROM document_links
     WHERE source_id IN (SELECT id FROM active_documents) AND target_id IN (SELECT id FROM active_documents)
@@ -74,6 +77,7 @@ export function registerExport(app: FastifyInstance, db: Database.Database) {
     sessionImports: sessionImports.all(),
     sessionRevisions: sessionRevisions.all(),
     links: links.all(),
+    documentFavorites: favorites.all(),
     tags: tags.all(),
     documentTags: documentTags.all(),
     pendingItems: pendingItems.all(),

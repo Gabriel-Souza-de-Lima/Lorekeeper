@@ -66,7 +66,7 @@ function legacy(t: TestContext, collision = false) {
 test('migration-preservation I3-08c: indexa documentos V7 e preserva o texto', (t) => {
   const db = openDatabase(legacy(t))
   try {
-    assert.equal(db.pragma('user_version', { simple: true }), 14)
+    assert.equal(db.pragma('user_version', { simple: true }), 15)
     assert.equal(db.prepare('SELECT body FROM documents').pluck().get(), 'Bússola')
     assert.equal(db.prepare("SELECT document_id FROM document_search WHERE document_search MATCH 'bussola'").pluck().get(), 'nota')
   } finally { db.close() }

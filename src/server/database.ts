@@ -1,3 +1,4 @@
+import { migrateDocumentFavorites } from './migrations/document-favorites.ts'
 import { migrateSessionImports } from './migrations/session-imports.ts'
 import { migrateSessionRecap } from './migrations/session-recap.ts'
 import { migratePendingEdit } from './migrations/pending-edit.ts'
@@ -18,7 +19,7 @@ export function openDatabase(path: string) {
     db.pragma('synchronous = FULL')
     db.transaction(() => {
       const version = db.pragma('user_version', { simple: true })
-      if (version === 3 || version === 4 || version === 5 || version === 6 || version === 7 || version === 8 || version === 9 || version === 10 || version === 11 || version === 12 || version === 13 || version === 14) return
+      if (version === 3 || version === 4 || version === 5 || version === 6 || version === 7 || version === 8 || version === 9 || version === 10 || version === 11 || version === 12 || version === 13 || version === 14 || version === 15) return
       if (version !== 0 && version !== 1 && version !== 2) throw new Error('Versão de banco incompatível.')
       if (version === 0) db.exec(`
         CREATE TABLE campaigns (
@@ -98,6 +99,7 @@ export function openDatabase(path: string) {
     migratePendingEdit(db)
     migrateSessionRecap(db)
     migrateSessionImports(db)
+    migrateDocumentFavorites(db)
     return db
   } catch (error) {
     db.close()
@@ -110,12 +112,12 @@ export function openDatabase(path: string) {
 // Foreign keys are suspended only on this connection and checked before commit.
 function migrateInbox(db: Database.Database) {
   const currentVersion = db.pragma('user_version', { simple: true })
-  if (currentVersion === 3 || currentVersion === 4 || currentVersion === 5 || currentVersion === 6 || currentVersion === 7 || currentVersion === 8 || currentVersion === 9 || currentVersion === 10 || currentVersion === 11 || currentVersion === 12 || currentVersion === 13 || currentVersion === 14) return
+  if (currentVersion === 3 || currentVersion === 4 || currentVersion === 5 || currentVersion === 6 || currentVersion === 7 || currentVersion === 8 || currentVersion === 9 || currentVersion === 10 || currentVersion === 11 || currentVersion === 12 || currentVersion === 13 || currentVersion === 14 || currentVersion === 15) return
   db.pragma('foreign_keys = OFF')
   try {
     db.transaction(() => {
       const version = db.pragma('user_version', { simple: true })
-      if (version === 3 || version === 4 || version === 5 || version === 6 || version === 7 || version === 8 || version === 9 || version === 10 || version === 11 || version === 12 || version === 13 || version === 14) return
+      if (version === 3 || version === 4 || version === 5 || version === 6 || version === 7 || version === 8 || version === 9 || version === 10 || version === 11 || version === 12 || version === 13 || version === 14 || version === 15) return
       if (version !== 2) throw new Error('Versão de banco incompatível.')
       db.exec(`
         CREATE TABLE documents_v3 (
@@ -147,7 +149,7 @@ function migrateInbox(db: Database.Database) {
 function migrateDocumentLinks(db: Database.Database) {
   db.transaction(() => {
     const version = db.pragma('user_version', { simple: true })
-    if (version === 4 || version === 5 || version === 6 || version === 7 || version === 8 || version === 9 || version === 10 || version === 11 || version === 12 || version === 13 || version === 14) return
+    if (version === 4 || version === 5 || version === 6 || version === 7 || version === 8 || version === 9 || version === 10 || version === 11 || version === 12 || version === 13 || version === 14 || version === 15) return
     if (version !== 3) throw new Error('Versão de banco incompatível.')
     db.exec(`
       CREATE TABLE document_links (

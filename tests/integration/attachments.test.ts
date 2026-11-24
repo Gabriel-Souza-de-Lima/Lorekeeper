@@ -137,7 +137,7 @@ function v10(t: TestContext, collision = false) {
 test('migration-preservation P5: V11 preserva a pendência de V10', (t) => {
   const db = openDatabase(v10(t))
   try {
-    assert.equal(db.pragma('user_version', { simple: true }), 14)
+    assert.equal(db.pragma('user_version', { simple: true }), 15)
     assert.equal(db.prepare('SELECT title FROM pending_items').pluck().get(), 'Onde está o farol?')
   } finally { db.close() }
 })

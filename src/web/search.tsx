@@ -2,7 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react'
 import type { SearchFilters, SearchResult, SearchType } from '../contracts.ts'
 import { api } from './api.ts'
 
-const categories: Record<SearchType, string> = {
+export const categories: Record<SearchType, string> = {
   session: 'Sessão', quick_note: 'Anotação rápida', character: 'Personagem',
   npc: 'NPC', location: 'Localidade', quest: 'Missão',
 }

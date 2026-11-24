@@ -8,6 +8,7 @@ interface Query {
   type?: string
   campaignId?: string
   tagId?: string
+  prefix?: 'true'
 }
 
 type SearchRow = Omit<SearchResult, 'snippet' | 'archived'> & { excerpt: string; archived: number }
@@ -40,6 +41,7 @@ export function registerSearch(app: FastifyInstance, db: Database.Database) {
       type: 'object', required: ['q'], additionalProperties: false,
       properties: {
         q: { type: 'string', maxLength: 200 },
+        prefix: { type: 'string', enum: ['true'] },
         type: { type: 'string', enum: searchTypes },
         campaignId: { type: 'string', maxLength: 64 },
         tagId: { type: 'string', maxLength: 64 },
@@ -52,7 +54,7 @@ export function registerSearch(app: FastifyInstance, db: Database.Database) {
     const start = `<${marker}>`
     const end = `</${marker}>`
     return search.all({
-      terms: terms.map((term) => `"${term}"`).join(' AND '),
+      terms: terms.map((term) => `"${term}"${query.prefix ? '*' : ''}`).join(' AND '),
       type: query.type ?? null,
       campaignId: query.campaignId ?? null,
       tagId: query.tagId ?? null,
