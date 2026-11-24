@@ -108,7 +108,8 @@ export function useSessionDraft(path: string, session: Session, archived: boolea
 
   function hasChanges(fields: SessionFields) {
     return (Object.keys(fields) as (keyof SessionFields)[]).some((key) =>
-      key === 'title' ? fields.title.trim() !== confirmed.current.fields.title : fields[key] !== confirmed.current.fields[key])
+      key === 'title' ? fields.title.trim() !== confirmed.current.fields.title :
+        (fields[key] ?? '') !== (confirmed.current.fields[key] ?? ''))
   }
 
   async function save() {
@@ -133,15 +134,14 @@ export function useSessionDraft(path: string, session: Session, archived: boolea
         setCreated(true)
         setRecoverable([])
       }
-      const version = result.version
-      const fields = { ...operation.fields, title: result.title }
+      const { id: savedId, version, ...fields } = result
       confirmed.current = { fields, version }
       setSaved(fields)
       const latest = working.current
       if (!latest || latest.generation === operation.generation || !hasChanges(latest.fields)) {
         await persist(null)
       } else {
-        await persist({ ...latest, path: `${path}/${result.id}`, version, operation: null })
+        await persist({ ...latest, path: `${path}/${savedId}`, version, operation: null })
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Tente novamente.'
@@ -219,11 +219,10 @@ export function useSessionDraft(path: string, session: Session, archived: boolea
       }) : null
       if (!await persist(null, true)) return
       if (server) {
-        setDocumentId(server.id)
+        const { id: savedId, version, ...fields } = server
+        setDocumentId(savedId)
         setCreated(true)
         setRecoverable([])
-        const { date, title, body, number, participants, fictionalDate, version } = server
-        const fields = { date, title, body, number, participants, fictionalDate }
         confirmed.current = { version, fields }
         setSaved(fields)
       }

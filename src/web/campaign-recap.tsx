@@ -4,6 +4,19 @@ import { api, displayDate } from './api.ts'
 import { PendingOverview } from './pending-items.tsx'
 import { WikiOverview } from './wiki-overview.tsx'
 
+function ConfirmedRecap({ session }: { session: CampaignRecap['sessions'][number] }) {
+  const highlights = session.highlights.split(/\r?\n/).map((line) => line.trim()).filter(Boolean)
+  return <>
+    {session.summary ? <><p className="context">Resumo confirmado</p><blockquote>{session.summary}</blockquote></>
+      : session.excerpt ? <><p className="context">Trecho registrado</p><blockquote>{session.excerpt}</blockquote></>
+      : <p>Nenhum texto registrado nesta sessão.</p>}
+    {highlights.length > 0 && <>
+      <p className="context">Destaques confirmados</p>
+      <ul>{highlights.map((entry, index) => <li key={index}>{entry}</li>)}</ul>
+    </>}
+  </>
+}
+
 export function CampaignResume({ campaign, busy, onSession, onWiki, onNote, onPending }: {
   campaign: Campaign
   busy: boolean
@@ -35,8 +48,7 @@ export function CampaignResume({ campaign, busy, onSession, onWiki, onNote, onPe
       {latest ? <section aria-labelledby="recap-latest">
         <h3 id="recap-latest">Última sessão</h3>
         <p><strong>{latest.title}</strong> · {displayDate(latest.date)}</p>
-        {latest.excerpt ? <><p className="context">Trecho registrado</p><blockquote>{latest.excerpt}</blockquote></>
-          : <p>Nenhum texto registrado nesta sessão.</p>}
+        <ConfirmedRecap session={latest} />
         <button className="quiet" disabled={busy} onClick={() => onSession(latest.id)}>Abrir última sessão</button>
       </section> : <p>Nenhuma sessão para retomar.</p>}
       {recent.length > 0 && <section>
@@ -45,7 +57,7 @@ export function CampaignResume({ campaign, busy, onSession, onWiki, onNote, onPe
           <button className="quiet" disabled={busy} aria-label={`Abrir sessão: ${session.title}`}
             onClick={() => onSession(session.id)}>{session.title}</button>
           <span>{displayDate(session.date)}</span>
-          {session.excerpt && <blockquote>{session.excerpt}</blockquote>}
+          <ConfirmedRecap session={session} />
         </div>)}
       </section>}
       <section>

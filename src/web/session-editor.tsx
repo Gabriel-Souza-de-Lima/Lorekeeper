@@ -92,7 +92,11 @@ export function SessionEditor({ campaignName, campaignUrl, session, path, archiv
   }
 
   function download() {
-    const url = URL.createObjectURL(new Blob([draft.body], { type: 'text/markdown;charset=utf-8' }))
+    const metadata = [
+      draft.summary && `## Resumo da sessão\n\n${draft.summary}`,
+      draft.highlights && `## Destaques da sessão\n\n${draft.highlights}`,
+    ].filter(Boolean)
+    const url = URL.createObjectURL(new Blob([[draft.body, ...metadata].join('\n\n')], { type: 'text/markdown;charset=utf-8' }))
     const anchor = document.createElement('a')
     anchor.href = url
     anchor.download = 'rascunho-da-sessao.md'
@@ -146,6 +150,12 @@ export function SessionEditor({ campaignName, campaignUrl, session, path, archiv
           onChange={(e) => update('number', e.target.value === '' ? null : e.target.valueAsNumber)} /></label>
         <label>Data no universo<input value={draft.fictionalDate} onChange={(e) => update('fictionalDate', e.target.value)} /></label>
         <label>Participantes<input value={draft.participants} onChange={(e) => update('participants', e.target.value)} /></label>
+      </fieldset>
+      <fieldset className="panel form-grid" disabled={archived || !ready}>
+        <label>Resumo da sessão<textarea rows={2} maxLength={600} value={draft.summary ?? ''}
+          onChange={(event) => update('summary', event.currentTarget.value)} /></label>
+        <label>Destaques da sessão<textarea rows={2} maxLength={2000} value={draft.highlights ?? ''}
+          placeholder="Um acontecimento por linha" onChange={(event) => update('highlights', event.currentTarget.value)} /></label>
       </fieldset>
       <div className="editor-grid">
         <div className="panel editor">

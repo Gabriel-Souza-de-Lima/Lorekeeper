@@ -93,7 +93,7 @@ test('migration-integrity I3-04d: campos têm valores restritos e chaves válida
 test('migration-preservation I3-04d: missão de V5 mantém texto e começa aberta', (t) => {
   const db = openDatabase(fixture(t))
   try {
-    assert.equal(db.pragma('user_version', { simple: true }), 12)
+    assert.equal(db.pragma('user_version', { simple: true }), 13)
     assert.deepEqual(db.prepare('SELECT id, body, version, quest_closed FROM documents').get(),
       { id: 'missao', body: 'Registro', version: 2, quest_closed: 0 })
     assert.equal(db.prepare('SELECT featured_character_id FROM campaigns').pluck().get(), null)

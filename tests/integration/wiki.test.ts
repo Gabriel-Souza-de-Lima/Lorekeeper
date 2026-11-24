@@ -101,7 +101,7 @@ test('migration-preservation I3-03c: V5 mantém todos os registros de V4', (t) =
   old.close()
   const db = openDatabase(path)
   try {
-    assert.equal(db.pragma('user_version', { simple: true }), 12)
+    assert.equal(db.pragma('user_version', { simple: true }), 13)
     assert.deepEqual(snapshot(db), before)
     assert.deepEqual(db.pragma('foreign_key_check'), [])
   } finally { db.close() }
