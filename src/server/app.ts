@@ -1,8 +1,9 @@
+import { maxImportBytes, readImportFile, validImportText } from '../text-import.ts'
 import { createHash, randomUUID } from 'node:crypto'
 import Fastify from 'fastify'
 import staticFiles from '@fastify/static'
 import { campaignStatuses } from '../contracts.ts'
-import type { Campaign, CampaignFields, Session, SessionFields, SessionSummary } from '../contracts.ts'
+import type { Campaign, CampaignFields, Session, SessionFields, SessionImportSource, SessionSummary } from '../contracts.ts'
 import { openDatabase } from './database.ts'
 import { registerAttachments } from './attachments.ts'
 import { registerPendingItems } from './pending-items.ts'
@@ -46,11 +47,16 @@ const sessionPath = `${sessionsPath}/:sessionId`
 const operationIdPattern = /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i
 type SaveDraft = SessionFields & { version: number }
 
-function hashDraft(draft: SaveDraft) {
+type ImportProvenance = SessionImportSource & { sha256: string }
+type ImportInput = SessionImportSource & { id: string; date: string; title: string; body: string; data: string }
+const maxEncodedImportBytes = Math.ceil(maxImportBytes / 3) * 4
+
+function hashDraft(draft: SaveDraft, provenance?: ImportProvenance) {
   const { version, title, body, date, fictionalDate, participants, number } = draft
   return createHash('sha256')
     .update(JSON.stringify([version, title, body, date, fictionalDate, participants, number,
-      ...(draft.summary === undefined && draft.highlights === undefined ? [] : [draft.summary, draft.highlights])]))
+      ...(draft.summary === undefined && draft.highlights === undefined ? [] : [draft.summary, draft.highlights]),
+      ...(provenance ? [provenance.filename, provenance.source, provenance.sha256] : [])]))
     .digest('hex')
 }
 
@@ -165,6 +171,8 @@ export function createApp(database: string, webRoot?: string) {
   const insertSession = db.prepare(`
     INSERT INTO sessions (document_id, session_date, fictional_date, participants, number, summary, highlights)
     VALUES (@id, @date, @fictionalDate, @participants, @number, @summary, @highlights)`)
+  const rememberImport = db.prepare('INSERT INTO session_imports (document_id, filename, source) VALUES (?, ?, ?)')
+  const importSource = db.prepare<[string], SessionImportSource>('SELECT filename, source FROM session_imports WHERE document_id = ?')
   const updateDocument = db.prepare(`
     UPDATE documents SET title = @title, body = @body, version = version + 1, updated_at = @now
     WHERE id = @id AND campaign_id = @campaignId AND version = @version`)
@@ -193,8 +201,8 @@ export function createApp(database: string, webRoot?: string) {
     return campaign.archivedAt ? 409 : 200
   }
 
-  const createSession = db.transaction((campaignId: string, id: string, fields: SessionFields, operationId?: string) => {
-    const requestHash = operationId ? hashDraft({ ...fields, version: 0 }) : null
+  const createSession = db.transaction((campaignId: string, id: string, fields: SessionFields, operationId?: string, provenance?: ImportProvenance) => {
+    const requestHash = operationId ? hashDraft({ ...fields, version: 0 }, provenance) : null
     const receipt = operationId && selectSession.get(campaignId, id) ? selectReceipt.get(id, operationId) : undefined
     if (receipt) {
       if (receipt.requestHash !== requestHash) return { status: 409, message: 'O identificador já foi usado.' }
@@ -206,6 +214,7 @@ export function createApp(database: string, webRoot?: string) {
     const values = { ...fields, id, campaignId, now: new Date().toISOString() }
     if (!insertDocument.run(values).changes) return { status: 409, message: 'O identificador já foi usado.' }
     insertSession.run({ ...values, summary: values.summary ?? '', highlights: values.highlights ?? '' })
+    if (provenance) rememberImport.run(id, provenance.filename, provenance.source)
     if (fields.body) syncMarkdownLinks(id, campaignId, fields.body)
     insertRevision.run(id)
     const session = sessionPayload({ ...fields, id, version: 1 })
@@ -306,6 +315,41 @@ export function createApp(database: string, webRoot?: string) {
       const result = createSession.immediate(request.params.campaignId, id, fields, operationId)
       return reply.code(result.status).send(result.session ?? { message: result.message })
     })
+  app.post<{ Params: CampaignParams; Body: ImportInput }>(`${campaignPath}/import-text`, {
+    bodyLimit: 2 * 1024 * 1024,
+    schema: bodySchema({
+      id: { ...text, pattern: operationIdPattern.source }, filename: { ...text, maxLength: 150 },
+      title: { ...text, maxLength: 150 }, date, body: { ...text, maxLength: maxImportBytes },
+      data: { ...text, maxLength: maxEncodedImportBytes },
+    }, { source: { ...text, maxLength: 500 } }),
+  }, ({ params, body, headers }, reply) => {
+    const key = headers['idempotency-key']
+    const title = body.title.trim()
+    if (!title || !validDate(body.date) || typeof key !== 'string' || !operationIdPattern.test(key)) {
+      return reply.code(400).send({ message: 'Confira o título, a data e a chave de importação.' })
+    }
+    const bytes = Buffer.from(body.data, 'base64')
+    if (bytes.length > maxImportBytes || Buffer.byteLength(body.body, 'utf8') > maxImportBytes) {
+      return reply.code(413).send({ message: 'O arquivo ou o texto excede 512 KiB.' })
+    }
+    if (bytes.toString('base64') !== body.data || !validImportText(body.body)) {
+      return reply.code(400).send({ message: 'Informe conteúdo de texto válido.' })
+    }
+    try { readImportFile(body.filename, bytes) }
+    catch { return reply.code(400).send({ message: 'Selecione um arquivo TXT ou Markdown em UTF-8 válido.' }) }
+    const provenance = {
+      filename: body.filename, source: body.source?.trim() ?? '',
+      sha256: createHash('sha256').update(bytes).digest('hex'),
+    }
+    const result = createSession.immediate(params.campaignId, body.id.toLowerCase(), {
+      title, date: body.date, body: body.body, fictionalDate: '', participants: '', number: null,
+    }, key.toLowerCase(), provenance)
+    return reply.code(result.status).send(result.session ?? { message: result.message })
+  })
+  app.get<{ Params: SessionParams }>(`${sessionPath}/import-source`, ({ params }, reply) => {
+    if (!sessionExists.get(params.campaignId, params.sessionId)) return reply.code(404).send({ message: 'Sessão não encontrada.' })
+    return importSource.get(params.sessionId) ?? reply.code(204).send()
+  })
   app.get<{ Params: SessionParams }>(sessionPath, (request, reply) => {
     const { campaignId, sessionId } = request.params
     const session = selectSession.get(campaignId, sessionId)

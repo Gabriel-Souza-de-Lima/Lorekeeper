@@ -7,6 +7,7 @@ import type { Campaign, CampaignFields, CampaignStatus, Session, SessionSummary,
 import { api, displayDate, localDate } from './api.ts'
 import { CampaignNotes, NoteList, type Note } from './note-assignment.tsx'
 import { QuickNotes } from './quick-notes.tsx'
+import { TextImport } from './text-import.tsx'
 import { Search } from './search.tsx'
 import { SessionEditor } from './session-editor.tsx'
 import { CampaignResume } from './campaign-recap.tsx'
@@ -19,6 +20,7 @@ const statusLabels: Record<CampaignStatus, string> = { active: 'Ativa', paused: 
 type View =
   | { page: 'dashboard' }
   | { page: 'search' }
+  | { page: 'text-import' }
   | { page: 'search-note'; note: Note; campaign: Campaign | null }
   | { page: 'quick-notes' }
   | { page: 'new' }
@@ -241,6 +243,8 @@ function App() {
 
   function currentPage() {
     switch (view.page) {
+      case 'text-import': return <TextImport onBack={dashboard}
+        onOpen={(campaign, session) => setView({ page: 'session', campaign, session })} />
       case 'search': return <Search working={working} onBack={dashboard} onOpen={openSearchResult} />
       case 'search-note': return <>
         <button className="quiet" onClick={() => setView({ page: 'search' })}>Voltar à busca</button>
@@ -301,6 +305,7 @@ function App() {
                 Anotações rápidas
               </button>
               <button disabled={working} onClick={() => { setError(''); setView({ page: 'search' }) }}>Busca</button>
+              <button disabled={working} onClick={() => { setError(''); setView({ page: 'text-import' }) }}>Importar texto</button>
               <a className="quiet" href="/api/export" download>Exportar acervo</a>
               <button className="primary" disabled={working} onClick={() => { setError(''); setView({ page: 'new' }) }}>
                 Nova campanha

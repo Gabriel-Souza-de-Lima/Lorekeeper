@@ -23,6 +23,9 @@ export function registerExport(app: FastifyInstance, db: Database.Database) {
     SELECT id, campaign_id, type, title, body, version, created_at, updated_at, quest_closed FROM active_documents ORDER BY id`)
   const sessions = db.prepare(`
     SELECT document_id, session_date, fictional_date, participants, number, summary, highlights FROM sessions WHERE trashed_at IS NULL ORDER BY document_id`)
+  const sessionImports = db.prepare(`
+    SELECT document_id, filename, source FROM session_imports
+    WHERE document_id IN (SELECT id FROM active_documents) ORDER BY document_id`)
   const sessionRevisions = db.prepare(`
     SELECT document_id, version, title, body, created_at FROM session_revisions WHERE document_id IN (SELECT id FROM active_documents) ORDER BY document_id, version`)
   const links = db.prepare(`
@@ -68,6 +71,7 @@ export function registerExport(app: FastifyInstance, db: Database.Database) {
       ...document, markdownPath: `documents/${encodeURIComponent(document.id)}.md`,
     })),
     sessions: sessions.all(),
+    sessionImports: sessionImports.all(),
     sessionRevisions: sessionRevisions.all(),
     links: links.all(),
     tags: tags.all(),

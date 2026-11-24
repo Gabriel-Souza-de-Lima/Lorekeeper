@@ -36,6 +36,8 @@ export interface Session extends SessionFields {
   version: number
 }
 
+export type SessionImportSource = { filename: string; source: string }
+
 export type SessionSummary = Pick<Session, 'id' | 'title' | 'date' | 'number'>
 
 export const wikiTypes = ['character', 'npc', 'location', 'quest'] as const
