@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { pendingStates, pendingTypes, type Campaign, type PendingItem, type PendingItemSummary,
-  type PendingState, type PendingType, type SessionSummary, type WikiSummary } from '../contracts.ts'
-import { api } from './api.ts'
+  type PendingFields, type PendingState, type PendingType, type SessionSummary, type WikiSummary } from '../contracts.ts'
+import { api, ApiError } from './api.ts'
 
 const types: Record<PendingType, string> = {
   clue: 'Pista', question: 'Pergunta', promise: 'Promessa', task: 'Tarefa', other: 'Outro',
@@ -12,6 +12,38 @@ const states: Record<PendingState, string> = {
 
 function campaignUrl(campaign: Campaign) {
   return `/api/campaigns/${campaign.id}`
+}
+
+function readFields(data: FormData): PendingFields {
+  return {
+    title: String(data.get('title')), type: data.get('type') as PendingType,
+    description: String(data.get('description')), origin: String(data.get('origin')),
+    notes: String(data.get('notes')), sessionId: (data.get('sessionId') as string) || null,
+    entityIds: data.getAll('entityIds').map(String),
+  }
+}
+
+function PendingInputs({ initial, sessions, entities, busy }: {
+  initial?: PendingFields; sessions: SessionSummary[]; entities: WikiSummary[]; busy: boolean
+}) {
+  return <fieldset disabled={busy} className="form-grid">
+    <label>Título<input name="title" defaultValue={initial?.title} required /></label>
+    <label>Tipo<select name="type" defaultValue={initial?.type ?? 'other'}>
+      {pendingTypes.map((type) => <option key={type} value={type}>{types[type]}</option>)}
+    </select></label>
+    <label>Descrição<textarea name="description" defaultValue={initial?.description} /></label>
+    <label>Origem<input name="origin" defaultValue={initial?.origin} /></label>
+    <label>Sessão de origem<select name="sessionId" defaultValue={initial?.sessionId ?? ''}>
+      <option value="">Nenhuma</option>
+      {initial?.sessionId && !sessions.some((row) => row.id === initial.sessionId) &&
+        <option value={initial.sessionId}>Sessão vinculada indisponível</option>}
+      {sessions.map((row) => <option key={row.id} value={row.id}>{row.title}</option>)}
+    </select></label>
+    {entities.length > 0 && <label>NPCs e localidades<select name="entityIds" multiple defaultValue={initial?.entityIds}>
+      {entities.map((row) => <option key={row.id} value={row.id}>{row.title}</option>)}
+    </select></label>}
+    <label>Observações<textarea name="notes" defaultValue={initial?.notes} /></label>
+  </fieldset>
 }
 
 export function PendingOverview({ campaign, busy, onOpen }: {
@@ -54,6 +86,9 @@ export function PendingItems({ campaign, itemId, onBack, onSession, onWiki }: {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [attempt, setAttempt] = useState(0)
+  const [editing, setEditing] = useState<PendingItem | null>(null)
+  const [editVersion, setEditVersion] = useState(0)
+  const conflict = Boolean(editing && item && item.editVersion !== editVersion)
   const locked = Boolean(campaign.archivedAt)
 
   function select(current: PendingItem) {
@@ -91,14 +126,27 @@ export function PendingItems({ campaign, itemId, onBack, onSession, onWiki }: {
     const form = event.currentTarget
     const data = new FormData(form)
     void action(async () => {
-      const saved = await api<PendingItem>(path, 'POST', {
-        id, title: data.get('title'), type: data.get('type'), description: data.get('description'),
-        origin: data.get('origin'), notes: data.get('notes'), sessionId: data.get('sessionId') || null,
-        entityIds: data.getAll('entityIds'),
-      })
+      const saved = await api<PendingItem>(path, 'POST', { id, ...readFields(data) })
       select(saved)
       setId(crypto.randomUUID())
       form.reset()
+      setRows(await api<PendingItemSummary[]>(path))
+    })
+  }
+
+  function edit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    if (!editing || conflict || busy) return
+    const input = readFields(new FormData(event.currentTarget))
+    const url = `${path}/${editing.id}`
+    void action(async () => {
+      try {
+        select(await api<PendingItem>(url, 'PUT', { ...input, editVersion }))
+      } catch (error) {
+        if (error instanceof ApiError && error.status === 409) select(await api<PendingItem>(url))
+        throw error
+      }
+      setEditing(null)
       setRows(await api<PendingItemSummary[]>(path))
     })
   }
@@ -112,7 +160,7 @@ export function PendingItems({ campaign, itemId, onBack, onSession, onWiki }: {
 
   const session = sessions.find((row) => row.id === item?.sessionId)
   return <>
-    <button className="quiet" disabled={busy} onClick={onBack}>Voltar à campanha</button>
+    <button className="quiet" disabled={busy || Boolean(editing)} onClick={onBack}>Voltar à campanha</button>
     <header className="page-header"><div><p className="context">{campaign.name}</p><h1>Pendências</h1></div></header>
     {error && <p className="error" role="alert">{error}</p>}
     {!rows ? <button disabled={!error} onClick={() => { setError(''); setAttempt((value) => value + 1) }}>
@@ -120,7 +168,7 @@ export function PendingItems({ campaign, itemId, onBack, onSession, onWiki }: {
     </button> : <>
       {rows.length === 0 ? <p>Nenhuma pendência registrada.</p> :
         <ul className="session-list">{rows.map((row) => <li className="panel" key={row.id}>
-          <button className="quiet" disabled={busy} onClick={() => void action(async () => {
+          <button className="quiet" disabled={busy || Boolean(editing)} onClick={() => void action(async () => {
             select(await api<PendingItem>(`${path}/${row.id}`))
           })}>{row.title}</button>
           <span>{types[row.type]} · {states[row.state]}</span>
@@ -131,15 +179,20 @@ export function PendingItems({ campaign, itemId, onBack, onSession, onWiki }: {
         {item.description && <p>{item.description}</p>}
         {item.origin && <p>Origem: {item.origin}</p>}
         {item.notes && <p>Observações: {item.notes}</p>}
-        {session ? <button disabled={busy} onClick={() => onSession(session.id)}>{session.title}</button> :
+        {session ? <button disabled={busy || Boolean(editing)} onClick={() => onSession(session.id)}>{session.title}</button> :
           item.sessionId && <p>Sessão de origem indisponível.</p>}
         {entities.filter((row) => item.entityIds.includes(row.id)).map((row) =>
-          <button key={row.id} disabled={busy} onClick={() => onWiki(row.id)}>{row.title}</button>)}
+          <button key={row.id} disabled={busy || Boolean(editing)} onClick={() => onWiki(row.id)}>{row.title}</button>)}
         <h3>Histórico de estados</h3>
         <ol aria-label="Histórico de estados">{item.history.map((entry, index) =>
           <li key={index}>{states[entry.state]} · <time dateTime={entry.createdAt}>
             {new Date(entry.createdAt).toLocaleString('pt-BR')}</time></li>)}</ol>
-        {!locked && <div className="actions">
+        {!locked && !editing && <div className="actions">
+          <button disabled={busy} onClick={() => {
+            setError('')
+            setEditing(item)
+            setEditVersion(item.editVersion)
+          }}>Editar pendência</button>
           <label>Alterar estado<select value={next} disabled={busy}
             onChange={(event) => setNext(event.currentTarget.value as PendingState)}>
             {pendingStates.map((state) => <option key={state} value={state}>{states[state]}</option>)}
@@ -147,22 +200,22 @@ export function PendingItems({ campaign, itemId, onBack, onSession, onWiki }: {
           <button disabled={busy || next === item.state} onClick={() => changeState(item)}>Salvar estado</button>
         </div>}
       </section>}
-      {!locked && <form className="panel form" onSubmit={create}>
+      {editing && <form className="panel form" aria-label="Editar pendência" onSubmit={edit}>
+        <h2>Editar pendência</h2>
+        {conflict && <p>Compare seu rascunho com os dados confirmados acima antes de salvar novamente.</p>}
+        <PendingInputs initial={editing} sessions={sessions} entities={entities} busy={busy} />
+        <div className="actions">
+          {conflict && item && <button type="button" disabled={busy} onClick={() => {
+            setEditVersion(item.editVersion)
+            setError('')
+          }}>Usar versão atual como base</button>}
+          <button className="primary" disabled={busy || conflict}>Salvar alterações</button>
+          <button type="button" disabled={busy} onClick={() => { setEditing(null); setError('') }}>Cancelar edição</button>
+        </div>
+      </form>}
+      {!locked && !editing && <form className="panel form" onSubmit={create}>
         <h2>Nova pendência</h2>
-        <label>Título<input name="title" required disabled={busy} /></label>
-        <label>Tipo<select name="type" defaultValue="other" disabled={busy}>
-          {pendingTypes.map((type) => <option key={type} value={type}>{types[type]}</option>)}
-        </select></label>
-        <label>Descrição<textarea name="description" disabled={busy} /></label>
-        <label>Origem<input name="origin" disabled={busy} /></label>
-        <label>Sessão de origem<select name="sessionId" disabled={busy}>
-          <option value="">Nenhuma</option>
-          {sessions.map((row) => <option key={row.id} value={row.id}>{row.title}</option>)}
-        </select></label>
-        {entities.length > 0 && <label>NPCs e localidades<select name="entityIds" multiple disabled={busy}>
-          {entities.map((row) => <option key={row.id} value={row.id}>{row.title}</option>)}
-        </select></label>}
-        <label>Observações<textarea name="notes" disabled={busy} /></label>
+        <PendingInputs sessions={sessions} entities={entities} busy={busy} />
         <button className="primary" disabled={busy}>Criar pendência</button>
       </form>}
     </>}

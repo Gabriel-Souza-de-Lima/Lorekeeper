@@ -36,8 +36,8 @@ export function registerExport(app: FastifyInstance, db: Database.Database) {
 
   const pendingItems = db.prepare(`
     SELECT id, campaign_id, CASE WHEN session_id IN (SELECT id FROM active_documents) THEN session_id END AS session_id,
-      title, type, description, origin, notes, state, created_at, updated_at FROM pending_items ORDER BY id`)
-  const pendingItemEntities = db.prepare('SELECT item_id, document_id FROM pending_item_entities ORDER BY item_id, document_id')
+      title, type, description, origin, notes, state, edit_version, created_at, updated_at FROM pending_items ORDER BY id`)
+  const pendingItemEntities = db.prepare('SELECT item_id, document_id FROM pending_item_entities WHERE removed_at IS NULL ORDER BY item_id, document_id')
   const pendingItemStates = db.prepare('SELECT item_id, state, created_at FROM pending_item_states ORDER BY id')
 
   const attachmentAssociations = db.prepare(`

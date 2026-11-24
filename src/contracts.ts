@@ -89,12 +89,18 @@ export interface PendingItemSummary {
   type: PendingType
   state: PendingState
 }
-export interface PendingItem extends PendingItemSummary {
+export interface PendingFields {
+  title: string
+  type: PendingType
   description: string
   origin: string
   notes: string
   sessionId: string | null
   entityIds: string[]
+}
+
+export interface PendingItem extends PendingItemSummary, PendingFields {
+  editVersion: number
   createdAt: string
   updatedAt: string
   history: { state: PendingState; createdAt: string }[]

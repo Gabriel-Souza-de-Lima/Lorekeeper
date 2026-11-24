@@ -73,7 +73,7 @@ test('migration-integrity I3-07c: exige vínculos válidos e chaves únicas', (t
 test('migration-preservation I3-07c: mantém o conteúdo legado ao abrir V7', (t) => {
   const db = openDatabase(legacy(t))
   try {
-    assert.equal(db.pragma('user_version', { simple: true }), 11)
+    assert.equal(db.pragma('user_version', { simple: true }), 12)
     assert.equal(db.prepare('SELECT body FROM documents').pluck().get(), 'Pista')
     assert.deepEqual(db.pragma('integrity_check'), [{ integrity_check: 'ok' }])
   } finally { db.close() }
