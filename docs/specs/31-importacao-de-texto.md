@@ -41,3 +41,7 @@ Reutiliza criação manual, revisão e FTS5 de sessões. Outros tipos ficam para
 - **Red** — a API retornou 404, a migração ainda não existia e o navegador não encontrou a ação de importar.
 - **Green** — a prévia manteve HTML inerte. A perda de resposta foi recuperada com o mesmo UUID. O documento entrou no FTS5, ficou editável e a origem foi recuperada do backup.
 - **Refactor** — a validação de arquivo é compartilhada entre prévia e servidor. A rota reutiliza a mesma transação de criação e o mesmo mecanismo de comprovantes do editor.
+
+## Validação após integração
+
+O `validar` do PR #58 passou. A primeira execução após o merge registrou timeout no E2E de campanha, durante a troca de servidor. A anotação apontou a primeira navegação após a troca, com a página já encerrada pelo teste. O cenário de importação passou nessa execução. A correção usa o encerramento compartilhado nas duas fases. Cada fase recebe seu próprio contexto de navegador e reutiliza o banco temporário para verificar persistência. [Execução original](https://github.com/Gabriel-Souza-de-Lima/Lorekeeper/actions/runs/45509391013)
