@@ -3,7 +3,7 @@ import type Database from 'better-sqlite3'
 export function migrateSessionTrash(db: Database.Database) {
   db.transaction(() => {
     const version = db.pragma('user_version', { simple: true })
-    if (version === 9 || version === 10 || version === 11 || version === 12) return
+    if (version === 9 || version === 10 || version === 11 || version === 12 || version === 13) return
     if (version !== 8) throw new Error('Versão de banco incompatível.')
     db.exec(`
       ALTER TABLE sessions ADD COLUMN trashed_at TEXT;

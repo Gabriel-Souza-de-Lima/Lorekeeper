@@ -5,7 +5,7 @@ import type { CampaignRecap } from '../contracts.ts'
 export function registerCampaignRecap(app: FastifyInstance, db: Database.Database) {
   const campaign = db.prepare('SELECT 1 FROM campaigns WHERE id = ?')
   const sessions = db.prepare<[string], CampaignRecap['sessions'][number]>(`
-    SELECT d.id, d.title, s.session_date AS date, s.number,
+    SELECT d.id, d.title, s.session_date AS date, s.number, s.summary, s.highlights,
       substr(ltrim(d.body, char(9) || char(10) || char(13) || ' '), 1, 241) AS excerpt
     FROM documents d JOIN sessions s ON s.document_id = d.id
     WHERE d.campaign_id = ? AND s.trashed_at IS NULL
@@ -31,7 +31,7 @@ export function registerCampaignRecap(app: FastifyInstance, db: Database.Databas
     return {
       sessions: recent.map(({ excerpt, ...session }) => {
         const characters = Array.from(excerpt)
-        return { ...session, excerpt: characters.length > 240 ? `${characters.slice(0, 239).join('')}…` : excerpt }
+        return { ...session, summary: session.summary.trim(), excerpt: characters.length > 240 ? `${characters.slice(0, 239).join('')}…` : excerpt }
       }),
       entities: entities.all(ids, id),
       notes: notes.all(ids, id),

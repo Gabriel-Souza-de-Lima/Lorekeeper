@@ -27,6 +27,8 @@ export interface SessionFields {
   participants: string
   number: number | null
   body: string
+  summary?: string
+  highlights?: string
 }
 
 export interface Session extends SessionFields {
@@ -73,7 +75,7 @@ export interface SearchFilters {
 }
 
 export interface CampaignRecap {
-  sessions: (SessionSummary & { excerpt: string })[]
+  sessions: (SessionSummary & { excerpt: string; summary: string; highlights: string })[]
   entities: WikiSummary[]
   notes: { id: string; title: string }[]
 }

@@ -22,7 +22,7 @@ export function registerExport(app: FastifyInstance, db: Database.Database) {
   const documents = db.prepare<[], ExportDocument>(`
     SELECT id, campaign_id, type, title, body, version, created_at, updated_at, quest_closed FROM active_documents ORDER BY id`)
   const sessions = db.prepare(`
-    SELECT document_id, session_date, fictional_date, participants, number FROM sessions WHERE trashed_at IS NULL ORDER BY document_id`)
+    SELECT document_id, session_date, fictional_date, participants, number, summary, highlights FROM sessions WHERE trashed_at IS NULL ORDER BY document_id`)
   const sessionRevisions = db.prepare(`
     SELECT document_id, version, title, body, created_at FROM session_revisions WHERE document_id IN (SELECT id FROM active_documents) ORDER BY document_id, version`)
   const links = db.prepare(`

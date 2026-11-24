@@ -71,6 +71,8 @@ function VersionText({ name, fields, version }: { name: string; fields: SessionF
     <p>{displayDate(fields.date)}{fields.number !== null && ` · Sessão ${fields.number}`}</p>
     {fields.fictionalDate && <p>Data no universo: {fields.fictionalDate}</p>}
     {fields.participants && <p>Participantes: {fields.participants}</p>}
+    {fields.summary && <p style={{ whiteSpace: 'pre-wrap' }}>Resumo: {fields.summary}</p>}
+    {fields.highlights && <p style={{ whiteSpace: 'pre-wrap' }}>Destaques: {fields.highlights}</p>}
     <p style={{ whiteSpace: 'pre-wrap' }}>{fields.body}</p>
   </section>
 }

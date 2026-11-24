@@ -26,8 +26,11 @@ const sessionFields = {
   version: { type: 'integer', minimum: 1, maximum: Number.MAX_SAFE_INTEGER - 1 },
 }
 
-function bodySchema(properties: Record<string, unknown>) {
-  return { body: { type: 'object', properties, required: Object.keys(properties), additionalProperties: false } }
+const recapFields = { summary: { ...text, maxLength: 600 }, highlights: { ...text, maxLength: 2000 } }
+
+function bodySchema(properties: Record<string, unknown>, optional: Record<string, unknown> = {}) {
+  return { body: { type: 'object', properties: { ...properties, ...optional },
+    required: Object.keys(properties), additionalProperties: false } }
 }
 
 function validDate(value: string) {
@@ -46,8 +49,13 @@ type SaveDraft = SessionFields & { version: number }
 function hashDraft(draft: SaveDraft) {
   const { version, title, body, date, fictionalDate, participants, number } = draft
   return createHash('sha256')
-    .update(JSON.stringify([version, title, body, date, fictionalDate, participants, number]))
+    .update(JSON.stringify([version, title, body, date, fictionalDate, participants, number,
+      ...(draft.summary === undefined && draft.highlights === undefined ? [] : [draft.summary, draft.highlights])]))
     .digest('hex')
+}
+
+function sessionPayload({ summary, highlights, ...fields }: Session): Session {
+  return { ...fields, ...(summary ? { summary } : {}), ...(highlights ? { highlights } : {}) }
 }
 
 export function createApp(database: string, webRoot?: string) {
@@ -146,7 +154,7 @@ export function createApp(database: string, webRoot?: string) {
     ORDER BY s.session_date DESC, d.created_at DESC, d.id DESC`)
   const selectSession = db.prepare<[campaignId: string, sessionId: string], Session>(`
     SELECT d.id, d.title, d.body, d.version, s.session_date AS date, s.fictional_date AS fictionalDate,
-      s.participants, s.number ${sessionSelect} AND d.id = ?`)
+      s.participants, s.number, s.summary, s.highlights ${sessionSelect} AND d.id = ?`)
   const sessionExists = db.prepare<[campaignId: string, sessionId: string]>(
     `SELECT 1 ${sessionSelect} AND d.id = ?`,
   )
@@ -155,15 +163,15 @@ export function createApp(database: string, webRoot?: string) {
     VALUES (@id, @campaignId, 'session', @title, @body, @now, @now)
     ON CONFLICT (id) DO NOTHING`)
   const insertSession = db.prepare(`
-    INSERT INTO sessions (document_id, session_date, fictional_date, participants, number)
-    VALUES (@id, @date, @fictionalDate, @participants, @number)`)
+    INSERT INTO sessions (document_id, session_date, fictional_date, participants, number, summary, highlights)
+    VALUES (@id, @date, @fictionalDate, @participants, @number, @summary, @highlights)`)
   const updateDocument = db.prepare(`
     UPDATE documents SET title = @title, body = @body, version = version + 1, updated_at = @now
     WHERE id = @id AND campaign_id = @campaignId AND version = @version`)
   const syncMarkdownLinks = prepareMarkdownLinks(db)
   const updateSession = db.prepare(`
     UPDATE sessions SET session_date = @date, fictional_date = @fictionalDate,
-      participants = @participants, number = @number WHERE document_id = @id`)
+      participants = @participants, number = @number, summary = @summary, highlights = @highlights WHERE document_id = @id`)
 
   const insertRevision = db.prepare<[id: string]>(`
     INSERT INTO session_revisions (document_id, version, title, body, created_at)
@@ -197,10 +205,10 @@ export function createApp(database: string, webRoot?: string) {
     if (status === 409) return { status, message: 'Reative a campanha para criar sessões.' }
     const values = { ...fields, id, campaignId, now: new Date().toISOString() }
     if (!insertDocument.run(values).changes) return { status: 409, message: 'O identificador já foi usado.' }
-    insertSession.run(values)
+    insertSession.run({ ...values, summary: values.summary ?? '', highlights: values.highlights ?? '' })
     if (fields.body) syncMarkdownLinks(id, campaignId, fields.body)
     insertRevision.run(id)
-    const session = { ...fields, id, version: 1 }
+    const session = sessionPayload({ ...fields, id, version: 1 })
     if (operationId) insertReceipt.run({ id, operationId, requestHash, responseJson: JSON.stringify(session) })
     return { status: 201, session }
   })
@@ -216,19 +224,22 @@ export function createApp(database: string, webRoot?: string) {
     }
     if (editability(campaignId) === 409) return { status: 409, message: 'Reative a campanha para editar.' }
     if (current.version !== draft.version) return { status: 409, message: 'A sessão foi alterada desde que você a abriu.' }
+    const summary = draft.summary ?? current.summary ?? ''
+    const highlights = draft.highlights ?? current.highlights ?? ''
     const textChanged = current.title !== draft.title || current.body !== draft.body
     const metadataChanged = current.date !== draft.date || current.fictionalDate !== draft.fictionalDate ||
-      current.participants !== draft.participants || current.number !== draft.number
-    let session = current
+      current.participants !== draft.participants || current.number !== draft.number ||
+      current.summary !== summary || current.highlights !== highlights
+    let session = sessionPayload(current)
     if (textChanged || metadataChanged) {
-      const values = { ...draft, id, campaignId, now: new Date().toISOString() }
+      const values = { ...draft, id, campaignId, summary, highlights, now: new Date().toISOString() }
       if (!updateDocument.run(values).changes) throw new Error('A sessão não pôde ser confirmada.')
       if (metadataChanged) updateSession.run(values)
       if (textChanged) {
         syncMarkdownLinks(id, campaignId, draft.body)
         insertRevision.run(id)
       }
-      session = { id, ...draft, version: current.version + 1 }
+      session = sessionPayload({ id, ...draft, summary, highlights, version: current.version + 1 })
     }
     if (operationId) insertReceipt.run({ id, operationId, requestHash, responseJson: JSON.stringify(session) })
     return { status: 200, session }
@@ -297,7 +308,8 @@ export function createApp(database: string, webRoot?: string) {
     })
   app.get<{ Params: SessionParams }>(sessionPath, (request, reply) => {
     const { campaignId, sessionId } = request.params
-    return selectSession.get(campaignId, sessionId) ?? reply.code(404).send({ message: 'Sessão não encontrada.' })
+    const session = selectSession.get(campaignId, sessionId)
+    return session ? sessionPayload(session) : reply.code(404).send({ message: 'Sessão não encontrada.' })
   })
   app.get<{ Params: SessionParams }>(`${sessionPath}/revisions`, (request, reply) => {
     const { campaignId, sessionId } = request.params
@@ -305,7 +317,7 @@ export function createApp(database: string, webRoot?: string) {
     return listRevisions.all(sessionId)
   })
   app.put<{ Params: SessionParams; Body: SaveDraft }>(
-    sessionPath, { schema: bodySchema(sessionFields) }, (request, reply) => {
+    sessionPath, { schema: bodySchema(sessionFields, recapFields) }, (request, reply) => {
       if (!validDate(request.body.date)) return reply.code(400).send({ message: 'Informe uma data válida.' })
       const title = request.body.title.trim()
       if (!title) return reply.code(400).send({ message: 'Informe o título da sessão.' })
