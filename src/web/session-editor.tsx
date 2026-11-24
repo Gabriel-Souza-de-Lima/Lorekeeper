@@ -7,6 +7,7 @@ import type { Session, WikiSummary } from '../contracts.ts'
 import { wikiMention, wikiReferenceId } from '../wiki-reference.ts'
 import { ConflictReview, RevisionHistory } from './session-review.tsx'
 import { useSessionDraft } from './use-session-draft.ts'
+import { ImportSource } from './text-import.tsx'
 import { SessionTemplates } from './session-templates.tsx'
 import { SessionWikiLinks } from './wiki-links.tsx'
 import { SessionNoteLinks } from './session-note-links.tsx'
@@ -131,6 +132,7 @@ export function SessionEditor({ campaignName, campaignUrl, session, path, archiv
           {(failure || storageFailed) && dirty && <button onClick={download}>Baixar rascunho</button>}
         </div>
       </header>
+      {created && <ImportSource sessionUrl={`${path}/${documentId}`} />}
       {created && <RevisionHistory url={`${path}/${documentId}`} canRestore={!archived && ready && !dirty}
         onRestore={editor.restoreRevision} />}
       {created && failure?.status === 409 && <ConflictReview url={`${path}/${documentId}`}
