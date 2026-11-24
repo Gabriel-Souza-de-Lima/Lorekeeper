@@ -122,7 +122,7 @@ function legacy(t: TestContext, collision = false) {
 test('migration-preservation SC-04d: sessões legadas permanecem ativas e indexadas', (t) => {
   const db = openDatabase(legacy(t))
   try {
-    assert.equal(db.pragma('user_version', { simple: true }), 11)
+    assert.equal(db.pragma('user_version', { simple: true }), 12)
     assert.deepEqual(db.prepare('SELECT participants, trashed_at FROM sessions').get(),
       { participants: 'Lia', trashed_at: null })
     assert.equal(db.prepare('SELECT body FROM session_revisions').pluck().get(), 'Uma bússola.')
