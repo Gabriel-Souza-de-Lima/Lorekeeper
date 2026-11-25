@@ -11,3 +11,7 @@ As especificações de campanhas e sessões serão as primeiras antes do código
 
 - [P10-A — Fatos, rumores e evidências](33-fatos-rumores-e-teorias.md)
 - [P10-B — Perspectivas e conhecimento dos personagens](34-perspectivas-e-conhecimento.md)
+
+## Requisitos transversais de UX/UI
+
+Consulte o [índice de UX/UI](../ux-ui/README.md) para a proposta revisada, as matrizes e o histórico das decisões. Vincule a respectiva especificação funcional ao propor uma mudança de comportamento.
