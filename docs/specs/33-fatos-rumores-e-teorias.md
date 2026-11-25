@@ -1,62 +1,77 @@
-# P10 — Fatos, rumores e teorias
+# P10-A — Fatos, rumores e evidências
 
-- **Estado** — proposta para avaliação. A implementação exige aprovação pessoal.
-- **Objetivo** — registrar informações narrativas, localizar suas fontes e acompanhar mudanças no que se sabe ao longo da campanha.
-- **Rastreabilidade** — produto §4.9 e §4.10, MVP-07, MVP-10, MVP-11 e MVP-12.
+- **Estado** — proposta revisada para aprovação. Todos os critérios e testes são planejados.
+- **Objetivo** — acompanhar como uma afirmação narrativa foi registrada, sustentada, contestada ou refutada.
+- **Rastreabilidade** — produto §4.9 e §4.10, MVP-07, MVP-10, MVP-11 e MVP-12. Os IDs originais P10-01 a P10-08 permanecem estáveis. P10-03 pertence à [P10-B](34-perspectivas-e-conhecimento.md), que tem aprovação própria.
 
-## Casos de uso
+## Fluxo e regras
 
-- Durante uma sessão, o jogador anota que uma vigia afirma ter visto uma luz no farol. Depois consegue recuperar a frase original e abrir a sessão e a página da vigia.
-- Outra sessão revela que a luz vinha de um barco. O jogador acrescenta a nova evidência e registra que a afirmação original foi refutada.
-- Na próxima sessão, o jogador consulta apenas as informações conhecidas pela personagem Marina e abre a pendência ligada ao farol quando precisar escolher o que investigar.
+Na área **Informações** da campanha, digitar o enunciado, escolher a natureza e confirmar. A origem inicial pode ser a sessão aberta, uma nota manual ou **Registro direto**, com instante de registro. O rótulo da listagem deriva da primeira linha do enunciado. Depois do cadastro, o detalhe oferece evidências, vínculos e histórico. O formulário revela justificativa ao confirmar ou refutar e permite acrescentar evidências em outro momento.
 
-## Comportamento e regras propostos
-
-Natureza, estado da apuração e conhecimento são três dimensões independentes. A natureza registra observação, relato de NPC, rumor ou teoria. O estado pode ser em aberto, confirmado, contestado ou refutado. **Fato confirmado** é a apresentação de um registro confirmado pelo usuário. Uma declaração de NPC continua identificada como declaração depois de ser confirmada ou refutada.
-
-O jogador registra quais personagens conhecem cada informação. Uma informação sem personagens atribuídos aparece como conhecida somente pelo jogador. O filtro de personagem é um recurso de apresentação para o uso pessoal. A marcação usa o modelo pessoal de usuário único.
-
-Criar, corrigir e reclassificar exige confirmação explícita. O usuário pode vincular fontes que sustentam, contradizem ou contextualizam a afirmação. Confirmar ou refutar deve registrar o motivo e alguma proveniência, inclusive uma nota manual quando o usuário não tiver uma sessão aplicável. Evidências divergentes podem coexistir. O usuário registra diretamente resumos, vínculos, estados e distinções de conhecimento.
-
-## Modelo de dados possível
-
-| Registro | Dados e regras propostas |
+| Dimensão | Valores e significado |
 | --- | --- |
-| Informação | UUID estável, campanha, revisão atual, criação e arquivamento reversível. |
-| Revisão de informação | UUID da informação, versão crescente, enunciado, natureza, estado, justificativa e instante. A primeira registra o enunciado original. |
-| Evidência | Informação, revisão em que entrou, classificação sustenta/contradiz/contextualiza, citação ou nota, UUID de sessão e NPC quando conhecidos e data do registro. Corrigir uma evidência acrescenta uma versão que cita a anterior. |
-| Conhecimento | Informação, personagem e revisão em que a atribuição entrou ou terminou. Guarda a evolução da perspectiva sem sobrescrever o histórico. |
-| Relação com pendência | UUIDs da informação e da pendência da mesma campanha. A pendência continua a controlar o trabalho de investigação e tem histórico próprio. |
+| Natureza | Observação, relato de NPC, rumor ou teoria. Registra como a informação surgiu. Um relato continua sendo relato após a mudança de estado. |
+| Estado | Em aberto, confirmado, contestado ou refutado. A criação começa em aberto. A avaliação é sempre explícita. Confirmar ou refutar exige justificativa e evidência identificável, incluindo nota manual descritiva. |
+| Evidência | Sustenta, contradiz ou contextualiza. Requer descrição ou referência registrada à fonte. Evidências divergentes coexistem, e a interpretação cabe ao usuário. |
 
-IDs de campanha, sessão, NPC, personagem e pendência usam as entidades existentes. Uma origem manual continua legível sem sessão ou NPC vinculados. Sessões na lixeira mantêm seus IDs, citações e proveniência, com navegação indicada como indisponível até restauração. A eventual migração seria aditiva. Exportação e backup teriam de preservar revisões, evidências, perspectivas e vínculos.
+Na sessão 4, a vigia atribui a luz do farol aos contrabandistas. Na sessão 6, uma evidência contextualiza o relato ao revelar um mecanismo. Na sessão 7, outra evidência contradiz o relato e fundamenta a refutação. O detalhe conserva os três registros, a declaração original e a justificativa de cada transição.
 
-## Controle de versões e falhas
+A lista da campanha é a entrada inicial, com filtros por natureza e estado. O detalhe navega para sessões, NPCs, outras páginas da wiki e pendências vinculadas. Criar a partir de uma sessão ou destaque confirmado é uma ação explícita. A operação preserva o texto da sessão e o estado das pendências. A consulta por FTS5 e a navegação rápida P9 podem ser avaliadas depois, usando o índice existente.
 
-Uma gravação proposta fornece UUID de operação e revisão-base. A transação valida o escopo da campanha, acrescenta a revisão e publica as relações em conjunto. Um reenvio idêntico recupera o comprovante. Uma edição atrasada compara as versões e conserva a edição local até uma nova confirmação. Relações inválidas ou uma falha na gravação mantêm a versão confirmada. O detalhamento das rotas e da proteção de rascunho fica para uma especificação aprovada.
+## Modelo relacional SQLite proposto
 
-## Navegação e apresentação
+| Relação | Chaves, dados e invariantes |
+| --- | --- |
+| `narrative_items` | UUID primário, campanha, enunciado atual, natureza, estado, origem inicial, criação, atualização e versão inteira positiva. Chave única adicional campanha + UUID para relacionamentos com escopo. |
+| `narrative_history` | Campanha, UUID da informação e versão como chave composta. Registra a criação e acrescenta instantâneo do enunciado, natureza, estado e justificativa quando mudam. Guarda a origem da mudança e a evidência que fundamentou a decisão, quando aplicável. Versões podem ter lacunas quando a operação altera somente vínculos ou evidências. |
+| `narrative_evidence` | UUID, campanha, informação, natureza da evidência, descrição, fonte capturada e instante. Uma correção acrescenta outra evidência com referência à anterior. A anterior continua consultável. |
+| `narrative_document_links`, `narrative_pending_links` | Campanha, informação e UUID do alvo em chaves compostas com unicidade. Referências usam as tabelas existentes. Validar tipo e campanha na mesma transação da escrita. |
+| `narrative_save_receipts` | Campanha + UUID da operação como chave. Guarda alvo, hash canônico da requisição e versão/resposta confirmada. A gravação é atômica com o conteúdo. |
 
-Na campanha, uma lista **Informações** poderia exibir enunciado, tipo, estado e origem. Filtros por estado, sessão de origem e personagem permitem preparar uma sessão. A vista **O que Marina sabe** incluiria apenas informações atribuídas à personagem.
+A fonte capturada é um conjunto de campos tipados na origem inicial, no histórico e nas evidências. Inclui tipo, UUID do documento quando houver, título observado, revisão textual quando disponível, trecho ou nota manual e instante da captura. A revisão da sessão usa a chave composta documento + versão textual. Uma edição apenas de metadados da sessão não cria revisão textual. Wiki e outras fontes sem revisão compatível usam a captura manual. A informação permanece compreensível a partir desses dados históricos se o título ou o texto da fonte mudar.
 
-O detalhe começa pela afirmação atual e mostra a cadeia de evidências na ordem em que foram registradas. Por exemplo, **Relato de NPC · Refutado**, seguido de **Sessão 4 · Declaração da vigia** e **Sessão 6 · Luz identificada no barco**. Os vínculos permitem voltar à sessão e à página da vigia. A pendência **Investigar a luz** pode aparecer ao lado, com estado independente. Depois de validar a estrutura, a navegação rápida pode reutilizar a busca para localizar informações.
+Chaves estrangeiras e validação transacional impedem referências cruzadas. As fontes históricas usam restrição de exclusão, sem cascata. Sessões na lixeira mantêm referência e trecho, com indicação de indisponibilidade temporária. Restaurar a sessão reativa a navegação. Arquivar uma campanha mantém suas fontes consultáveis conforme as regras existentes. Índices iniciais atendem lista por campanha/estado e detalhe por informação/versão. A futura migração será aditiva, com verificação de integridade, preservação e rollback. O ZIP mantém as capturas históricas inclusive quando omite a sessão na lixeira. O backup SQLite mantém as relações completas.
 
-## Critérios de aceitação sugeridos
+## Salvamento e recuperação propostos
 
-| ID | Critério | Teste proposto |
-| --- | --- | --- |
-| P10-01 | Criar uma informação com natureza, estado e proveniência. | Integração e E2E |
-| P10-02 | Distinguir relato, rumor, teoria e confirmação sem confundir a fonte com o estado. | E2E |
-| P10-03 | Consultar o conhecimento de um personagem e do jogador. | Integração e E2E |
-| P10-04 | Acrescentar evidência e revisar estado sem apagar o registro original. | SQLite |
-| P10-05 | Navegar para sessão, NPC e pendência vinculados. | E2E |
-| P10-06 | Rejeitar relações entre campanhas e manter a proveniência na lixeira. | SQLite |
-| P10-07 | Detectar concorrência, preservar o rascunho e recuperar reenvio. | SQLite e E2E |
-| P10-08 | Exportar e restaurar revisões, evidências, atribuições e referências. | SQLite e ZIP |
+Usar um armazenamento IndexedDB próprio da P10-A, com escopo campanha + UUID da informação e identificação da aba. Guardar dados do formulário, versão-base, geração e envelope imutável da operação pendente. Reaproveitar os padrões do editor de sessões para fila local, proteção por geração e comprovante, adaptando a representação e o fluxo às informações narrativas. Rascunhos de sessão continuam no armazenamento existente.
+
+O botão Salvar congela o UUID da operação e o payload antes do envio. Uma transação SQLite valida vínculos e base, confirma conteúdo e histórico e grava o comprovante. Falha de rede ou resposta perdida mantém a operação exata para reenvio, inclusive após reabrir. A mesma chave e payload recuperam a resposta original. Uma chave reutilizada com conteúdo diferente falha. Só a resposta confirmada permite exibir **Salvo no servidor**. Uma resposta antiga limpa apenas a geração que confirmou.
+
+Um conflito de versão mantém o rascunho e abre a comparação com o servidor. A combinação exige nova confirmação e novo UUID de operação. A edição posterior de um rascunho fica separada do envelope já enviado. Falha local indica risco e oferece cópia ou download dos campos ainda disponíveis. Rascunhos são locais ao perfil e ao dispositivo, e sua recuperação depende do armazenamento disponível.
+
+## Matriz de critérios e testes planejados
+
+Cada linha indica o cenário principal, uma alternativa, a falha relevante, a dependência e a evidência esperada para aprovação futura.
+
+| ID | Comportamento e cenário principal | Alternativa e falha | Dependência | Nível e evidência esperada |
+| --- | --- | --- | --- | --- |
+| P10-01 | Confirmar enunciado e natureza com origem. | Origem inicial por registro direto. Entrada vazia ou vínculo inválido mantém o banco intacto. | Campanha e fonte | SQLite e E2E com UUID, estado inicial e captura. |
+| P10-02 | Alterar avaliação preservando a natureza. | Contestar sem conclusão. Confirmar/refutar sem evidência ou justificativa é rejeitado. | P10-01 | Unitário e SQLite com combinações válidas, rejeições e estados anteriores preservados. |
+| P10-04 | Adicionar evidência e reclassificar. | Acrescentar evidência sem mudar estado. Falha injetada reverte a operação inteira. | P10-01/02 | SQLite com transação real, histórico ordenado e rollback. |
+| P10-05 | Navegar para sessão, NPC, wiki e pendência. | Origem manual sem destino navegável. UUID ausente gera indicação de indisponibilidade. | Sessões, wiki, P6 e P7 | E2E com abertura dos destinos corretos e independência da pendência. |
+| P10-06 | Operar somente dentro da campanha. | Dois NPCs homônimos têm IDs distintos. ID externo é rejeitado sem alterações parciais. | P10-05 | SQLite com campanhas isoladas e verificação de chaves. |
+| P10-07 | Detectar edição concorrente e recuperar resposta perdida. | Reabrir offline com rascunho. Falha de armazenamento ou operação divergente mantém o texto disponível e evita duplicação. | IndexedDB, versão e comprovante | Unitário para gerações, SQLite para corrida e idempotência, E2E para perda da resposta e recuperação. |
+| P10-08 | Exportar e restaurar informação, histórico e fontes. | Fonte na lixeira permanece como captura no ZIP. Destino ocupado ou backup inválido preserva o original. | Exportação e backup existentes | SQLite e ZIP com cópia isolada, integridade e comparação de IDs, fontes e versões. |
+| P10-09 | Gravar somente após confirmação explícita. | Cancelar ou fechar antes de salvar. Erro de rede mantém a confirmação pendente. | P10-07 | E2E e SQLite com consulta antes e depois de salvar. |
+| P10-10 | Manter enunciados, justificativas e evidências anteriores. | Corrigir evidência por novo registro. Falha intermediária preserva as versões existentes. | P10-04 | SQLite com comparação de instantâneos e rollback. |
+| P10-11 | Manter evidências favoráveis e contrárias lado a lado. | Acrescentar evidência contextual. Reenvio idêntico mantém uma única evidência e o mesmo estado. | P10-04/07 | SQLite e E2E com ambas as evidências e estado inalterado. |
+| P10-12 | Preservar captura histórica ao editar, arquivar, mover à lixeira ou restaurar uma fonte. | Wiki sem revisões usa captura manual. Fonte indisponível conserva a descrição e o UUID. | P10-05/06 e lixeira atual | SQLite e E2E com captura invariável e retorno da navegação. |
+| P10-14 | Cadastrar com enunciado e natureza em tela estreita. | Usar teclado. Erro de validação mantém os campos e informa como prosseguir. | P10-01/09 | Playwright em 320 px, rótulos, foco, campos mínimos e largura sem transbordo. |
 
 ## Dependências, riscos e decisões pendentes
 
-P6 fornece pendências com IDs e histórico. P7 oferece origem em conteúdo confirmado de sessões. P8 preserva proveniência de textos importados. P9 fornece navegação reutilizável. O modelo referencia pendências, resumos e texto importado. A criação de uma informação estruturada continua sendo explícita.
+P6 fornece vínculos com pendências. P7 fornece sessão e destaques confirmados como possíveis fontes. P8 preserva origem de texto importado. P9 pode receber integração depois de validada a navegação contextual. A P10-A pode ser entregue sem campos ou tabelas de perspectivas.
 
-O custo maior está em manter coerentes a revisão, as evidências e a atribuição de conhecimento. Campos demais também aumentam o tempo de captura durante a sessão. Para avaliação, a proposta começa com cadastro simples, evidência opcional na entrada, estado em aberto e filtro de personagem. Uma avaliação posterior pode testar se data ficcional, evidências múltiplas no primeiro formulário e busca integrada justificam a complexidade.
+A captura pode divergir do conteúdo atualizado da fonte, por isso a interface identifica instante e revisão quando disponíveis. Capturas longas aumentam o ZIP, e a perda do armazenamento do navegador pode remover rascunhos ainda pendentes. Manter recibos e histórico aumenta o volume do SQLite.
 
-A aprovação deve decidir quais estados entram no primeiro recorte, se o registro de conhecimento precisa cobrir grupos e como apresentar evidências divergentes. A reformulação visual tem aprovação própria e fica fora desta proposta.
+### Decisões que exigem aprovação do mantenedor
+
+| Decisão | Alternativas e consequências | Recomendação |
+| --- | --- | --- |
+| Origem inicial e título | Exigir fonte e título melhora catalogação imediata e torna a captura mais longa. Derivar o título e usar registro direto reduz campos. | Derivar o título e oferecer origem opcional no cadastro. Exigir fonte identificável e justificativa só ao confirmar ou refutar. |
+| Alteração de evidência | Revisar o mesmo registro simplifica a lista, mas exige histórico separado. Acrescentar correção preserva a fonte original diretamente. | Correção por acréscimo, destacando a versão vigente. |
+| Descoberta de informações | Lançar com FTS5 e P9 amplia acesso e aumenta o trabalho de indexação e navegação. Uma lista contextual valida primeiro o fluxo principal. | Entregar lista e filtros por campanha. Avaliar FTS5/P9 depois. |
+| Retenção de comprovantes | Retenção por prazo reduz volume e limita recuperação de operações antigas. Retenção enquanto existir o registro simplifica o reenvio. | Reter pelo ciclo de vida do registro nesta primeira entrega. Medir o custo antes de definir expiração. |
+
+Durante a implementação futura, cada cenário começa com Red, passa pela menor mudança que satisfaz o teste e repete a validação após Refactor. Os resultados serão registrados no respectivo PR.
