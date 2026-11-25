@@ -116,3 +116,9 @@ A alteração da própria automação é integrada primeiro por PR de revisão e
 A branch `codex/ensaio-auto-merge-final` partiu de `bb47c13` e publicou `b58022b`. O [sinal](https://github.com/Gabriel-Souza-de-Lima/Lorekeeper/actions/runs/44987317118) passou e o [workflow da App](https://github.com/Gabriel-Souza-de-Lima/Lorekeeper/actions/runs/44987327680) abriu o [PR #7](https://github.com/Gabriel-Souza-de-Lima/Lorekeeper/pull/7). O GitHub registra abertura, solicitação de auto-merge e merge por `lorekeeper-pr-bot[bot]`.
 
 O pedido foi registrado às 01h58min22s, horário de Brasília, com o CI ainda aguardando. O [job validar](https://github.com/Gabriel-Souza-de-Lima/Lorekeeper/actions/runs/44987340745/job/137100699306) aprovou o candidato `22e0403`, e o GitHub integrou o PR às 01h59min31s no commit `dce0d9d`. O [CI pós-merge](https://github.com/Gabriel-Souza-de-Lima/Lorekeeper/actions/runs/44987415546) passou na `main`.
+
+## Alterações de frontend
+
+No SDD e no TDD existentes, relacione mudanças de frontend aos critérios funcionais e aos requisitos de UX/UI aprovados que se aplicam à entrega. Use os padrões de interação e o Design System aprovados, confira acessibilidade e responsividade e inclua evidências de regressão funcional, avaliação visual e avaliação humana conforme o risco e o critério.
+
+A [proposta revisada de UX/UI](ux-ui/README.md) orienta a avaliação. Critérios ainda em proposta podem embasar a discussão. Sua adoção como critérios de aceite depende da aprovação do mantenedor.

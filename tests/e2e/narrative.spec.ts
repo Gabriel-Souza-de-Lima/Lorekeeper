@@ -105,9 +105,19 @@ test('P10-05/07/10/12: preserva texto em conflito e abre a fonte após restaura�
     await page.getByRole('button', { name: 'Usar versão atual como base' }).click()
     await page.getByRole('button', { name: 'Salvar', exact: true }).click()
     await expect(page.getByRole('status')).toHaveText('Salvo no servidor')
-    await expect(page.getByText('Rumor inicial', { exact: true })).toBeVisible()
+    const confirmed = page.getByRole('region', { name: 'Dados confirmados', exact: true })
+    await expect(confirmed.getByRole('heading', { name: 'Rascunho em conflito', exact: true })).toBeVisible()
+    const originalRevision = confirmed.getByRole('listitem').filter({
+      has: page.getByText(/^Versão 1 ·/),
+    })
+    await expect(originalRevision.getByText('Rumor inicial', { exact: true })).toBeVisible()
+
+    const list = page.getByRole('region', { name: 'Lista de informações', exact: true })
+    const updatedItem = list.getByRole('button', { name: 'Rascunho em conflito', exact: true })
+    await expect(updatedItem).toBeVisible()
+    await expect(list.getByRole('button', { name: 'Rumor inicial', exact: true })).toHaveCount(0)
     expect((await request.patch(root + '/sessions/' + session + '/trash', { data: { trashed: false } })).ok()).toBe(true)
-    await page.getByRole('button', { name: 'Rascunho em conflito', exact: true }).click()
+    await updatedItem.click()
     await page.getByRole('region', { name: 'Origem inicial' }).getByRole('button', { name: 'Nova sessão', exact: true }).click()
     await expect(page.getByRole('heading', { name: 'Editor de sessão' })).toBeVisible()
   } finally { await finishE2EServer(app, [page.context()], request) }

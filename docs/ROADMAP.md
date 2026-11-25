@@ -78,3 +78,18 @@ A implementação começa após a revisão da [arquitetura](ARCHITECTURE.md) e d
 P6–P9 foram integrados com validação pós-merge. O acervo existente foi verificado com migrações aditivas V12–V15 em bancos temporários, usando testes de preservação, integridade e rollback. A importação inicial tem sessão como destino editável e limite de 512 KiB em UTF-8. O resumo e os destaques são escritos pelo usuário, e os favoritos incluem sessões e páginas da wiki.
 
 A P10 encerrou o ciclo técnico com os 16 critérios aprovados na validação automatizada local do Windows, incluindo as regressões de foco de P10-14 e P10-03. A avaliação humana da experiência permanece pendente. Qualquer planejamento da reformulação visual depende de autorização explícita do mantenedor. [P10-A](specs/33-fatos-rumores-e-teorias.md#aceite-local-no-windows) · [P10-B](specs/34-perspectivas-e-conhecimento.md#aceite-local-no-windows)
+
+## Ciclo de UX/UI
+
+A [documentação de UX/UI](ux-ui/README.md) reúne a proposta revisada e o histórico. A especificação aguarda avaliação e aprovação do mantenedor.
+
+| Etapa | Objetivo | Estado |
+| --- | --- | --- |
+| UXR-01 | Levantamento de requisitos | Concluído |
+| UXR-02 | Auditoria independente | Concluído |
+| Revisão do mantenedor | Avaliação e aprovação dos requisitos | Pendente |
+| UXR-03 | Auditoria da interface existente | Pendente |
+| UXR-04 | Arquitetura de informação e prototipação | Pendente |
+| UXR-05 | Aprovação da experiência e identidade visual | Pendente |
+| UXR-06 | Implementação incremental com SDD/TDD | Pendente |
+| UXR-07 | Validação e aceite final | Pendente |
