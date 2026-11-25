@@ -1,6 +1,6 @@
 # P10-A — Fatos, rumores e evidências
 
-- **Estado** — implementação autorizada e verificada em bancos fictícios. A integração é acompanhada pelo check obrigatório.
+- **Estado** — aprovada com ressalva de foco na validação local automatizada do Windows.
 - **Objetivo** — acompanhar como uma afirmação narrativa foi registrada, sustentada, contestada ou refutada.
 - **Rastreabilidade** — produto §4.9 e §4.10, MVP-07, MVP-10, MVP-11 e MVP-12. Os IDs originais P10-01 a P10-08 permanecem estáveis. P10-03 pertence à [P10-B](34-perspectivas-e-conhecimento.md), que tem aprovação própria.
 
@@ -95,3 +95,26 @@ A P10-B e a reformulação visual mantêm suas aprovações próprias.
 
 
 A cobertura executável da P10-A está em `tests/unit/narrative.test.ts`, `tests/integration/narrative.test.ts` e `tests/e2e/narrative.spec.ts`. Os ensaios SQLite usam arquivos temporários. A validação E2E usa Chromium em Linux. O Windows permanece sem ensaio manual nesta entrega.
+
+## Aceite local no Windows
+
+Checkout limpo em `main` com `dad322d`, igual à referência remota. Node.js 24.22.3 e npm 11.19.1. A navegação automatizada em Chromium verificou que o JavaScript entregue era idêntico a `dist/assets/index-B0tqtAAk.js`. O servidor do ensaio usou `PORT=0`, `LOREKEEPER_DB_PATH` em diretório temporário e perfil de navegador isolado. O processo em 3000 e os dados operacionais ficaram fora dos testes. [PR #63](https://github.com/Gabriel-Souza-de-Lima/Lorekeeper/pull/63) · [CI de P10-A](https://github.com/Gabriel-Souza-de-Lima/Lorekeeper/actions/runs/45525308293)
+
+| Critério | Resultado | Evidência |
+| --- | --- | --- |
+| P10-01 | Aprovado | Cadastro pela interface de Mistérios do Farol, Relato de NPC, Em aberto, título derivado e captura da sessão 4. |
+| P10-02 | Aprovado | Contestado e Refutado com justificativa e evidência, preservando a natureza. As rejeições exigidas passaram nos testes de domínio e integração. |
+| P10-04 | Aprovado | Evidências das sessões 6 e 7, correção por acréscimo e rollback exercitado pela integração. |
+| P10-05 | Aprovado | Navegação para Vigia, pendência e sessão de origem restaurada. A pendência continuou aberta. |
+| P10-06 | Aprovado | Uma sessão de Floresta Antiga foi rejeitada com 404 e o detalhe permaneceu idêntico. |
+| P10-07 | Aprovado | E2E de IndexedDB, perda de resposta, preservação de rascunho em conflito e reenvio. |
+| P10-08 | Aprovado | ZIP com evidências, histórico e captura da fonte na lixeira. A CLI restaurou um SQLite separado, com integridade e chaves estrangeiras verificadas e consultas iguais às originais. |
+| P10-09 | Aprovado | Consulta vazia antes de Salvar e após cancelar, com confirmação explícita observada no navegador. |
+| P10-10 | Aprovado | Sequência Em aberto, Contestado e Refutado, com enunciado e evidência anterior preservados. |
+| P10-11 | Aprovado | Evidências contextual e contraditória no ensaio, favorável e contraditória no E2E oficial. |
+| P10-12 | Aprovado | Renomear e editar a sessão conservou a captura. Na lixeira, a captura ficou legível e indisponível para navegação. Restaurar reativou o acesso. |
+| P10-14 | Aprovado com ressalva | Largura de 320 px sem rolagem horizontal. Teclado acionou cadastro e cancelamento. Enunciado em branco gerou mensagem e deixou o campo intacto. Após cancelar, o foco foi para `body`. |
+
+**Problema de interface, severidade baixa (P10-14).** Em 320 px, abra **Nova informação** pelo teclado, preencha o enunciado e acione **Cancelar** com Enter. O formulário fecha e o banco permanece sem registro, mas `document.activeElement` volta a `body` em vez de **Nova informação**. Isso interrompe a continuidade pelo teclado. Uma correção futura pode devolver o foco ao controle de origem quando o formulário fechar. A legibilidade e o esforço de uso durante uma sessão permanecem para avaliação humana.
+
+**Regressão.** `npm run lint`, `npm run typecheck` e `npm run build` passaram. A suíte geral aprovou 5 unitários, 83 integrações e 42 E2E. A integração focada em `narrative.test.ts` e `perspectives.test.ts` passou 10/10, e `npx playwright test tests/e2e/narrative.spec.ts tests/e2e/perspectives.spec.ts --repeat-each=3` passou 21/21. Nenhuma falha ou caso ignorado nessas suítes. O roteiro complementar teve ajustes de seletores e de contexto do navegador durante a execução, antes de completar o fluxo. O ensaio foi automatizado no Windows e não representa validação manual do mantenedor. [E2E narrativo](../../tests/e2e/narrative.spec.ts) · [Integração narrativa](../../tests/integration/narrative.test.ts)
