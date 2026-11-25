@@ -1,3 +1,4 @@
+import { KnowledgeView, PerspectivePanel } from './perspectives.tsx'
 import { useEffect, useRef, useState } from 'react'
 import type { Campaign, PendingItemSummary, SessionSummary, WikiSummary } from '../contracts.ts'
 import { assessments, evidenceRoles, natures, type NarrativeDetail, type NarrativeSummary,
@@ -45,6 +46,8 @@ export function Narrative({ campaign, onBack, onDocument, onPending }: Props) {
   const [targets, setTargets] = useState<Target[]>([])
   const [pending, setPending] = useState<PendingItemSummary[]>([])
   const [drafts, setDrafts] = useState<NarrativeDraft[]>([])
+  const [consulting, setConsulting] = useState(false)
+  const [perspectiveEditing, setPerspectiveEditing] = useState(false)
   const [item, setItem] = useState<NarrativeDetail | null>(null)
   const [draft, setDraft] = useState<NarrativeDraft | null>(null)
   const [conflict, setConflict] = useState<NarrativeDetail | null>(null)
@@ -240,23 +243,29 @@ export function Narrative({ campaign, onBack, onDocument, onPending }: Props) {
   }
 
   const archived = Boolean(campaign.archivedAt)
-  const navigable = draft ? undefined : onDocument
+  const navigable = draft || perspectiveEditing ? undefined : onDocument
   const fields = draft?.fields
   const entry = fields?.evidence?.[0]
   return <div className="narrative-area">
-    <button className="quiet" disabled={busy} onClick={() => {
+    <button className="quiet" disabled={busy || perspectiveEditing} onClick={() => {
       if (!draft || window.confirm(status === 'Falha no armazenamento local'
         ? 'O rascunho está apenas nesta aba e pode ser perdido. Voltar à campanha?'
         : 'Voltar à campanha mantendo o rascunho neste navegador?')) onBack()
     }}>Voltar à campanha</button>
     <header className="page-header"><div><p className="context">{campaign.name}</p><h1>Informações</h1></div>
-      {!archived && <button disabled={busy || !!draft} onClick={() => void begin('edit')}>Nova informação</button>}</header>
+      <div className="actions">
+        <button disabled={busy || !!draft || perspectiveEditing} onClick={() => setConsulting((value) => !value)}>Consultar conhecimento</button>
+        {!archived && !consulting && <button disabled={busy || !!draft || perspectiveEditing} onClick={() => void begin('edit')}>Nova informação</button>}
+      </div></header>
+    {consulting && <KnowledgeView root={root} characters={targets.filter(({ type }) => type === 'character')}
+      onOpen={(id) => { setConsulting(false); open(id) }} onSession={(id) => onDocument(id, 'session')}
+      onClose={() => setConsulting(false)} />}
     {error && <p role="alert" className="error">{error}</p>}
     {status && <p role="status">{status}</p>}
-    {!draft && !archived && drafts.map((saved) => <button key={saved.key} disabled={busy} onClick={() => void recover(saved)}>
+    {!consulting && !perspectiveEditing && !draft && !archived && drafts.map((saved) => <button key={saved.key} disabled={busy} onClick={() => void recover(saved)}>
       Recuperar rascunho {saved.fields.statement || saved.id.slice(0, 8)}
     </button>)}
-    {!draft && <section aria-label="Lista de informações" className="panel">
+    {!consulting && !draft && <section aria-label="Lista de informações" className="panel">
       <div className="actions">
         <label>Filtrar natureza<select value={nature} onChange={(event) => setNature(event.currentTarget.value)}>
           <option value="">Todas</option>{natures.map((value) => <option key={value} value={value}>{natureNames[value]}</option>)}
@@ -266,15 +275,15 @@ export function Narrative({ campaign, onBack, onDocument, onPending }: Props) {
         </select></label>
       </div>
       {items.length ? <ul className="session-list">{items.map((row) => <li key={row.id}>
-        <button className="quiet" disabled={busy} onClick={() => open(row.id)}>{row.statement.split('\n')[0]}</button>
+        <button className="quiet" disabled={busy || perspectiveEditing} onClick={() => open(row.id)}>{row.statement.split('\n')[0]}</button>
         <span>{natureNames[row.nature]} · {stateNames[row.state]} · {row.source.title ?? (row.source.kind === 'manual' ? 'Nota manual' : 'Registro direto')} · {new Date(row.updatedAt).toLocaleDateString('pt-BR')}</span>
       </li>)}</ul> : <p>Nenhuma informação nesta consulta.</p>}
     </section>}
-    {item && (!draft || draft.fields.version > 0 || conflict) && <section className="panel" aria-label="Dados confirmados">
+    {!consulting && item && (!draft || draft.fields.version > 0 || conflict) && <section className="panel" aria-label="Dados confirmados">
       <h2>{item.statement}</h2>
       <p>{natureNames[item.nature]} · {stateNames[item.state]}</p>
       <section aria-label="Origem inicial"><SourceView source={item.source} onDocument={navigable} /></section>
-      {!archived && !draft && <div className="actions">
+      {!archived && !perspectiveEditing && !draft && <div className="actions">
         <button disabled={busy} onClick={() => void begin('edit', item)}>Editar informação</button>
         <button disabled={busy} onClick={() => void begin('assessment', item)}>Alterar estado</button>
         <button disabled={busy} onClick={() => void begin('evidence', item)}>Acrescentar evidência</button>
@@ -286,13 +295,13 @@ export function Narrative({ campaign, onBack, onDocument, onPending }: Props) {
         return <section key={evidence.id} className="panel">
           <p>{roleNames[evidence.role]}{replaced && ' · Substituída'}{evidence.replacesId && ' · Correção'}</p>
           <SourceView source={evidence.source} onDocument={navigable} />
-          {!archived && !draft && !replaced && <button disabled={busy} onClick={() => void begin('evidence', item, evidence.id)}>Corrigir evidência</button>}
+          {!archived && !perspectiveEditing && !draft && !replaced && <button disabled={busy} onClick={() => void begin('evidence', item, evidence.id)}>Corrigir evidência</button>}
         </section>
       })}
       <h3>Vínculos</h3>
-      {item.documents.map((doc) => <button key={doc.id} disabled={!!draft || !doc.available}
+      {item.documents.map((doc) => <button key={doc.id} disabled={!!draft || perspectiveEditing || !doc.available}
         onClick={() => onDocument(doc.id, doc.type)}>{doc.title}{!doc.available && ' · Indisponível'}</button>)}
-      {item.pending.map((row) => <button key={row.id} disabled={!!draft} onClick={() => onPending(row.id)}>{row.title}</button>)}
+      {item.pending.map((row) => <button key={row.id} disabled={!!draft || perspectiveEditing} onClick={() => onPending(row.id)}>{row.title}</button>)}
       <h3>Histórico</h3>
       <ol>{item.history.map((row) => <li key={row.version}>
         <p>Versão {row.version} · {natureNames[row.nature]} · {stateNames[row.state]}</p>
@@ -300,6 +309,8 @@ export function Narrative({ campaign, onBack, onDocument, onPending }: Props) {
         {row.justification && <p>{row.justification}</p>}
         {row.version > 1 && <SourceView source={row.source} onDocument={navigable} />}
       </li>)}</ol>
+      {!draft && <PerspectivePanel key={item.id} campaignId={campaign.id} item={item} targets={targets}
+        archived={archived} onEditing={setPerspectiveEditing} onSession={(id) => onDocument(id, 'session')} />}
     </section>}
     {draft && fields && <form className="panel form" aria-label="Rascunho de informação" onSubmit={(event) => { event.preventDefault(); void save() }}>
       <h2>{fields.version ? 'Editar informação' : 'Nova informação'}</h2>

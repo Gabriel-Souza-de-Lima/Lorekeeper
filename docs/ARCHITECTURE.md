@@ -86,4 +86,4 @@ O backup operacional é uma cópia consistente do SQLite gerada via API de backu
 
 A P10-A usa relações SQLite específicas para informação, histórico, evidências, vínculos e comprovantes. Capturas históricas preservam a fonte registrada, e um armazenamento IndexedDB próprio protege os rascunhos. A consulta inicial é contextual na campanha. [Proposta P10-A](specs/33-fatos-rumores-e-teorias.md)
 
-A P10-B propõe atribuições explícitas e histórico de descobertas por sujeito. Campos e relações de perspectiva pertencem à segunda etapa. Cada etapa exige aprovação do mantenedor antes da implementação. [Proposta P10-B](specs/34-perspectivas-e-conhecimento.md)
+A P10-B registra atribuições explícitas e histórico de descobertas por sujeito. A V17 conserva histórico por acréscimo e usa uma versão de concorrência própria. [Proposta P10-B](specs/34-perspectivas-e-conhecimento.md)

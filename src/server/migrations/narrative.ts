@@ -3,7 +3,7 @@ import type Database from 'better-sqlite3'
 export function migrateNarrative(db: Database.Database) {
   db.transaction(() => {
     const version = db.pragma('user_version', { simple: true })
-    if (version === 16) return
+    if (version === 16 || version === 17) return
     if (version !== 15) throw new Error('Versão de banco incompatível.')
     db.exec(`
       CREATE UNIQUE INDEX narrative_document_scope ON documents(campaign_id,id);
