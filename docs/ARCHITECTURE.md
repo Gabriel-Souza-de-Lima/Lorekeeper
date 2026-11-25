@@ -80,3 +80,10 @@ O backup operacional é uma cópia consistente do SQLite gerada via API de backu
 | Disco cheio ou servidor indisponível | Rejeitar a gravação sem confirmar sucesso, manter a fila local, alertar sobre espaço e permitir repetir a operação. |
 | Perda do volume, erro em migração ou backup corrompido | Cópia externa, validação e restauração ensaiada. Com backup diário, uma perda total pode afetar até um dia de gravações confirmadas se as cópias estiverem em dia. Definir o tempo de recuperação com base no primeiro ensaio. |
 | Computador de jogo bloqueia a rede privada | Validar o acesso nos dispositivos reais antes do piloto e decidir se o proxy autenticado é necessário. |
+
+
+## P10 — Decisões propostas para aprovação
+
+A P10-A propõe relações SQLite específicas para informação, histórico, evidências, vínculos e comprovantes. Capturas históricas preservam a fonte registrada, e um armazenamento IndexedDB próprio protege os rascunhos. A consulta inicial é contextual na campanha. [Proposta P10-A](specs/33-fatos-rumores-e-teorias.md)
+
+A P10-B propõe atribuições explícitas e histórico de descobertas por sujeito. Campos e relações de perspectiva pertencem à segunda etapa. Cada etapa exige aprovação do mantenedor antes da implementação. [Proposta P10-B](specs/34-perspectivas-e-conhecimento.md)
