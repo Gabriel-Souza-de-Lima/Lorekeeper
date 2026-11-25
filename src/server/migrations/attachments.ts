@@ -3,7 +3,7 @@ import type Database from 'better-sqlite3'
 export function migrateAttachments(db: Database.Database) {
   db.transaction(() => {
     const version = db.pragma('user_version', { simple: true })
-    if (version === 11 || version === 12 || version === 13 || version === 14 || version === 15) return
+    if (version === 11 || version === 12 || version === 13 || version === 14 || version === 15 || version === 16) return
     if (version !== 10) throw new Error('Versão de banco incompatível.')
     db.exec(`
       CREATE TABLE attachments (

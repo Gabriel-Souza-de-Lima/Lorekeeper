@@ -1,3 +1,4 @@
+import { Narrative } from './narrative.tsx'
 import { Attachments } from './attachments.tsx'
 import { PendingItems } from './pending-items.tsx'
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -26,6 +27,7 @@ type View =
   | { page: 'quick-notes' }
   | { page: 'new' }
   | { page: 'campaign' | 'edit'; campaign: Campaign }
+  | { page: 'information'; campaign: Campaign }
   | { page: 'pending-items'; campaign: Campaign; itemId?: string }
   | { page: 'campaign-notes'; campaign: Campaign; noteId?: string }
   | { page: 'session-trash'; campaign: Campaign; rows: SessionSummary[] }
@@ -94,7 +96,7 @@ function App() {
   const [quickOpen, setQuickOpen] = useState(false)
   const quickOrigin = useRef<HTMLElement | null>(null)
   const sessionNavigation = useRef<SessionNavigation>(null)
-  const shortcutAvailable = !['text-import', 'pending-items', 'edit', 'new', 'quick-notes', 'campaign-notes', 'wiki'].includes(view.page)
+  const shortcutAvailable = !['text-import', 'information', 'pending-items', 'edit', 'new', 'quick-notes', 'campaign-notes', 'wiki'].includes(view.page)
 
   const openQuick = useCallback(() => {
     quickOrigin.current = document.activeElement instanceof HTMLElement ? document.activeElement : null
@@ -201,6 +203,7 @@ function App() {
           <div><p className="context">{locked ? 'Campanha arquivada' : statusLabels[campaign.status]}</p>
             <h1>{campaign.name}</h1>{campaign.description && <p>{campaign.description}</p>}</div>
           <div className="actions">
+            <button disabled={working} onClick={() => { setError(''); setView({ page: 'information', campaign }) }}>Informações</button>
             <button disabled={working} onClick={() => { setError(''); setView({ page: 'campaign-notes', campaign }) }}>
               Anotações da campanha
             </button>
@@ -310,6 +313,16 @@ function App() {
             })}>Restaurar sessão</button>}
         </li>)}</ul>}
       </>
+      case 'information': return <Narrative key={view.campaign.id} campaign={view.campaign}
+        onBack={() => void action(() => openCampaign(view.campaign.id))}
+        onPending={(itemId) => setView({ page: 'pending-items', campaign: view.campaign, itemId })}
+        onDocument={(id, type) => {
+          if (type !== 'session') return openWikiPage(view.campaign, id)
+          void action(async () => {
+            const session = await api<Session>(`${campaignPath}/${view.campaign.id}/sessions/${id}`)
+            setView({ page: 'session', campaign: view.campaign, session })
+          })
+        }} />
       case 'pending-items': return <PendingItems campaign={view.campaign} itemId={view.itemId}
         onBack={() => void action(() => openCampaign(view.campaign.id))}
         onSession={(id) => void action(async () => {

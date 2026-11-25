@@ -29,6 +29,8 @@ A API entrega o ZIP para download na rede privada com `Cache-Control: no-store`.
 | `pendingItems`, `pendingItemEntities`, `pendingItemStates` | Pendências com versão de edição, entidades com vínculo ativo e estados em ordem de gravação. Uma sessão na lixeira é representada com `session_id: null` no ZIP. O backup SQLite mantém o vínculo original. |
 | `attachments/<id>.png`, `attachments/<id>.pdf` | Bytes originais de um anexo com ao menos um vínculo consultável. O caminho é gerado pelo UUID e MIME. |
 | `attachments`, `attachmentAssociations` | Metadados com `path`, tamanho e SHA-256, além dos vínculos ativos. O ZIP omite vínculos removidos e sessões na lixeira. O backup conserva os dados omitidos. |
+| `narrativeItems`, `narrativeHistory`, `narrativeEvidence` | Informações narrativas, versões e evidências com capturas de origem em objetos `source`. Capturas históricas conservam UUID, título, trecho, instante e revisão quando disponível. |
+| `narrativeDocumentLinks`, `narrativePendingLinks` | Relacionamentos por UUID. Uma referência histórica a sessão na lixeira pode ficar sem o Markdown da fonte neste ZIP. O backup SQLite conserva todas as relações e os comprovantes. |
 
 ## Evidências de TDD
 

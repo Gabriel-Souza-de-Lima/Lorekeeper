@@ -70,7 +70,7 @@ A implementação começa após a revisão da [arquitetura](ARCHITECTURE.md) e d
 | P7 | Resumo de sessão e destaques escritos pelo usuário. | Preservar salvamento manual, retomada e portabilidade. [Especificação](specs/30-resumo-de-sessao.md) |
 | P8 | Importação de TXT e Markdown. | Prévia, confirmação, idempotência e busca. [Especificação](specs/31-importacao-de-texto.md) |
 | P9 | Navegação rápida e favoritos. | Teclado, foco, rascunhos e persistência. [Especificação](specs/32-navegacao-rapida.md) |
-| P10-A | Fatos, rumores e evidências. | [Proposta](specs/33-fatos-rumores-e-teorias.md) sujeita à aprovação antes da implementação. |
+| P10-A | Fatos, rumores e evidências. | [Especificação e evidências](specs/33-fatos-rumores-e-teorias.md). |
 | P10-B | Perspectivas e conhecimento dos personagens. | [Proposta](specs/34-perspectivas-e-conhecimento.md) com aprovação própria após validar P10-A. |
 
 ### Encerramento do ciclo funcional
