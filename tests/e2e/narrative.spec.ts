@@ -2,6 +2,45 @@ import { resolve } from 'node:path'
 import { expect, test } from '@playwright/test'
 import { createE2EServer, finishE2EServer } from '../support/e2e-server.ts'
 
+test('P10-14: cancelar cadastro devolve o foco à Nova informação', async ({ page, request }) => {
+  const app = createE2EServer(':memory:', resolve('dist'))
+  try {
+    const origin = await app.listen({ host: '127.0.0.1', port: 0 })
+    const campaign = await request.post(origin + '/api/campaigns', { data: { name: 'Farol fictício' } })
+    expect(campaign.status()).toBe(201)
+    const path = origin + '/api/campaigns/' + (await campaign.json()).id + '/information'
+    await page.setViewportSize({ width: 320, height: 700 })
+    const enter = async () => {
+      await page.getByRole('button', { name: 'Farol fictício', exact: true }).click()
+      await page.getByRole('button', { name: 'Informações', exact: true }).click()
+    }
+    await page.goto(origin)
+    await enter()
+    const start = page.getByRole('button', { name: 'Nova informação' })
+    await start.press('Enter')
+    await page.getByLabel('Enunciado').fill('Rascunho fictício para cancelar')
+    await expect(page.getByRole('status')).toHaveText('Rascunho protegido neste navegador')
+    const countDrafts = () => page.evaluate(() => new Promise<number>((resolve, reject) => {
+      const open = indexedDB.open('lorekeeper-narrative')
+      open.onerror = () => reject(open.error)
+      open.onsuccess = () => {
+        const db = open.result
+        const tx = db.transaction('drafts', 'readonly')
+        const count = tx.objectStore('drafts').count()
+        tx.oncomplete = () => { db.close(); resolve(count.result) }
+        tx.onabort = () => { db.close(); reject(tx.error) }
+      }
+    }))
+    expect(await countDrafts()).toBe(1)
+    await page.getByRole('button', { name: 'Cancelar', exact: true }).press('Enter')
+    await expect(page.getByRole('form', { name: 'Rascunho de informação' })).toHaveCount(0)
+    await expect(start).toBeEnabled()
+    await expect(start).toBeFocused()
+    expect(await countDrafts()).toBe(0)
+    expect(await (await request.get(path)).json()).toEqual([])
+  } finally { await finishE2EServer(app, [page.context()], request) }
+})
+
 test('P10-01/07/09/14: rascunho, confirmação explícita e reenvio em 320 px', async ({ page, request }) => {
   const app = createE2EServer(':memory:', resolve('dist'))
   try {
