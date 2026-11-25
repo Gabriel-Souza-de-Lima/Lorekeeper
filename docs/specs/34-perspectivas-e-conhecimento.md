@@ -1,6 +1,6 @@
 # P10-B — Perspectivas e conhecimento dos personagens
 
-- **Estado** — implementação autorizada. Integração acompanhada pelo check obrigatório.
+- **Estado** — aprovada com ressalva de foco na validação local automatizada do Windows.
 - **Objetivo** — consultar o que o jogador e cada personagem souberam, quando souberam e quais evidências conheceram.
 - **Dependência** — [P10-A](33-fatos-rumores-e-teorias.md) integrada e validada. Esta etapa acrescenta atribuições em relação aos UUIDs de informações e evidências da P10-A.
 
@@ -63,3 +63,18 @@ Testes em `tests/unit/perspectives.test.ts`, `tests/integration/perspectives.tes
 ### Ensaio manual no Windows
 
 Usar uma cópia isolada do banco. Criar uma informação fictícia com uma evidência global, registrar uma descoberta para um personagem e conferir que outro personagem só vê suas próprias atribuições. Repetir após recarregar o editor, simular desconexão e verificar reenvio. Arquivar ou mover a origem para a lixeira e restaurá-la. Conferir o ZIP e restaurar um backup em outro caminho para verificar fontes e descobertas.
+
+## Aceite local no Windows
+
+Revisão `dad322d`, com [ambiente, isolamento e resultados gerais](33-fatos-rumores-e-teorias.md#aceite-local-no-windows) registrados em P10-A. [PR #64](https://github.com/Gabriel-Souza-de-Lima/Lorekeeper/pull/64) · [CI de P10-B](https://github.com/Gabriel-Souza-de-Lima/Lorekeeper/actions/runs/45527414644)
+
+| Critério | Resultado | Evidência |
+| --- | --- | --- |
+| P10-03 | Aprovado com ressalva | A consulta de jogador, Marina e Tomas mostrou apenas suas respectivas atribuições. Abrir o detalhe global foi explícito e preservou a versão. Ao fechar a consulta pelo teclado, o foco voltou a `body`. |
+| P10-13 | Aprovado | Sem atribuições, o jogador e os personagens ficaram indefinidos. Somente o jogador exigiu conhecimento explícito e ausência declarada. A descoberta de Marina substituiu a cobertura vazia e preservou o evento histórico. A migração de V16 sem atribuições passou na integração. |
+| P10-15 | Aprovado | Marina recebeu afirmação, contestação e evidência separadamente. Tomas recebeu afirmação e evidência sem contestação. Correção pela interface preservou a descoberta anterior, mudou apenas a perspectiva vigente de Marina e conservou as evidências globais. A suíte exercitou rollback e isolamento. |
+| P10-16 | Aprovado | O ZIP incluiu cabeças, eventos, jogador, personagens, correção e sessão capturada na lixeira. A restauração isolada preservou os resultados completos do detalhe, histórico e consultas de jogador, Marina e Tomas, inclusive UUIDs, relações e ordem. `integrity_check` retornou `ok` e `foreign_key_check` ficou vazio. As perspectivas também foram abertas no Chromium sobre o banco restaurado. |
+
+Na perda de rede, o formulário continuou editável, exibiu proteção no IndexedDB e manteve a versão do servidor. Após retorno da conexão e recarga, o texto foi recuperado. Uma resposta aceita pelo servidor foi descartada no navegador. O reenvio preservou chave e corpo, confirmou a gravação e deixou uma única descoberta. Em dois contextos isolados, a alteração atrasada exibiu a base atual, manteve o rascunho e permitiu confirmar após comparação. IDs inexistentes e referências de outra campanha ou outra informação foram rejeitados. O mesmo UUID de operação com conteúdo divergente retornou 409. Após fechar e reabrir o Chromium e reiniciar o servidor sobre o mesmo SQLite, as consultas retornaram os mesmos dados. [E2E de perspectivas](../../tests/e2e/perspectives.spec.ts) · [Integração de perspectivas](../../tests/integration/perspectives.test.ts)
+
+**Problema de interface, severidade baixa (P10-03).** Abra **Consultar conhecimento** e acione **Fechar consulta** com Enter. A consulta fecha, mas o foco vai para `body` em vez de retornar ao acionador. A correção sugerida é restaurar o foco a **Consultar conhecimento**. O documento manteve largura de 320 px na vista de perspectivas. A avaliação humana da clareza, do esforço de preenchimento e do uso pelo teclado permanece pendente.
