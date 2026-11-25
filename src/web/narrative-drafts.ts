@@ -19,9 +19,9 @@ export function acknowledge(draft: NarrativeDraft, operation: Operation, version
   return { ...draft, operation: null, fields: { ...draft.fields, version } }
 }
 
-export function draftRequest<T>(mode: IDBTransactionMode, job: (store: IDBObjectStore) => IDBRequest<T>) {
+export function draftRequest<T>(mode: IDBTransactionMode, job: (store: IDBObjectStore) => IDBRequest<T>, database = 'lorekeeper-narrative') {
   return new Promise<T>((resolve, reject) => {
-    const opening = indexedDB.open('lorekeeper-narrative', 1)
+    const opening = indexedDB.open(database, 1)
     opening.onerror = () => reject(opening.error)
     opening.onupgradeneeded = () => {
       opening.result.createObjectStore('drafts', { keyPath: 'key' }).createIndex('campaign', 'campaignId')

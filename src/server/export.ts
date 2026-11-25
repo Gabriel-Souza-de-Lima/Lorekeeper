@@ -77,10 +77,15 @@ export function registerExport(app: FastifyInstance, db: Database.Database) {
   const narrativeDocumentLinks = db.prepare('SELECT * FROM narrative_document_links ORDER BY campaign_id, item_id, document_id')
   const narrativePendingLinks = db.prepare('SELECT * FROM narrative_pending_links ORDER BY campaign_id, item_id, pending_id')
 
+  const perspectiveHeads = db.prepare('SELECT * FROM perspective_heads ORDER BY campaign_id, item_id')
+  const perspectiveEvents = db.prepare('SELECT * FROM perspective_events ORDER BY campaign_id, item_id, version')
+
   const snapshot = db.transaction(() => ({
     formatVersion: 1,
     exportedAt: new Date().toISOString(),
     campaigns: campaigns.all(),
+    perspectiveHeads: perspectiveHeads.all(),
+    perspectiveEvents: perspectiveEvents.all(),
     narrativeItems: narrativeItems.all().map(capturedSource),
     narrativeHistory: narrativeHistory.all().map(capturedSource),
     narrativeEvidence: narrativeEvidence.all().map(capturedSource),

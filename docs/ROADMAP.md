@@ -71,7 +71,7 @@ A implementação começa após a revisão da [arquitetura](ARCHITECTURE.md) e d
 | P8 | Importação de TXT e Markdown. | Prévia, confirmação, idempotência e busca. [Especificação](specs/31-importacao-de-texto.md) |
 | P9 | Navegação rápida e favoritos. | Teclado, foco, rascunhos e persistência. [Especificação](specs/32-navegacao-rapida.md) |
 | P10-A | Fatos, rumores e evidências. | [Especificação e evidências](specs/33-fatos-rumores-e-teorias.md). |
-| P10-B | Perspectivas e conhecimento dos personagens. | [Proposta](specs/34-perspectivas-e-conhecimento.md) com aprovação própria após validar P10-A. |
+| P10-B | Perspectivas e conhecimento dos personagens. | [Especificação e evidências](specs/34-perspectivas-e-conhecimento.md). |
 
 ### Encerramento do ciclo funcional
 

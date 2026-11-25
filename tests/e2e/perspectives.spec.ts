@@ -1,0 +1,127 @@
+import { randomUUID } from 'node:crypto'
+import { resolve } from 'node:path'
+import { expect, test } from '@playwright/test'
+import { createE2EServer, finishE2EServer } from '../support/e2e-server.ts'
+
+test('P10-03/13/15: conhecimento por personagem em 320 px, com reenvio e filtro', async ({ page, request }) => {
+  const app = createE2EServer(':memory:', resolve('dist'))
+  try {
+    const origin = await app.listen({ host: '127.0.0.1', port: 0 })
+    const campaign = (await (await request.post(origin + '/api/campaigns', { data: { name: 'Costa' } })).json()).id
+    const root = origin + '/api/campaigns/' + campaign
+    const marine = randomUUID()
+    await request.post(root + '/wiki', { data: { id: marine, type: 'character', title: 'Marina', body: '' } })
+    const item = root + '/information/' + randomUUID()
+    const hiddenEvidence = randomUUID()
+    expect((await request.put(item, { headers: { 'Idempotency-Key': randomUUID() }, data: {
+      version: 0, statement: 'O farol anuncia o barco', nature: 'rumor',
+      evidence: [{ id: hiddenEvidence, role: 'contradicts', source: { text: 'Evidência só no registro global' } }],
+    } })).ok()).toBe(true)
+    await page.setViewportSize({ width: 320, height: 700 })
+    const enter = async () => {
+      await page.getByRole('button', { name: 'Costa', exact: true }).click()
+      await page.getByRole('button', { name: 'Informações', exact: true }).click()
+      await page.getByRole('button', { name: 'O farol anuncia o barco', exact: true }).click()
+    }
+    await page.goto(origin)
+    await enter()
+    const panel = page.getByRole('region', { name: 'Perspectivas' })
+    await expect(panel.getByText('Ainda não definido', { exact: true })).toBeVisible({ timeout: 4000 })
+    await panel.getByRole('button', { name: 'Registrar conhecimento do jogador' }).press('Enter')
+    await panel.getByRole('button', { name: 'Salvar perspectiva' }).click()
+    await expect(panel.getByText('Jogador registrado · personagens ainda não definidos')).toBeVisible()
+    await panel.getByRole('button', { name: 'Declarar ausência de personagens' }).click()
+    await panel.getByRole('button', { name: 'Salvar perspectiva' }).click()
+    await expect(panel.getByText('Somente o jogador', { exact: true })).toBeVisible()
+    await panel.getByRole('button', { name: 'Registrar descoberta' }).click()
+    await panel.getByLabel('Personagem', { exact: true }).selectOption(marine)
+    await panel.getByLabel('Origem ou observação').fill('Ouviu da vigia')
+    await expect(panel.getByRole('status')).toHaveText('Rascunho protegido neste navegador')
+    expect((await (await request.get(item + '/perspectives')).json()).version).toBe(2)
+    await page.reload()
+    await enter()
+    await panel.getByRole('button', { name: 'Recuperar rascunho de perspectiva' }).click()
+    await expect(panel.getByLabel('Origem ou observação')).toHaveValue('Ouviu da vigia')
+    await page.route(item + '/perspectives', async (route) => {
+      expect((await route.fetch()).ok()).toBe(true)
+      await route.abort()
+    }, { times: 1 })
+    await panel.getByRole('button', { name: 'Salvar perspectiva' }).click()
+    await expect(panel.getByRole('alert')).toContainText('conexão')
+    await panel.getByRole('button', { name: 'Reenviar perspectiva' }).click()
+    await expect(panel.getByRole('status')).toHaveText('Salvo no servidor')
+    expect((await (await request.get(item + '/perspectives')).json()).version).toBe(3)
+    await page.getByRole('button', { name: 'Consultar conhecimento', exact: true }).click()
+    const knowledge = page.getByRole('region', { name: 'Consulta de conhecimento' })
+    await knowledge.getByLabel('Consultar por').selectOption(marine)
+    await expect(knowledge.getByRole('heading', { name: 'O que Marina sabe' })).toBeVisible()
+    await expect(knowledge.getByText('Ouviu da vigia')).toBeVisible()
+    await expect(knowledge.getByText('Evidência só no registro global')).toHaveCount(0)
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320)
+  } finally { await finishE2EServer(app, [page.context()], request) }
+})
+
+test('P10-15: conflito preserva o rascunho e permite corrigir sem sobrescrever', async ({ page, request }) => {
+  const app = createE2EServer(':memory:', resolve('dist'))
+  try {
+    const origin = await app.listen({ host: '127.0.0.1', port: 0 })
+    const { id } = await (await request.post(origin + '/api/campaigns', { data: { name: 'Ilhas' } })).json()
+    const root = origin + '/api/campaigns/' + id
+    const actor = randomUUID()
+    await request.post(root + '/wiki', { data: { id: actor, type: 'character', title: 'Marina', body: '' } })
+    const item = root + '/information/' + randomUUID()
+    const put = (url: string, data: object) => request.put(url, { data, headers: { 'Idempotency-Key': randomUUID() } })
+    expect((await put(item, { version: 0, statement: 'Boa maré', nature: 'observation' })).ok()).toBe(true)
+    const url = item + '/perspectives'
+    expect((await put(url, { version: 0, discovery: { id: randomUUID(), characterId: actor, kind: 'heard', note: 'Nota original' } })).ok()).toBe(true)
+    await page.goto(origin)
+    await page.getByRole('button', { name: 'Ilhas', exact: true }).click()
+    await page.getByRole('button', { name: 'Informações', exact: true }).click()
+    await page.getByRole('button', { name: 'Boa maré' }).click()
+    const panel = page.getByRole('region', { name: 'Perspectivas' })
+    await panel.getByRole('button', { name: 'Corrigir descoberta' }).click()
+    await panel.getByLabel('Origem ou observação').fill('Nota corrigida')
+    expect((await put(url, { version: 1, discovery: { id: randomUUID(), kind: 'heard', note: 'Mudança remota' } })).ok()).toBe(true)
+    const save = panel.getByRole('button', { name: 'Salvar perspectiva' })
+    await save.click()
+    await expect(panel.getByText('Mudança remota')).toBeVisible()
+    await expect(panel.getByLabel('Origem ou observação')).toHaveValue('Nota corrigida')
+    await panel.getByRole('button', { name: 'Usar perspectiva atual como base' }).click()
+    await save.click()
+    await expect(panel.getByText('Nota corrigida')).toBeVisible()
+    await expect(panel.getByText('Nota original')).toBeVisible()
+    await expect(panel.getByText('Marina · Substituída')).toBeVisible()
+  } finally { await finishE2EServer(app, [page.context()], request) }
+})
+
+test('P10-15: falha do IndexedDB mantém o formulário e oferece cópia', async ({ page, request }) => {
+  const app = createE2EServer(':memory:', resolve('dist'))
+  try {
+    const origin = await app.listen({ host: '127.0.0.1', port: 0 })
+    const { id } = await (await request.post(origin + '/api/campaigns', { data: { name: 'Vale' } })).json()
+    const item = origin + '/api/campaigns/' + id + '/information/' + randomUUID()
+    expect((await request.put(item, { headers: { 'Idempotency-Key': randomUUID() },
+      data: { version: 0, statement: 'Marca fictícia', nature: 'rumor' } })).ok()).toBe(true)
+    await page.addInitScript(() => {
+      const open = IDBFactory.prototype.open
+      IDBFactory.prototype.open = function (name: string, version?: number) {
+        if (name === 'lorekeeper-perspectives') throw new Error('Falha fictícia')
+        return open.call(this, name, version)
+      }
+    })
+    await page.goto(origin)
+    await page.getByRole('button', { name: 'Vale', exact: true }).click()
+    await page.getByRole('button', { name: 'Informações' }).click()
+    await page.getByRole('button', { name: 'Marca fictícia' }).click()
+    const panel = page.getByRole('region', { name: 'Perspectivas' })
+    await panel.getByRole('button', { name: 'Registrar conhecimento do jogador' }).click()
+    await panel.getByLabel('Origem ou observação').fill('Anotação preservada')
+    await expect(panel.getByRole('status')).toHaveText('Falha no armazenamento local')
+    await panel.getByRole('button', { name: 'Salvar perspectiva' }).click()
+    await expect(panel.getByLabel('Origem ou observação')).toHaveValue('Anotação preservada')
+    expect((await (await request.get(item + '/perspectives')).json()).version).toBe(0)
+    const download = page.waitForEvent('download')
+    await panel.getByRole('button', { name: 'Baixar rascunho de perspectiva' }).click()
+    expect((await download).suggestedFilename()).toBe('rascunho-perspectiva.json')
+  } finally { await finishE2EServer(app, [page.context()], request) }
+})

@@ -156,7 +156,7 @@ function legacy(t: TestContext, collision = false) {
 test('migration-preservation P10: mantém campanha de V15', (t) => {
   const db = openDatabase(legacy(t))
   try {
-    assert.equal(db.pragma('user_version', { simple: true }), 16)
+    assert.equal(db.pragma('user_version', { simple: true }), 17)
     assert.equal(db.prepare('SELECT name FROM campaigns').pluck().get(), 'Bruma')
   } finally { db.close() }
 })

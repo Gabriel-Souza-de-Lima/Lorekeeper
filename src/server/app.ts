@@ -1,3 +1,4 @@
+import { registerPerspectives } from './perspectives.ts'
 import { registerNarrative } from './narrative.ts'
 import { maxImportBytes, readImportFile, validImportText } from '../text-import.ts'
 import { createHash, randomUUID } from 'node:crypto'
@@ -380,6 +381,7 @@ export function createApp(database: string, webRoot?: string) {
   registerCampaignRecap(app, db)
   registerPendingItems(app, db)
   registerNarrative(app, db)
+  registerPerspectives(app, db)
   registerAttachments(app, db)
   registerSearch(app, db)
   registerFavorites(app, db)
