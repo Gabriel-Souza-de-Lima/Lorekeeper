@@ -37,15 +37,7 @@ A especificação do produto é a principal referência para o escopo funcional.
 - Mantenha a interface em português brasileiro.
 
 ## Fluxo de trabalho
-Antes de implementar uma funcionalidade grande, apresente um plano.
-
-Para cada entrega:
-- Descreva as alterações realizadas.
-- Execute os testes aplicáveis.
-- Informe limitações e pendências.
-- Mantenha a documentação técnica atualizada.
-
-Não tente implementar todas as funcionalidades do produto simultaneamente.
+Quando o mantenedor pedir para prosseguir, siga o [protocolo de continuidade](docs/DEVELOPMENT.md#protocolo-de-continuidade). Execute uma etapa por solicitação, salvo autorização explícita de uma sequência. Decida autonomamente detalhes técnicos reversíveis e proporcionais dentro do escopo aprovado. Encaminhe para decisão do mantenedor os pontos de aprovação definidos no protocolo.
 
 ## SDD, TDD e CI
 

@@ -2,6 +2,26 @@
 
 A arquitetura de referência usa TypeScript, Fastify, React com Vite e SQLite. A infraestrutura inicial exercita o driver SQLite e um Chromium real no Codex Cloud, no GitHub Actions ou localmente. O Incremento 1 introduz a interface, a API e a primeira migração SQLite.
 
+## Protocolo de continuidade
+
+O repositório é a fonte principal de requisitos, decisões, critérios de aceitação e planejamento. Uma solicitação para prosseguir autoriza executar a próxima etapa cujos requisitos e decisões já tenham sido aprovados.
+
+1. Leia o [AGENTS.md](../AGENTS.md) e as instruções aplicáveis à área. Confirme o SHA atual da `main`, os PRs relevantes e o estado do CI. Identifique entregas em andamento para evitar repetir trabalho. Registre verificações remotas indisponíveis e use as evidências acessíveis.
+2. Consulte o [roadmap](ROADMAP.md), o [produto](PRODUCT.md) e as [especificações vigentes](specs/README.md). Identifique a primeira etapa ainda não concluída, confira suas dependências e autorizações e relacione os critérios de aceitação aplicáveis. Para UX/UI, confira o estado de aprovação no [índice da documentação](ux-ui/README.md).
+3. Planeje na proporção da complexidade. Tome decisões técnicas reversíveis, proporcionais e compatíveis com o escopo aprovado sem pedir aprovação a cada alteração. Execute o trabalho autorizado conforme [SDD e TDD](#sdd-e-tdd) e rode as verificações aplicáveis e de regressão.
+4. Atualize a especificação, o roadmap ou a documentação afetada conforme necessário, com evidências reais e pendências explícitas. Publique pelo [fluxo da GitHub App](#publicação-com-github-app). Confirme o merge e o CI pós-merge na `main` antes de considerar a integração validada.
+5. Informe o que foi entregue, os critérios atendidos, as evidências, o resultado da integração, as pendências e a próxima etapa prevista. Encerre após uma etapa quando o pedido for apenas para prosseguir. Execute uma sequência somente com autorização explícita, na ordem das dependências e respeitando os pontos de aprovação. Aguarde a integração e validação da entrega anterior antes de iniciar uma etapa dependente.
+
+Interrompa a etapa e apresente ao mantenedor as alternativas e seus impactos quando a decisão envolver:
+
+- Requisitos ainda sem aprovação, ambiguidades que alterem regras de negócio ou ampliação do escopo funcional.
+- Mudanças relevantes de arquitetura, novas dependências relevantes ou alterações nas raízes de confiança e nas políticas de integração.
+- Risco de perda ou comprometimento de dados.
+- Identidade visual ou mudanças significativas de navegação ou experiência de uso ainda sem aprovação.
+- Critérios que dependam de avaliação humana.
+
+O CI confirma as verificações automatizadas executadas. Aceite de produto, experiência, estética e conformidade integral de acessibilidade exigem as evidências e aprovações próprias de cada critério.
+
 ## SDD e TDD
 
 1. Abra ou escreva a [especificação](specs/README.md) e confira o vínculo com o [MVP](MVP.md). Se uma regra de negócio estiver indefinida, apresente a dúvida para decisão e deixe o comportamento afetado pendente.
