@@ -84,3 +84,5 @@ textarea { resize: vertical; min-height: 5rem; }
 .quick-navigation [role="option"] { display: grid; padding: .45rem .55rem; cursor: pointer; overflow-wrap: anywhere; }
 .quick-navigation [role="option"] span { color: var(--muted); }
 .quick-navigation [role="option"][aria-selected="true"] { color: var(--accent); outline: 1px solid var(--accent); outline-offset: -1px; }
+
+.narrative-area { overflow-wrap: anywhere; }

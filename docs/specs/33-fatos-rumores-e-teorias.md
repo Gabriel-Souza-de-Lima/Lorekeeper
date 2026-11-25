@@ -1,6 +1,6 @@
 # P10-A — Fatos, rumores e evidências
 
-- **Estado** — proposta revisada para aprovação. Todos os critérios e testes são planejados.
+- **Estado** — implementação autorizada e verificada em bancos fictícios. A integração é acompanhada pelo check obrigatório.
 - **Objetivo** — acompanhar como uma afirmação narrativa foi registrada, sustentada, contestada ou refutada.
 - **Rastreabilidade** — produto §4.9 e §4.10, MVP-07, MVP-10, MVP-11 e MVP-12. Os IDs originais P10-01 a P10-08 permanecem estáveis. P10-03 pertence à [P10-B](34-perspectivas-e-conhecimento.md), que tem aprovação própria.
 
@@ -75,3 +75,23 @@ A captura pode divergir do conteúdo atualizado da fonte, por isso a interface i
 | Retenção de comprovantes | Retenção por prazo reduz volume e limita recuperação de operações antigas. Retenção enquanto existir o registro simplifica o reenvio. | Reter pelo ciclo de vida do registro nesta primeira entrega. Medir o custo antes de definir expiração. |
 
 Durante a implementação futura, cada cenário começa com Red, passa pela menor mudança que satisfaz o teste e repete a validação após Refactor. Os resultados serão registrados no respectivo PR.
+
+
+## Implementação da P10-A
+
+A migração V16 cria as seis relações documentadas. As capturas são objetos JSON com UUID e revisão de origem expostos em colunas geradas protegidas por chaves estrangeiras. Os vínculos de origem, documentos e pendências têm escopo de campanha no SQLite. O histórico acrescenta um instantâneo ao mudar enunciado, natureza ou estado. Evidências e vínculos avançam a versão de concorrência, inclusive quando a mesma avaliação continua. As correções de evidências acrescentam registros com referência à versão anterior. Os vínculos podem ser acrescentados de forma idempotente.
+
+A API por campanha expõe lista filtrável, detalhe e gravação versionada em `/api/campaigns/:campaignId/information`. A gravação usa `PUT /:id` e `Idempotency-Key`. Comprovantes permanecem pelo ciclo de vida do registro e guardam o resultado original completo. Histórico maior aumenta o custo de novos comprovantes, que é uma limitação desta versão.
+
+O IndexedDB `lorekeeper-narrative` usa escopo de campanha e UUID de rascunho, com trava por rascunho entre abas. A recuperação exige reabrir a aplicação em condição suportada. O texto já aberto continua editável offline. Depois de um envio sem confirmação, o formulário conserva a operação exata até a resposta. Se a proteção local falhar, a interface disponibiliza o arquivo JSON do rascunho.
+
+## Evidências Red → Green → Refactor
+
+- **Red** — os testes SQLite obtiveram 404 e banco V15. O E2E não encontrou a área Informações. O teste de geração dependia da camada de rascunhos ainda ausente.
+- **Green** — a integração verificou estado inicial, transição justificada, duas evidências divergentes, correção por acréscimo, isolamento, comparação de versões, preservação da captura e restauração SQLite. O navegador recuperou o rascunho e recuperou a resposta de uma operação já gravada.
+- **Refactor** — as origens passaram a compartilhar o mesmo seletor e apresentação. O encerramento dos E2E usa clientes e servidores isolados. Os testes verificam conflito, falha do IndexedDB, navegação e regressão no fluxo protegido.
+
+A P10-B e a reformulação visual mantêm suas aprovações próprias.
+
+
+A cobertura executável da P10-A está em `tests/unit/narrative.test.ts`, `tests/integration/narrative.test.ts` e `tests/e2e/narrative.spec.ts`. Os ensaios SQLite usam arquivos temporários. A validação E2E usa Chromium em Linux. O Windows permanece sem ensaio manual nesta entrega.

@@ -15,6 +15,11 @@ type ExportDocument = {
   quest_closed: number
 }
 
+function capturedSource(row: unknown) {
+  const { source, ...data } = row as { source: string }
+  return { ...data, source: JSON.parse(source) }
+}
+
 export function registerExport(app: FastifyInstance, db: Database.Database) {
   const campaigns = db.prepare(`
     SELECT id, name, description, game_master, system, rules_version, notes, status, archived_at,
@@ -66,10 +71,21 @@ export function registerExport(app: FastifyInstance, db: Database.Database) {
       SELECT attachment_id FROM attachment_associations WHERE ${activeAttachmentAssociations}
     ) ORDER BY id`)
 
+  const narrativeItems = db.prepare('SELECT * FROM narrative_items ORDER BY campaign_id, id')
+  const narrativeHistory = db.prepare('SELECT * FROM narrative_history ORDER BY campaign_id, item_id, version')
+  const narrativeEvidence = db.prepare('SELECT * FROM narrative_evidence ORDER BY campaign_id, item_id, rowid')
+  const narrativeDocumentLinks = db.prepare('SELECT * FROM narrative_document_links ORDER BY campaign_id, item_id, document_id')
+  const narrativePendingLinks = db.prepare('SELECT * FROM narrative_pending_links ORDER BY campaign_id, item_id, pending_id')
+
   const snapshot = db.transaction(() => ({
     formatVersion: 1,
     exportedAt: new Date().toISOString(),
     campaigns: campaigns.all(),
+    narrativeItems: narrativeItems.all().map(capturedSource),
+    narrativeHistory: narrativeHistory.all().map(capturedSource),
+    narrativeEvidence: narrativeEvidence.all().map(capturedSource),
+    narrativeDocumentLinks: narrativeDocumentLinks.all(),
+    narrativePendingLinks: narrativePendingLinks.all(),
     documents: documents.all().map((document) => ({
       ...document, markdownPath: `documents/${encodeURIComponent(document.id)}.md`,
     })),

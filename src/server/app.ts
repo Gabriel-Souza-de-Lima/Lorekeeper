@@ -1,3 +1,4 @@
+import { registerNarrative } from './narrative.ts'
 import { maxImportBytes, readImportFile, validImportText } from '../text-import.ts'
 import { createHash, randomUUID } from 'node:crypto'
 import Fastify from 'fastify'
@@ -378,6 +379,7 @@ export function createApp(database: string, webRoot?: string) {
   registerWiki(app, db)
   registerCampaignRecap(app, db)
   registerPendingItems(app, db)
+  registerNarrative(app, db)
   registerAttachments(app, db)
   registerSearch(app, db)
   registerFavorites(app, db)
