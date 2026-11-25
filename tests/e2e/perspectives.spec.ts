@@ -3,6 +3,49 @@ import { resolve } from 'node:path'
 import { expect, test } from '@playwright/test'
 import { createE2EServer, finishE2EServer } from '../support/e2e-server.ts'
 
+test('P10-03: fechar a consulta devolve o foco a Consultar conhecimento', async ({ page, request }) => {
+  const app = createE2EServer(':memory:', resolve('dist'))
+  try {
+    const origin = await app.listen({ host: '127.0.0.1', port: 0 })
+    const campaign = await request.post(origin + '/api/campaigns', { data: { name: 'Vale fictício' } })
+    expect(campaign.status()).toBe(201)
+    const root = origin + '/api/campaigns/' + (await campaign.json()).id
+    const actor = randomUUID()
+    expect((await request.post(root + '/wiki', { data: { id: actor, type: 'character', title: 'Marina', body: '' } })).status()).toBe(201)
+    const item = root + '/information/' + randomUUID()
+    const evidence = randomUUID()
+    const put = (url: string, data: object) => request.put(url, { data, headers: { 'Idempotency-Key': randomUUID() } })
+    expect((await put(item, { version: 0, statement: 'Uma luz surgiu no vale', nature: 'observation',
+      evidence: [{ id: evidence, role: 'supports', source: { text: 'Registro fictício da luz' } }],
+    })).status()).toBe(201)
+    expect((await put(item + '/perspectives', { version: 0,
+      discovery: { id: randomUUID(), characterId: actor, kind: 'evidence', evidenceId: evidence },
+    })).status()).toBe(200)
+    const paths = [item, item + '/perspectives', root + '/perspectives?characterId=' + actor]
+    const snapshot = () => Promise.all(paths.map(async (path) => {
+      const result = await request.get(path)
+      expect(result.status()).toBe(200)
+      return result.json()
+    }))
+    const before = await snapshot()
+    await page.setViewportSize({ width: 320, height: 700 })
+    await page.goto(origin)
+    await page.getByRole('button', { name: 'Vale fictício', exact: true }).click()
+    await page.getByRole('button', { name: 'Informações', exact: true }).click()
+    const start = page.getByRole('button', { name: 'Consultar conhecimento' })
+    await start.press('Enter')
+    const query = page.getByRole('region', { name: 'Consulta de conhecimento' })
+    const subject = query.getByLabel('Consultar por')
+    await subject.press('ArrowDown')
+    await expect(query.getByRole('heading', { name: 'O que Marina sabe' })).toBeVisible()
+    await expect(query.getByText(/Registro fictício da luz/)).toBeVisible()
+    await query.getByRole('button', { name: 'Fechar consulta' }).press('Enter')
+    await expect(query).toHaveCount(0)
+    await expect(start).toBeFocused()
+    expect(await snapshot()).toEqual(before)
+  } finally { await finishE2EServer(app, [page.context()], request) }
+})
+
 test('P10-03/13/15: conhecimento por personagem em 320 px, com reenvio e filtro', async ({ page, request }) => {
   const app = createE2EServer(':memory:', resolve('dist'))
   try {

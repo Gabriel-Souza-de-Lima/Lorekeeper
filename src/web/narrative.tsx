@@ -42,6 +42,7 @@ function SourceView({ source, onDocument }: { source: Source; onDocument?: Props
 export function Narrative({ campaign, onBack, onDocument, onPending }: Props) {
   const root = '/api/campaigns/' + campaign.id
   const path = root + '/information'
+  const archived = Boolean(campaign.archivedAt)
   const [items, setItems] = useState<NarrativeSummary[]>([])
   const [targets, setTargets] = useState<Target[]>([])
   const [pending, setPending] = useState<PendingItemSummary[]>([])
@@ -61,6 +62,16 @@ export function Narrative({ campaign, onBack, onDocument, onPending }: Props) {
   const queue = useRef<Promise<unknown>>(Promise.resolve())
   const release = useRef<(() => void) | null>(null)
   const tab = useRef(crypto.randomUUID())
+  const newInformationButton = useRef<HTMLButtonElement>(null)
+  const knowledgeButton = useRef<HTMLButtonElement>(null)
+  const restoreNewInformationFocus = useRef(false)
+  const canStartInformation = !archived && !consulting && !busy && !draft && !perspectiveEditing
+
+  useEffect(() => {
+    if (!canStartInformation || !restoreNewInformationFocus.current) return
+    restoreNewInformationFocus.current = false
+    newInformationButton.current?.focus()
+  }, [canStartInformation])
 
   useEffect(() => {
     let active = true
@@ -216,6 +227,7 @@ export function Narrative({ campaign, onBack, onDocument, onPending }: Props) {
       await persist(null, draft.key)
       release.current?.()
       release.current = null
+      restoreNewInformationFocus.current = draft.mode === 'edit' && draft.fields.version === 0
       adopt(null)
       setConflict(null)
       setStatus('')
@@ -242,7 +254,6 @@ export function Narrative({ campaign, onBack, onDocument, onPending }: Props) {
     window.setTimeout(() => URL.revokeObjectURL(url), 1000)
   }
 
-  const archived = Boolean(campaign.archivedAt)
   const navigable = draft || perspectiveEditing ? undefined : onDocument
   const fields = draft?.fields
   const entry = fields?.evidence?.[0]
@@ -254,12 +265,17 @@ export function Narrative({ campaign, onBack, onDocument, onPending }: Props) {
     }}>Voltar à campanha</button>
     <header className="page-header"><div><p className="context">{campaign.name}</p><h1>Informações</h1></div>
       <div className="actions">
-        <button disabled={busy || !!draft || perspectiveEditing} onClick={() => setConsulting((value) => !value)}>Consultar conhecimento</button>
-        {!archived && !consulting && <button disabled={busy || !!draft || perspectiveEditing} onClick={() => void begin('edit')}>Nova informação</button>}
+        <button ref={knowledgeButton} disabled={busy || !!draft || perspectiveEditing}
+          onClick={() => setConsulting((value) => !value)}>Consultar conhecimento</button>
+        {!archived && !consulting && <button ref={newInformationButton} disabled={!canStartInformation}
+          onClick={() => void begin('edit')}>Nova informação</button>}
       </div></header>
     {consulting && <KnowledgeView root={root} characters={targets.filter(({ type }) => type === 'character')}
       onOpen={(id) => { setConsulting(false); open(id) }} onSession={(id) => onDocument(id, 'session')}
-      onClose={() => setConsulting(false)} />}
+      onClose={() => {
+        setConsulting(false)
+        knowledgeButton.current?.focus()
+      }} />}
     {error && <p role="alert" className="error">{error}</p>}
     {status && <p role="status">{status}</p>}
     {!consulting && !perspectiveEditing && !draft && !archived && drafts.map((saved) => <button key={saved.key} disabled={busy} onClick={() => void recover(saved)}>

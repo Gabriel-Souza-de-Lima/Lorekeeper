@@ -1,6 +1,6 @@
 # P10-A — Fatos, rumores e evidências
 
-- **Estado** — aprovada com ressalva de foco na validação local automatizada do Windows.
+- **Estado** — aprovada na validação automatizada local do Windows.
 - **Objetivo** — acompanhar como uma afirmação narrativa foi registrada, sustentada, contestada ou refutada.
 - **Rastreabilidade** — produto §4.9 e §4.10, MVP-07, MVP-10, MVP-11 e MVP-12. Os IDs originais P10-01 a P10-08 permanecem estáveis. P10-03 pertence à [P10-B](34-perspectivas-e-conhecimento.md), que tem aprovação própria.
 
@@ -113,8 +113,15 @@ Checkout limpo em `main` com `dad322d`, igual à referência remota. Node.js 24.
 | P10-10 | Aprovado | Sequência Em aberto, Contestado e Refutado, com enunciado e evidência anterior preservados. |
 | P10-11 | Aprovado | Evidências contextual e contraditória no ensaio, favorável e contraditória no E2E oficial. |
 | P10-12 | Aprovado | Renomear e editar a sessão conservou a captura. Na lixeira, a captura ficou legível e indisponível para navegação. Restaurar reativou o acesso. |
-| P10-14 | Aprovado com ressalva | Largura de 320 px sem rolagem horizontal. Teclado acionou cadastro e cancelamento. Enunciado em branco gerou mensagem e deixou o campo intacto. Após cancelar, o foco foi para `body`. |
+| P10-14 | Aprovado | A 320 px, o teclado aciona cadastro e cancelamento. O foco volta a **Nova informação** após remover o rascunho. Enunciado em branco gera mensagem e mantém o campo intacto. |
 
 **Problema de interface, severidade baixa (P10-14).** Em 320 px, abra **Nova informação** pelo teclado, preencha o enunciado e acione **Cancelar** com Enter. O formulário fecha e o banco permanece sem registro, mas `document.activeElement` volta a `body` em vez de **Nova informação**. Isso interrompe a continuidade pelo teclado. Uma correção futura pode devolver o foco ao controle de origem quando o formulário fechar. A legibilidade e o esforço de uso durante uma sessão permanecem para avaliação humana.
 
 **Regressão.** `npm run lint`, `npm run typecheck` e `npm run build` passaram. A suíte geral aprovou 5 unitários, 83 integrações e 42 E2E. A integração focada em `narrative.test.ts` e `perspectives.test.ts` passou 10/10, e `npx playwright test tests/e2e/narrative.spec.ts tests/e2e/perspectives.spec.ts --repeat-each=3` passou 21/21. Nenhuma falha ou caso ignorado nessas suítes. O roteiro complementar teve ajustes de seletores e de contexto do navegador durante a execução, antes de completar o fluxo. O ensaio foi automatizado no Windows e não representa validação manual do mantenedor. [E2E narrativo](../../tests/e2e/narrative.spec.ts) · [Integração narrativa](../../tests/integration/narrative.test.ts)
+
+### Encerramento da ressalva de foco P10-14
+
+- **Red** — sobre `089d5a1`, o E2E acionou **Cancelar** com Enter em Chromium a 320 px. O formulário fechou e **Nova informação** voltou a estar habilitado, mas `toBeFocused()` falhou.
+- **Green** — após excluir o rascunho do IndexedDB, o efeito React restaura o foco quando **Nova informação** volta a estar habilitado. O teste confirma o foco, a remoção local e a lista vazia no servidor.
+
+A mudança ficou restrita à restauração de foco e dispensou refatoração. O cenário anterior permanece registrado acima como evidência histórica. [E2E narrativo](../../tests/e2e/narrative.spec.ts)
