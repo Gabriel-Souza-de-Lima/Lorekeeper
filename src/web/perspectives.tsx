@@ -32,29 +32,37 @@ export function KnowledgeView({ root, characters, onOpen, onSession, onClose }: 
   root: string; characters: Target[]; onOpen: (id: string) => void; onSession: (id: string) => void; onClose: () => void
 }) {
   const [subject, setSubject] = useState('')
-  const [data, setData] = useState<{ subject: string; rows: Knowledge[] } | null>(null)
+  const [data, setData] = useState<{ key: string; rows: Knowledge[] } | null>(null)
   const [failure, setFailure] = useState<string | null>(null)
   const [attempt, setAttempt] = useState(0)
+  const key = JSON.stringify([root, subject, attempt])
   const heading = characters.find(({ id }) => id === subject)?.title
   useEffect(() => {
     let active = true
     const url = root + '/perspectives' + (subject ? '?characterId=' + encodeURIComponent(subject) : '')
     void api<Knowledge[]>(url).then(
-      (rows) => { if (active) { setData({ subject, rows }); setFailure(null) } },
-      () => { if (active) setFailure(subject) },
+      (rows) => { if (active) { setData({ key, rows }); setFailure(null) } },
+      () => { if (active) setFailure(key) },
     )
     return () => { active = false }
-  }, [root, subject, attempt])
-  const rows = data?.subject === subject ? data.rows : null
+  }, [root, subject, key])
+  const rows = data?.key === key ? data.rows : null
   return <section className="panel" aria-label="Consulta de conhecimento">
     <h2>{heading ? `O que ${heading} sabe` : 'Conhecimento do jogador'}</h2>
     <p>Descobertas atribuídas explicitamente a esta perspectiva.</p>
-    <label>Consultar por<select value={subject} onChange={(event) => setSubject(event.currentTarget.value)}>
+    <label>Consultar por<select value={subject} onChange={(event) => {
+      setData(null)
+      setFailure(null)
+      setSubject(event.currentTarget.value)
+    }}>
       <option value="">Jogador</option>
       {characters.map((actor) => <option key={actor.id} value={actor.id}>{actor.title}</option>)}
     </select></label>
-    {failure === subject ? <button onClick={() => { setFailure(null); setAttempt((value) => value + 1) }}>Tentar carregar novamente</button>
-      : !rows ? <p>Carregando…</p> : rows.length === 0 ? <p>Nenhuma atribuição registrada.</p> :
+    {failure === key ? <>
+      <p role="alert">Não foi possível carregar esta perspectiva.</p>
+      <button onClick={() => setAttempt((value) => value + 1)}>Tentar carregar novamente</button>
+    </> : !rows ? <p role="status">Carregando perspectiva…</p>
+      : rows.length === 0 ? <p role="status">Nenhuma atribuição registrada.</p> :
         rows.map((row) => <article key={row.id} className="panel">
           <h3>{row.discoveries[0].statement}</h3>
           <ol>{row.discoveries.map((entry) => <li key={entry.id}><DiscoveryText row={entry} onSession={onSession} /></li>)}</ol>

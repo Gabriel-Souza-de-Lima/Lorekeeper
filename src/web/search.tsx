@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, type FormEvent } from 'react'
 import type { SearchFilters, SearchResult, SearchType } from '../contracts.ts'
 import { api } from './api.ts'
 
@@ -7,8 +7,15 @@ export const categories: Record<SearchType, string> = {
   npc: 'NPC', location: 'Localidade', quest: 'Missão',
 }
 
-export function Search({ working, onBack, onOpen }: {
+export type SearchReturn = { result: SearchResult; unavailable?: boolean }
+
+function resultKey(result: SearchResult) {
+  return JSON.stringify([result.campaignId, result.type, result.id])
+}
+
+export function Search({ working, onBack, onOpen, returned }: {
   working: boolean
+  returned: SearchReturn | null
   onBack: () => void
   onOpen: (result: SearchResult) => void
 }) {
@@ -18,6 +25,12 @@ export function Search({ working, onBack, onOpen }: {
   const [filterError, setFilterError] = useState(false)
   const [error, setError] = useState('')
   const [pending, setPending] = useState(false)
+  const [notice, setNotice] = useState('')
+  const [focusResult, setFocusResult] = useState<string | null>(null)
+  const lastQuery = useRef('')
+  const [submitted, setSubmitted] = useState<{ query: string; previous?: SearchReturn } | null>(null)
+  const heading = useRef<HTMLHeadingElement>(null)
+  const list = useRef<HTMLUListElement>(null)
 
   useEffect(() => {
     let active = true
@@ -28,7 +41,54 @@ export function Search({ working, onBack, onOpen }: {
     return () => { active = false }
   }, [attempt])
 
-  async function submit(event: FormEvent<HTMLFormElement>) {
+  useLayoutEffect(() => {
+    if (!returned || !lastQuery.current) return
+    setPending(true)
+    setResults(null)
+    setSubmitted({ query: lastQuery.current, previous: returned })
+  }, [returned])
+
+  useEffect(() => {
+    if (!submitted) return
+    let active = true
+    const { previous } = submitted
+    setPending(true)
+    setError('')
+    setNotice('')
+    setResults(null)
+    void api<SearchResult[]>(`/api/search?${submitted.query}`).then(
+      (rows) => {
+        if (!active) return
+        const target = previous ? resultKey(previous.result) : null
+        const available = rows.some((row) => resultKey(row) === target)
+        setResults(rows)
+        if (previous) {
+          const opening = previous.unavailable ? 'Não foi possível abrir o resultado anterior.' : ''
+          const missing = !available ? 'O resultado anterior saiu da busca.' : ''
+          setNotice([opening, missing].filter(Boolean).join(' '))
+          setFocusResult(available && !previous.unavailable ? target : '')
+        }
+      },
+      (failure) => {
+        if (!active) return
+        setError(failure instanceof Error ? failure.message : 'Não foi possível realizar a busca.')
+        if (previous?.unavailable) setNotice('Não foi possível abrir o resultado anterior.')
+        if (previous) setFocusResult('')
+      },
+    ).finally(() => { if (active) setPending(false) })
+    return () => { active = false }
+  }, [submitted])
+
+  useEffect(() => {
+    if (focusResult === null || pending || working) return
+    const button = Array.from(list.current?.querySelectorAll<HTMLButtonElement>('button') ?? [])
+      .find((element) => element.dataset.result === focusResult)
+    const destination = button ?? heading.current
+    destination?.focus()
+    setFocusResult(null)
+  }, [focusResult, pending, working])
+
+  function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     const query = new URLSearchParams()
     for (const [key, value] of new FormData(event.currentTarget)) {
@@ -39,22 +99,14 @@ export function Search({ working, onBack, onOpen }: {
       setResults(null)
       return
     }
-    setPending(true)
-    setError('')
-    setResults(null)
-    try {
-      setResults(await api<SearchResult[]>(`/api/search?${query}`))
-    } catch (failure) {
-      setError(failure instanceof Error ? failure.message : 'Não foi possível realizar a busca.')
-    } finally {
-      setPending(false)
-    }
+    lastQuery.current = query.toString()
+    setSubmitted({ query: lastQuery.current })
   }
 
   return <>
     <button className="quiet" disabled={working} onClick={onBack}>Voltar ao painel</button>
     <h1>Busca global</h1>
-    <form className="panel campaign-form" onSubmit={(event) => void submit(event)}>
+    <form className="panel campaign-form" onSubmit={submit}>
       <fieldset className="form-grid" disabled={working || pending}>
         <label className="wide">Termos de busca<input name="q" maxLength={200} required /></label>
         <div><label htmlFor="search-campaignId">Campanha</label><select id="search-campaignId" name="campaignId" disabled={!filters}>
@@ -79,11 +131,12 @@ export function Search({ working, onBack, onOpen }: {
       <button onClick={() => { setFilterError(false); setAttempt((value) => value + 1) }}>Recarregar filtros</button>
     </div>}
     {error && <p className="error" role="alert">{error}</p>}
-    {pending && <p role="status">Buscando…</p>}
+    <p role="status">{pending ? 'Buscando…' : notice}</p>
+    <h2 ref={heading} tabIndex={-1}>Resultados da busca</h2>
     {results?.length === 0 && <p className="panel empty">Nenhum documento encontrado.</p>}
-    {results && results.length > 0 && <ul className="session-list">{results.map((result) => <li key={result.id} className="panel">
+    {results && results.length > 0 && <ul ref={list} className="session-list">{results.map((result) => <li key={resultKey(result)} className="panel">
       <div>
-        <button className="quiet" disabled={working} onClick={() => onOpen(result)}>{result.title}</button>
+        <button className="quiet" data-result={resultKey(result)} disabled={working || pending} onClick={() => onOpen(result)}>{result.title}</button>
         <p className="context">{categories[result.type]} · {result.campaignName ?? 'Caixa de entrada'}
           {result.archived ? ' · Campanha arquivada' : ''}</p>
         <p>{result.snippet.map(({ text, match }, index) => match
