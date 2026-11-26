@@ -1,6 +1,6 @@
 # Matriz de aceitação e rastreabilidade
 
-Todos os critérios UX abaixo são **propostos**, após revisão independente. Os testes citados são pontos de partida para regressão e rastreabilidade funcional. Cada linha registra identificação, categoria, descrição e razão, aplicação, prioridade, critério e caso principal, alternativa ou falha, dependência e evidência esperada.
+O mantenedor aprovou os 45 critérios UX abaixo como base para a [auditoria da interface existente](../auditoria/uxr-03.md). Os testes citados são pontos de partida para regressão e rastreabilidade funcional. Cada linha registra identificação, categoria, descrição e razão, aplicação, prioridade, critério e caso principal, alternativa ou falha, dependência e evidência esperada.
 
 **Métodos.** A = automatizável, com log e assertions. I = inspeção técnica, com checklist e medições. V = avaliação visual, com capturas identificadas. M = manual de usabilidade ou acessibilidade, com roteiro, observação e configuração. P = aprovação pessoal registrada. Os métodos podem se complementar.
 
