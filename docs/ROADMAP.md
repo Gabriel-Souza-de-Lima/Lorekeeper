@@ -81,15 +81,15 @@ A P10 encerrou o ciclo técnico com os 16 critérios aprovados na validação au
 
 ## Ciclo de UX/UI
 
-A [documentação de UX/UI](ux-ui/README.md) reúne a proposta revisada e o histórico. A especificação aguarda avaliação e aprovação do mantenedor.
+A [documentação de UX/UI](ux-ui/README.md) reúne a proposta revisada e o histórico. O mantenedor aprovou os 45 requisitos revisados como base da auditoria da interface existente.
 
 | Etapa | Objetivo | Estado |
 | --- | --- | --- |
 | UXR-01 | Levantamento de requisitos | Concluído |
 | UXR-02 | Auditoria independente | Concluído |
-| Revisão do mantenedor | Avaliação e aprovação dos requisitos | Pendente |
-| UXR-03 | Auditoria da interface existente | Pendente |
-| UXR-04 | Arquitetura de informação e prototipação | Pendente |
+| Revisão do mantenedor | Aprovação dos requisitos para a UXR-03 | Concluído |
+| UXR-03 | [Auditoria da interface existente](ux-ui/auditoria/uxr-03.md) | Concluída com pendências de validação humana e em dispositivos reais |
+| UXR-04 | Arquitetura de informação e prototipação | Aguarda autorização do mantenedor |
 | UXR-05 | Aprovação da experiência e identidade visual | Pendente |
 | UXR-06 | Implementação incremental com SDD/TDD | Pendente |
 | UXR-07 | Validação e aceite final | Pendente |
