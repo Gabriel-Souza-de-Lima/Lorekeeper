@@ -1,6 +1,6 @@
 # Design System Codex — referência da UXR-05
 
-O mantenedor selecionou **Codex** como referência visual do Arquivo Narrativo Vivo. A identidade é sóbria, compacta e literária. Tipografia, proporções, grafite, marfim e dourado definem a expressão visual. A referência está registrada abaixo. Os detalhes de implementação e as decisões em avaliação dependem do aceite da UXR-05 e de autorização explícita para a UXR-06. [Protótipo UXR-05](prototipos/uxr-05.html) · [45 requisitos](revisada/03-aceitacao-e-rastreabilidade.md) · [Auditoria UXR-03](auditoria/uxr-03.md)
+O mantenedor selecionou **Codex** como referência visual do Arquivo Narrativo Vivo. A identidade é sóbria, compacta e literária. Tipografia, proporções, grafite, marfim e dourado definem a expressão visual. A referência está registrada abaixo. O mantenedor aprovou a UXR-05 e autorizou exclusivamente o [recorte UXR-06.1](../specs/35-uxr-06-1-fundamentos-codex.md). A aprovação da direção orienta a implementação. O aceite da interface depende da validação de cada entrega. [Protótipo UXR-05](prototipos/uxr-05.html) · [45 requisitos](revisada/03-aceitacao-e-rastreabilidade.md) · [Auditoria UXR-03](auditoria/uxr-03.md)
 
 ```json
 {
@@ -52,7 +52,7 @@ Plano base contínuo, painéis com recuo e camada elevada de uso pontual. Em di�
 | Título de seção e cartão | Mesma família, 1,25 a 1,5 rem, linha 1,25, peso 700 |
 | Texto narrativo e anotações | Georgia, fallback `'Times New Roman', serif`, 1 rem, linha 1,6. Leitura contínua até cerca de 68 ch; preservar zoom e preferências do navegador. |
 | Metadados | 0,875 rem, linha 1,5; cor secundária. Em avisos acionáveis, usar corpo de 1 rem. |
-| Rótulos, botões, filtros e valores compactos | Proposta em fonte de sistema sem serifa, 1 rem, linha 1,4, rótulo seminegrito. A exportação usa serifa no corpo; comparar controles serifados no mesmo roteiro de leitura e seleção antes de fixar esta exceção. |
+| Rótulos, botões, filtros e valores compactos | Fonte de sistema sem serifa, 1 rem, linha 1,4, rótulo seminegrito. A UXR-05 aprovou a separação híbrida entre leitura e controles. |
 | Código Markdown | Pilha monoespaçada do sistema, 0,9375 rem, linha 1,5; bloco longo com região de rolagem acessível. |
 
 Usar escala compacta de **4, 8, 12, 16, 24 e 32 CSS px** traduzida em rem para tipografia e espaçamento conforme o papel. Referência de 12 px entre grupos próximos, 16 px de respiro de painel e 24–32 px entre seções. Painel encadernado com raio de 16 px, recuo geométrico nominal de 6 px e raio interno de 10 px para encaixe equivalente. Em encaixes com recuo diferente, derivar raio interno como `max(2px, raio externo - recuo efetivo)` e medir três exemplos. Controles isolados usam 8 px como referência. Espaçamento compacto conserva alvos de 44 × 44 CSS px nas ações principais por toque e 24 × 24 CSS px ou exceção WCAG documentada nas demais. Texto e foco devem sobreviver a zoom, alto contraste e quebra de linha.
@@ -87,20 +87,20 @@ Usar escala compacta de **4, 8, 12, 16, 24 e 32 CSS px** traduzida em rem para t
 | D09, D10 | Escala compacta e papéis tipográficos. Validar alvos, ampliação, zoom e leitura. |
 | D12, D13 | Estados legíveis por texto, revelação progressiva sem esconder confirmação, erro ou recuperação. |
 
-## Decisões para avaliação do mantenedor
+## Decisões aprovadas na UXR-05
 
-| Decisão | Proposta inicial | Evidência para decidir |
+| Decisão | Direção aprovada | Evidência de aceite da implementação |
 | --- | --- | --- |
-| Destinos | **Acervo:** Campanhas, Busca, Anotações rápidas. **Campanha:** Visão geral, Sessões, Wiki, Pendências, Informações e perspectivas. Importação e exportação disponíveis como ações de acervo. Tags, referências e anexos permanecem no contexto pertinente. | Comparar descoberta por tarefa, retorno, número de passos e acesso às ações atuais. Rever apenas rótulos ou agrupamentos que causem desvio. |
+| Destinos | **Acervo:** Campanhas, Busca, Anotações rápidas. **Campanha:** Visão geral, Sessões, Wiki, Personagens, Pendências, Informações e perspectivas. Favoritos são identificáveis pela navegação rápida. Importação e exportação disponíveis como ações de acervo. Tags, referências e anexos permanecem no contexto pertinente. | Comparar descoberta por tarefa, retorno, número de passos e acesso às ações atuais. Rever apenas rótulos ou agrupamentos que causem desvio. |
 | Navegação móvel | Cabeçalho com contexto e botão de navegação recolhida. Expansão em fluxo normal, com fechamento após escolher destino e foco no título de chegada. | Comparar com painel sobreposto se o menu em fluxo alongar a tarefa. Ensaiar toque, orientação e teclado virtual. |
 | Informação e perspectivas | Um destino de campanha com registro global como entrada e ação explícita **Consultar perspectiva**. Consulta nomeia o sujeito e informa origem atribuída. Retorno preserva seleção válida. | Comparar entendimento de escopo e uso de teclado com o seletor único do protótipo, inclusive troca de sujeito com resposta atrasada. |
-| Suporte | Primeiro alvo proposto é Chromium estável em desktop Windows, com ensaio de teclado e leitor disponível. Chromium Linux cobre CI e inspeção técnica. Alvo móvel complementar proposto é Chrome no Android em dispositivo real. Registrar versões e ampliar para Edge, Firefox ou Safari conforme aparelho necessário e evidência. | O mantenedor confirma seus dispositivos. Acesso privado, escrita, recuperação e leitura assistiva devem passar em cada ambiente declarado oficialmente suportado. |
+| Suporte | Windows/Chromium é o alvo principal. Linux/Chromium cobre CI e inspeção técnica. Android/Chrome é complementar após validação em aparelho físico. Registrar versões e ampliar para Edge, Firefox ou Safari conforme aparelho necessário e evidência. | O mantenedor confirma seus dispositivos. Acesso privado, escrita, recuperação e leitura assistiva devem passar em cada ambiente declarado oficialmente suportado. |
 | Controles | Serifada em narrativa e títulos. Fonte de sistema em controles, rótulos e filtros compactos. | Comparar leitura de campos curtos, homônimos e mensagens em 100% e 200%, com 320 CSS px e dados representativos. |
 | Personalização | Codex como única configuração inicial. Respeitar zoom, tamanho de texto e preferências do navegador. Avaliar uma preferência de largura ou tamanho de leitura somente se o ensaio identificar necessidade. | Comparar conforto para escrever e ler primeiro. O laboratório de opções e o JSON são ferramentas de avaliação da UXR-05. |
 
 ## Divisão proposta da UXR-06
 
-Cada recorte depende da integração e do CI pós-merge do anterior. A UXR-06 só começa após a conclusão da UXR-05 e autorização explícita. Cada mudança terá especificação, Red → Green → Refactor para comportamento testável, verificação focal, regressão e CI `validar`. Preferir testes e componentes existentes. Fixar dados, ambiente e escala nas poucas comparações visuais necessárias.
+Cada recorte depende da integração e do CI pós-merge do anterior. A autorização vigente cobre apenas o primeiro recorte. Os demais aguardam autorização posterior. Cada mudança terá especificação, Red → Green → Refactor para comportamento testável, verificação focal, regressão e CI `validar`. Preferir testes e componentes existentes. Fixar dados, ambiente e escala nas poucas comparações visuais necessárias.
 
 | Recorte | Dependência | Critérios de aceitação propostos | Validação |
 | --- | --- | --- | --- |

@@ -18,7 +18,7 @@ test('I2-03: recupera rascunho e reenvia o UUID após o servidor perder a respos
     let originalKey: string | undefined
     let originalBody: unknown
     await page.goto(base)
-    await page.getByRole('button', { name: 'Observatório' }).click()
+    await page.getByRole('button', { name: 'Observatório', exact: true }).click()
     await page.getByRole('button', { name: 'Nova sessão', exact: true }).last().click()
     await page.route(path, async (route) => {
       if (route.request().method() !== 'PUT') return route.continue()
@@ -35,7 +35,7 @@ test('I2-03: recupera rascunho e reenvia o UUID após o servidor perder a respos
 
     const next = await context.newPage()
     await next.goto(base)
-    await next.getByRole('button', { name: 'Observatório' }).click()
+    await next.getByRole('button', { name: 'Observatório', exact: true }).click()
     await next.getByRole('button', { name: 'Nova sessão', exact: true }).last().click()
     const retry = next.waitForRequest((req) => req.url() === path && req.method() === 'PUT')
     await next.getByRole('button', { name: /Recuperar rascunho/ }).click({ timeout: 4000 })
@@ -70,7 +70,7 @@ test('I2-04: falha de armazenamento é visível e oferece download do texto', as
       }
     })
     await page.goto(base)
-    await page.getByRole('button', { name: 'Observatório' }).click()
+    await page.getByRole('button', { name: 'Observatório', exact: true }).click()
     await page.getByRole('listitem').getByRole('button', { name: 'Nova sessão', exact: true }).click()
     await page.getByLabel('Anotações', { exact: true }).fill('Registro ainda disponível na aba.')
     await expect(page.getByRole('status')).toHaveText(/Falha no armazenamento local/)
@@ -95,7 +95,7 @@ test('I2-04: confirmação antiga preserva edição nova em outra geração', as
     const base = await app.listen({ host: '127.0.0.1', port: 0 })
     const path = await seed(request, base)
     await page.goto(base)
-    await page.getByRole('button', { name: 'Observatório' }).click()
+    await page.getByRole('button', { name: 'Observatório', exact: true }).click()
     await page.getByRole('listitem').getByRole('button', { name: 'Nova sessão', exact: true }).click()
     await page.route(path, async (route) => {
       if (route.request().method() !== 'PUT') return route.continue()
@@ -146,7 +146,7 @@ test('I2-03: duas abas mantêm edições offline independentes e permitem recupe
     const second = await context.newPage()
     for (const tab of [page, second]) {
       await tab.goto(base)
-      await tab.getByRole('button', { name: 'Observatório' }).click()
+      await tab.getByRole('button', { name: 'Observatório', exact: true }).click()
       await tab.getByRole('listitem').getByRole('button', { name: 'Nova sessão', exact: true }).click()
     }
     await context.setOffline(true)
@@ -160,7 +160,7 @@ test('I2-03: duas abas mantêm edições offline independentes e permitem recupe
     await context.setOffline(false)
     const reopened = await context.newPage()
     await reopened.goto(base)
-    await reopened.getByRole('button', { name: 'Observatório' }).click()
+    await reopened.getByRole('button', { name: 'Observatório', exact: true }).click()
     await reopened.getByRole('listitem').getByRole('button', { name: 'Nova sessão', exact: true }).click()
     const alternatives = reopened.getByRole('button', { name: /Recuperar rascunho/ })
     await expect(alternatives).toHaveCount(2)

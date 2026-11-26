@@ -12,9 +12,10 @@ const labels: Record<WikiType, string> = {
   character: 'Personagem', npc: 'NPC', location: 'Localidade', quest: 'Missão',
 }
 
-export function Wiki({ campaign, initialPage, onOpenSession, onBack }: {
+export function Wiki({ campaign, initialPage, charactersOnly, onOpenSession, onBack }: {
   campaign: Campaign
   initialPage?: WikiDetails
+  charactersOnly?: boolean
   onOpenSession: (id: string) => void
   onBack: () => void
 }) {
@@ -184,9 +185,11 @@ export function Wiki({ campaign, initialPage, onOpenSession, onBack }: {
     </form>
   </>
 
+  const visiblePages = charactersOnly ? pages?.filter(({ type }) => type === 'character') : pages
+
   return <>
     <button className="quiet" disabled={busy} onClick={onBack}>Voltar à campanha</button>
-    <header className="page-header"><div><p className="context">{campaign.name}</p><h1>Wiki da campanha</h1></div>
+    <header className="page-header"><div><p className="context">{campaign.name}</p><h1>{charactersOnly ? 'Personagens' : 'Wiki da campanha'}</h1></div>
       {!campaign.archivedAt && <button className="primary" disabled={busy} onClick={() => {
         setError('')
         setDraft({ id: crypto.randomUUID(), type: 'character', title: '', body: '' })
@@ -195,8 +198,8 @@ export function Wiki({ campaign, initialPage, onOpenSession, onBack }: {
     {feedback}
     {pages === null ? error ? <button onClick={() => { setError(''); setRefresh((value) => value + 1) }}>Recarregar wiki</button>
       : <p>Carregando páginas…</p>
-      : pages.length === 0 ? <p className="panel empty">Nenhuma página cadastrada.</p>
-        : <ul className="session-list">{pages.map((item) => <li key={item.id} className="panel">
+      : !visiblePages?.length ? <p className="panel empty">{charactersOnly ? 'Nenhum personagem cadastrado.' : 'Nenhuma página cadastrada.'}</p>
+        : <ul className="session-list">{visiblePages.map((item) => <li key={item.id} className="panel">
           <button className="quiet" disabled={busy} onClick={() => void open(item.id)}>{item.title}</button>
           <span>{labels[item.type]}</span>
         </li>)}</ul>}

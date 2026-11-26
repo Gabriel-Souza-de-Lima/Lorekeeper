@@ -1,8 +1,8 @@
 # UXR-05 — Arquivo Narrativo Vivo
 
-**Estado:** em andamento, com padrões de experiência aprovados conceitualmente e identidade visual em avaliação. O HTML demonstra a proposta com dados fictícios em memória. O aceite conceitual serve de referência para avaliação e não autoriza implementação operacional. [UXR-04](README.md) · [45 requisitos vigentes](../revisada/03-aceitacao-e-rastreabilidade.md) · [Auditoria UXR-03](../auditoria/uxr-03.md)
+**Estado:** registro histórico da exploração. A UXR-05 foi encerrada com [aprovação do Design System Codex](../design-system-codex.md). O HTML demonstra a proposta com dados fictícios em memória. O aceite conceitual serve de referência para avaliação e não autoriza implementação operacional. [UXR-04](README.md) · [45 requisitos vigentes](../revisada/03-aceitacao-e-rastreabilidade.md) · [Auditoria UXR-03](../auditoria/uxr-03.md)
 
-O mantenedor selecionou [Codex como referência](../design-system-codex.md). As alternativas abaixo documentam a exploração anterior. As decisões restantes seguem em avaliação.
+O mantenedor selecionou [Codex como referência](../design-system-codex.md). As alternativas abaixo documentam a exploração anterior. As decisões definitivas estão na especificação aprovada.
 
 ## Decisões conceituais aprovadas
 
@@ -66,4 +66,4 @@ Contraste calculado a partir dos tokens efetivos em Chromium, convertidos a sRGB
 
 ## Decisões em aberto
 
-Compare paleta, tipografia, forma, densidade, contraste percebido, camadas, ornamentação e ilustração no mesmo roteiro de escrita e leitura. A estrutura móvel definitiva, a apresentação do registro global e das perspectivas, e o agrupamento e os rótulos específicos dos destinos também dependem de avaliação. O desktop é o ambiente principal; o mobile complementa escrita, consulta e captura. Permanecem necessários ensaios de leitor de tela, toque, teclado virtual e zoom real, além da avaliação estética do mantenedor. A UXR-05 continua em andamento. A UXR-06 exige autorização posterior.
+Compare paleta, tipografia, forma, densidade, contraste percebido, camadas, ornamentação e ilustração no mesmo roteiro de escrita e leitura. A estrutura móvel definitiva, a apresentação do registro global e das perspectivas, e o agrupamento e os rótulos específicos dos destinos também dependem de avaliação. O desktop é o ambiente principal; o mobile complementa escrita, consulta e captura. Permanecem necessários ensaios de leitor de tela, toque, teclado virtual e zoom real, além da avaliação estética do mantenedor. A UXR-05 foi concluída após a avaliação do mantenedor. A autorização atual se limita à UXR-06.1.
