@@ -40,6 +40,7 @@ test('C01/C02/C03/S01/S02: gerencia campanha, escreve duas sessões e reabre ap�
       // Sair de uma sessão ainda local não cria uma entrada.
       await page.getByRole('button', { name: 'Voltar à campanha' }).click()
       await newSession.click()
+      await page.getByText('Dados da sessão', { exact: true }).click()
       await page.getByLabel('Título').fill('O farol')
       await page.getByLabel('Data real').fill('2026-02-01')
       const notes = page.getByLabel('Anotações', { exact: true })
@@ -51,6 +52,7 @@ test('C01/C02/C03/S01/S02: gerencia campanha, escreve duas sessões e reabre ap�
       await page.getByRole('button', { name: 'Voltar à campanha' }).click()
 
       await newSession.click()
+      await page.getByText('Dados da sessão', { exact: true }).click()
       const title = page.getByLabel('Título')
       await title.fill('A ponte')
       await expect(title).toHaveValue('A ponte')

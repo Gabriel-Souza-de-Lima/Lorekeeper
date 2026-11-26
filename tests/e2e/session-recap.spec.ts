@@ -15,6 +15,7 @@ test('P7-01 a P7-06: só a confirmação substitui o trecho literal pelo resumo 
     const panel = page.getByRole('region', { name: 'Retomar campanha' })
     await expect(panel.getByText('Trecho literal')).toBeVisible()
     await panel.getByRole('button', { name: 'Abrir última sessão' }).click()
+    await page.getByText('Dados da sessão', { exact: true }).click()
     const summary = page.getByLabel('Resumo da sessão')
     await expect(summary).toBeVisible({ timeout: 4000 })
     await summary.fill('O mapa foi recuperado.')

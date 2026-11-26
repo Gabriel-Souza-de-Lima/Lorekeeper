@@ -112,6 +112,7 @@ test('I2-06: restaura título e texto em nova revisão, mantendo os metadados', 
     expect(latest.ok()).toBe(true)
 
     const notes = await openEditor(page, base, 'Chegamos ao farol')
+    await page.getByText('Dados da sessão', { exact: true }).click()
     const title = page.getByLabel('Título', { exact: true })
     await expect(notes).toHaveValue('A lanterna apagou.')
     await page.getByRole('button', { name: 'Histórico de revisões' }).click({ timeout: 3000 })

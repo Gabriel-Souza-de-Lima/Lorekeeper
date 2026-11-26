@@ -13,6 +13,7 @@ test('P4-01 a P4-08: copia Markdown no rascunho e confirma antes de substituir t
     const newSession = page.getByRole('button', { name: 'Nova sessão', exact: true })
     await newSession.click()
     const notes = page.getByLabel('Anotações', { exact: true })
+    await page.getByText('Dados da sessão', { exact: true }).click()
     const title = page.getByLabel('Título', { exact: true })
     const model = page.getByLabel('Modelo de sessão')
     const apply = page.getByRole('button', { name: 'Aplicar modelo' })

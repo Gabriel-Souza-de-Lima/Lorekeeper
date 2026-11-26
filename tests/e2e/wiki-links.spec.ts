@@ -15,6 +15,7 @@ test('I3-05c: vincula página no editor e retorna pelo backlink', async ({ page,
     await page.goto(origin)
     await page.getByRole('button', { name: 'Bruma', exact: true }).click()
     await page.getByRole('button', { name: 'Nova sessão' }).click()
+    await page.getByText('Dados da sessão', { exact: true }).click()
     await page.getByLabel('Participantes').fill('Lia')
     await page.getByRole('button', { name: 'Salvar', exact: true }).click()
     await expect(page.getByRole('status')).toHaveText('Salvo no servidor')
