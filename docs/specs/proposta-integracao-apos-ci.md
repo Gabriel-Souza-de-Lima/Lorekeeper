@@ -1,6 +1,16 @@
 # Proposta SDD — Integração automática após aprovação do candidato
 
-**Estado:** em revisão. Direção aprovada para investigação. A publicação deste SDD não autoriza AUT-02 nem alterações na automação operacional. **Base analisada:** `bb017e0` da `main`. **Escopo:** evolução do fluxo de engenharia descrito em [IA](05-github-app-integracao.md), sem critérios funcionais do MVP afetados.
+## Decisão do mantenedor
+
+**Estado:** arquivada. A iniciativa AUT-01, AUT-02 e AUT-03 foi encerrada sem implementação. A investigação e a publicação deste SDD não concedem autorização para implementar a proposta.
+
+O Lorekeeper mantém a [política de integração vigente](../DEVELOPMENT.md#publicação-com-github-app). O custo de provisionar um ambiente isolado, executar os ensaios de concorrência e implantar outra política foi considerado desproporcional às necessidades atuais. O mantenedor aceita desarmar manualmente o auto-merge quando uma falha de CI impedir a publicação de uma correção pelo Codex Cloud.
+
+Os ensaios E1 a E6 não foram executados por essa decisão de proporcionalidade. As garantias que dependiam dos ensaios continuam sem comprovação experimental. A investigação pode ser reaberta por decisão do mantenedor se a frequência das intervenções manuais justificar o investimento.
+
+## Registro histórico da proposta
+
+**Estado no momento da publicação original:** em revisão. Direção aprovada para investigação. A publicação deste SDD não autoriza AUT-02 nem alterações na automação operacional. **Base analisada:** `bb017e0` da `main`. **Escopo:** evolução do fluxo de engenharia descrito em [IA](05-github-app-integracao.md), sem critérios funcionais do MVP afetados.
 
 ## Evidência e comportamento atual
 
