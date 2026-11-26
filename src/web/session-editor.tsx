@@ -26,9 +26,10 @@ interface Props {
   onOpenWiki: (id: string) => void
   onTrash: (id: string, title: string) => void
   onBack: () => void
+  onSearchBack?: () => void
 }
 
-export function SessionEditor({ navigationRef, campaignName, campaignUrl, session, path, archived, onOpenWiki, onTrash, onBack }: Props) {
+export function SessionEditor({ navigationRef, campaignName, campaignUrl, session, path, archived, onOpenWiki, onTrash, onBack, onSearchBack }: Props) {
   const editor = useSessionDraft(path, session, archived)
   const { draft, documentId, created, ready, dirty, locallySaved, storageFailed, saving, failure, recoverable, recover, update, retry } = editor
 
@@ -126,7 +127,9 @@ export function SessionEditor({ navigationRef, campaignName, campaignUrl, sessio
 
   return (
     <>
-      <button className="quiet" onClick={back} disabled={saving}>Voltar à campanha</button>
+      {onSearchBack
+        ? <button className="quiet" disabled={saving} onClick={() => leave(onSearchBack)}>Voltar à busca</button>
+        : <button className="quiet" onClick={back} disabled={saving}>Voltar à campanha</button>}
       <header className="page-header">
         <div><p className="context">{campaignName}</p><h1>Editor de sessão</h1></div>
       </header>

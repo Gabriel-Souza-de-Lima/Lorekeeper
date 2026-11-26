@@ -170,3 +170,84 @@ test('P10-15: falha do IndexedDB mantém o formulário e oferece cópia', async 
     expect((await download).suggestedFilename()).toBe('rascunho-perspectiva.json')
   } finally { await finishE2EServer(app, [page.context()], request) }
 })
+
+test('UX63-03: resposta atrasada não troca a perspectiva ativa nem cruza campanhas homônimas', async ({ page, request }) => {
+  const app = createE2EServer(':memory:', resolve('dist'))
+  const releases: (() => void)[] = []
+  try {
+    const origin = await app.listen({ host: '127.0.0.1', port: 0 })
+    async function setup(name: string, people: string[]) {
+      const campaign = await request.post(origin + '/api/campaigns', { data: { name } })
+      expect(campaign.status()).toBe(201)
+      const root = origin + '/api/campaigns/' + (await campaign.json()).id
+      const actors = []
+      for (const title of people) {
+        const id = randomUUID()
+        expect((await request.post(root + '/wiki', { data: { id, type: 'character', title, body: '' } })).status()).toBe(201)
+        const item = root + '/information/' + randomUUID()
+        const put = (url: string, data: object) => request.put(url, { data, headers: { 'Idempotency-Key': randomUUID() } })
+        expect((await put(item, { version: 0, statement: `${title} em ${name}`, nature: 'observation' })).status()).toBe(201)
+        expect((await put(item + '/perspectives', { version: 0, discovery: { id: randomUUID(), characterId: id, kind: 'heard' } })).status()).toBe(200)
+        actors.push(id)
+      }
+      return { root, actors }
+    }
+
+    const first = await setup('Costa fictícia', ['Marina', 'Lia'])
+    const second = await setup('Serra fictícia', ['Marina'])
+    const delayedUrl = first.root + '/perspectives?characterId=' + first.actors[0]
+    async function delayMarina() {
+      const received = Promise.withResolvers<void>()
+      const gate = Promise.withResolvers<void>()
+      releases.push(gate.resolve)
+      await page.route(delayedUrl, async (route) => {
+        const response = await route.fetch()
+        received.resolve()
+        await gate.promise
+        await route.fulfill({ response })
+      }, { times: 1 })
+      return { received: received.promise, release: gate.resolve }
+    }
+    const query = page.getByRole('region', { name: 'Consulta de conhecimento' })
+    const subject = query.getByLabel('Consultar por')
+    async function enter(name: string) {
+      await page.getByRole('button', { name, exact: true }).click()
+      await page.getByRole('button', { name: 'Informações', exact: true }).click()
+      await expect(page.getByRole('heading', { name: 'Registro global' })).toBeVisible()
+      await page.getByRole('button', { name: 'Consultar conhecimento' }).click()
+    }
+
+    await page.goto(origin)
+    await enter('Costa fictícia')
+    const initial = await delayMarina()
+    await subject.selectOption(first.actors[0])
+    await initial.received
+    await expect(query.getByRole('status')).toHaveText('Carregando perspectiva…')
+    await subject.selectOption(first.actors[1])
+    await expect(query.getByRole('heading', { name: 'Lia em Costa fictícia' })).toBeVisible()
+    const response = page.waitForResponse(delayedUrl)
+    initial.release()
+    await (await response).finished()
+    await page.evaluate(() => new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))))
+    await expect(query.getByRole('heading', { name: 'O que Lia sabe' })).toBeVisible()
+    await expect(query.getByRole('heading', { name: 'Marina em Costa fictícia' })).toHaveCount(0)
+
+    const previousCampaign = await delayMarina()
+    await subject.selectOption(first.actors[0])
+    await previousCampaign.received
+    await page.getByRole('button', { name: 'Voltar à campanha' }).click()
+    await page.getByRole('button', { name: 'Voltar ao painel' }).click()
+    await enter('Serra fictícia')
+    await subject.selectOption(second.actors[0])
+    await expect(query.getByRole('heading', { name: 'Marina em Serra fictícia' })).toBeVisible()
+    const late = page.waitForResponse(delayedUrl)
+    previousCampaign.release()
+    await (await late).finished()
+    await page.evaluate(() => new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))))
+    await expect(query.getByRole('heading', { name: 'Marina em Costa fictícia' })).toHaveCount(0)
+    await expect(query.getByRole('heading', { name: 'Marina em Serra fictícia' })).toBeVisible()
+  } finally {
+    releases.forEach((release) => release())
+    await finishE2EServer(app, [page.context()], request)
+  }
+})

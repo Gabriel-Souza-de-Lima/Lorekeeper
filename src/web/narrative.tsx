@@ -265,23 +265,25 @@ export function Narrative({ campaign, onBack, onDocument, onPending }: Props) {
     }}>Voltar à campanha</button>
     <header className="page-header"><div><p className="context">{campaign.name}</p><h1>Informações</h1></div>
       <div className="actions">
-        <button ref={knowledgeButton} disabled={busy || !!draft || perspectiveEditing}
+        <button ref={knowledgeButton} aria-expanded={consulting} aria-controls={consulting ? 'knowledge-view' : undefined} disabled={busy || !!draft || perspectiveEditing}
           onClick={() => setConsulting((value) => !value)}>Consultar conhecimento</button>
         {!archived && !consulting && <button ref={newInformationButton} disabled={!canStartInformation}
           onClick={() => void begin('edit')}>Nova informação</button>}
       </div></header>
-    {consulting && <KnowledgeView root={root} characters={targets.filter(({ type }) => type === 'character')}
+    {consulting && <div id="knowledge-view"><KnowledgeView key={root} root={root} characters={targets.filter(({ type }) => type === 'character')}
       onOpen={(id) => { setConsulting(false); open(id) }} onSession={(id) => onDocument(id, 'session')}
       onClose={() => {
         setConsulting(false)
         knowledgeButton.current?.focus()
-      }} />}
+      }} /></div>}
     {error && <p role="alert" className="error">{error}</p>}
     {status && <p role="status">{status}</p>}
     {!consulting && !perspectiveEditing && !draft && !archived && drafts.map((saved) => <button key={saved.key} disabled={busy} onClick={() => void recover(saved)}>
       Recuperar rascunho {saved.fields.statement || saved.id.slice(0, 8)}
     </button>)}
     {!consulting && !draft && <section aria-label="Lista de informações" className="panel">
+      <h2>Registro global</h2>
+      <p className="context">Informações registradas na campanha. Use Consultar conhecimento para filtrar por sujeito.</p>
       <div className="actions">
         <label>Filtrar natureza<select value={nature} onChange={(event) => setNature(event.currentTarget.value)}>
           <option value="">Todas</option>{natures.map((value) => <option key={value} value={value}>{natureNames[value]}</option>)}

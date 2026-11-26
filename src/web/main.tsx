@@ -9,7 +9,7 @@ import { api, displayDate, localDate } from './api.ts'
 import { CampaignNotes, NoteList, type Note } from './note-assignment.tsx'
 import { QuickNotes } from './quick-notes.tsx'
 import { TextImport } from './text-import.tsx'
-import { Search } from './search.tsx'
+import { Search, type SearchReturn } from './search.tsx'
 import { QuickNavigation, type QuickDestination } from './quick-navigation.tsx'
 import { SessionEditor, type SessionNavigation } from './session-editor.tsx'
 import { CampaignResume } from './campaign-recap.tsx'
@@ -20,7 +20,7 @@ const campaignPath = '/api/campaigns'
 const narrowNavigation = '(width < 760px)'
 const statusLabels: Record<CampaignStatus, string> = { active: 'Ativa', paused: 'Pausada', finished: 'Encerrada' }
 
-type View =
+type View = (
   | { page: 'dashboard' }
   | { page: 'search' }
   | { page: 'text-import' }
@@ -34,6 +34,8 @@ type View =
   | { page: 'session-trash'; campaign: Campaign; rows: SessionSummary[] }
   | { page: 'wiki'; campaign: Campaign; initialPage?: WikiDetails; charactersOnly?: boolean }
   | { page: 'session'; campaign: Campaign; session: Session }
+
+) & { searchResult?: SearchResult }
 
 const campaignMetadata = [
   ['name', 'Nome'], ['system', 'Sistema'], ['rulesVersion', 'Versão das regras'], ['gameMaster', 'Mestre'],
@@ -86,6 +88,7 @@ function CampaignForm({ initial, busy, onSave, onCancel }: {
 }
 
 function App() {
+  const [searchReturn, setSearchReturn] = useState<SearchReturn | null>(null)
   const [view, setView] = useState<View>({ page: 'dashboard' })
   const [campaigns, setCampaigns] = useState<Campaign[]>([])
   const [sessions, setSessions] = useState<SessionSummary[]>([])
@@ -314,21 +317,39 @@ function App() {
     )
   }
 
-  function openSearchResult(result: SearchResult) {
+  function startSearch() {
+    setSearchReturn(null)
+    setView({ page: 'search' })
+  }
+
+  function returnToSearch(result: SearchResult) {
+    setSearchReturn({ result })
+    setView({ page: 'search' })
+  }
+
+  function openSearchResult(result: SearchResult, fromSearch = false) {
     void action(async () => {
-      const url = `${campaignPath}/${result.campaignId}`
-      const campaign = result.campaignId ? await api<Campaign>(url) : null
-      if (result.type === 'quick_note') {
-        const notes = await api<Note[]>(campaign ? `${url}/quick-notes` : '/api/quick-notes')
-        const note = notes.find((item) => item.id === result.id)
-        if (!note) throw new Error('Anotação não encontrada. Atualize a busca.')
-        setView({ page: 'search-note', note, campaign })
-      } else if (campaign && result.type === 'session') {
-        const session = await api<Session>(`${url}/sessions/${result.id}`)
-        setView({ page: 'session', campaign, session })
-      } else if (campaign) {
-        const initialPage = await api<WikiDetails>(`${url}/wiki/${result.id}`)
-        setView({ page: 'wiki', campaign, initialPage })
+      const searchResult = fromSearch ? result : undefined
+      try {
+        const url = `${campaignPath}/${result.campaignId}`
+        const campaign = result.campaignId ? await api<Campaign>(url) : null
+        if (result.type === 'quick_note') {
+          const notes = await api<Note[]>(campaign ? `${url}/quick-notes` : '/api/quick-notes')
+          const note = notes.find((item) => item.id === result.id)
+          if (!note) throw new Error('Anotação não encontrada. Atualize a busca.')
+          setView({ page: 'search-note', note, campaign, searchResult })
+        } else if (campaign && result.type === 'session') {
+          const session = await api<Session>(`${url}/sessions/${result.id}`)
+          setView({ page: 'session', campaign, session, searchResult })
+        } else if (campaign) {
+          const initialPage = await api<WikiDetails>(`${url}/wiki/${result.id}`)
+          setView({ page: 'wiki', campaign, initialPage, searchResult })
+        } else {
+          throw new Error('Campanha indisponível. Atualize a busca.')
+        }
+      } catch (failure) {
+        if (!fromSearch) throw failure
+        setSearchReturn({ result, unavailable: true })
       }
     })
   }
@@ -341,12 +362,14 @@ function App() {
   }
 
   function currentPage() {
+    const result = view.searchResult
+    const onSearchBack = result ? () => returnToSearch(result) : undefined
     switch (view.page) {
       case 'text-import': return <TextImport onBack={dashboard}
         onOpen={(campaign, session) => setView({ page: 'session', campaign, session })} />
-      case 'search': return <Search working={working} onBack={dashboard} onOpen={openSearchResult} />
+      case 'search': return null
       case 'search-note': return <>
-        <button className="quiet" onClick={() => setView({ page: 'search' })}>Voltar à busca</button>
+        <button className="quiet" onClick={onSearchBack ?? startSearch}>Voltar à busca</button>
         <header className="page-header"><div>
           <p className="context">{view.campaign?.name ?? 'Caixa de entrada'}</p>
           <h1>Anotação rápida</h1>
@@ -357,7 +380,7 @@ function App() {
       case 'new': return campaignForm()
       case 'edit': return campaignForm(view.campaign)
       case 'campaign': return campaignPage(view.campaign)
-      case 'wiki': return <Wiki campaign={view.campaign} initialPage={view.initialPage} charactersOnly={view.charactersOnly}
+      case 'wiki': return <Wiki key={view.campaign.id} campaign={view.campaign} initialPage={view.initialPage} charactersOnly={view.charactersOnly} onSearchBack={onSearchBack}
         onOpenSession={(id) => void action(async () => {
           const session = await api<Session>(`${campaignPath}/${view.campaign.id}/sessions/${id}`)
           setView({ page: 'session', campaign: view.campaign, session })
@@ -398,7 +421,7 @@ function App() {
         onWiki={(id) => openWikiPage(view.campaign, id)} />
       case 'campaign-notes': return <CampaignNotes campaign={view.campaign} noteId={view.noteId}
         onBack={() => setView({ page: 'campaign', campaign: view.campaign })} />
-      case 'session': return <SessionEditor key={view.session.id} navigationRef={sessionNavigation} campaignName={view.campaign.name}
+      case 'session': return <SessionEditor key={view.session.id} navigationRef={sessionNavigation} onSearchBack={onSearchBack} campaignName={view.campaign.name}
         campaignUrl={`${campaignPath}/${view.campaign.id}`}
         session={view.session} archived={Boolean(view.campaign.archivedAt)}
         path={`${campaignPath}/${view.campaign.id}/sessions`}
@@ -413,7 +436,7 @@ function App() {
               <button className="dashboard-shortcut" disabled={working}
                 onClick={() => navigate(() => setView({ page: 'quick-notes' }))}>Anotações rápidas</button>
               <button className="dashboard-shortcut" disabled={working}
-                onClick={() => navigate(() => setView({ page: 'search' }))}>Busca</button>
+                onClick={() => navigate(startSearch)}>Busca</button>
               <button disabled={working} onClick={() => { setError(''); setView({ page: 'text-import' }) }}>Importar texto</button>
               <a className="quiet" href="/api/export" download>Exportar acervo</a>
               <button className="primary" disabled={working} onClick={() => { setError(''); setView({ page: 'new' }) }}>
@@ -474,7 +497,7 @@ function App() {
           <button className="quiet" aria-current={view.page === 'dashboard' ? 'page' : undefined}
             disabled={working || !canNavigate} onClick={() => navigate(dashboard)}>Campanhas</button>
           <button className="quiet" disabled={working || !canNavigate} aria-current={view.page === 'search' ? 'page' : undefined}
-            onClick={() => navigate(() => setView({ page: 'search' }))}>Busca</button>
+            onClick={() => navigate(startSearch)}>Busca</button>
           <button className="quiet" disabled={working || !canNavigate} aria-current={view.page === 'quick-notes' ? 'page' : undefined}
             onClick={() => navigate(() => setView({ page: 'quick-notes' }))}>Anotações rápidas</button>
         </nav>
@@ -492,6 +515,9 @@ function App() {
       }} />}
       {error && <p role="alert" className="error panel">{error}</p>}
       {currentPage()}
+      {(view.page === 'search' || view.searchResult) && <div hidden={view.page !== 'search'}>
+        <Search working={working} onBack={dashboard} onOpen={(result) => openSearchResult(result, true)} returned={searchReturn} />
+      </div>}
     </main>
   </div>
 }

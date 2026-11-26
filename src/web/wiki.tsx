@@ -1,5 +1,5 @@
 import { Attachments } from './attachments.tsx'
-import { Fragment, useEffect, useState, type FormEvent } from 'react'
+import { Fragment, useEffect, useLayoutEffect, useRef, useState, type FormEvent } from 'react'
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { markdownLayout } from './markdown-layout.tsx'
@@ -12,12 +12,13 @@ const labels: Record<WikiType, string> = {
   character: 'Personagem', npc: 'NPC', location: 'Localidade', quest: 'Missão',
 }
 
-export function Wiki({ campaign, initialPage, charactersOnly, onOpenSession, onBack }: {
+export function Wiki({ campaign, initialPage, charactersOnly, onOpenSession, onBack, onSearchBack }: {
   campaign: Campaign
   initialPage?: WikiDetails
   charactersOnly?: boolean
   onOpenSession: (id: string) => void
   onBack: () => void
+  onSearchBack?: () => void
 }) {
   const url = `/api/campaigns/${campaign.id}/wiki`
   const [pages, setPages] = useState<WikiSummary[] | null>(null)
@@ -30,6 +31,22 @@ export function Wiki({ campaign, initialPage, charactersOnly, onOpenSession, onB
   const [error, setError] = useState('')
   const [featuredId, setFeaturedId] = useState(campaign.featuredCharacterId)
   const [refresh, setRefresh] = useState(0)
+
+  const articleHeading = useRef<HTMLHeadingElement>(null)
+  const listHeading = useRef<HTMLHeadingElement>(null)
+  const opener = useRef<string>(null)
+  const list = useRef<HTMLUListElement>(null)
+
+  useLayoutEffect(() => {
+    if (articleHeading.current) articleHeading.current.focus()
+    else if (opener.current) {
+      const button = Array.from(list.current?.querySelectorAll<HTMLButtonElement>('button') ?? [])
+        .find((element) => element.dataset.wikiPage === opener.current)
+      const target = button ?? listHeading.current
+      target?.focus()
+      opener.current = null
+    }
+  }, [page?.id])
 
   useEffect(() => {
     let active = true
@@ -130,8 +147,10 @@ export function Wiki({ campaign, initialPage, charactersOnly, onOpenSession, onB
 
   const feedback = error && <p className="error" role="alert">{error}</p>
   if (page) return <>
-    <button className="quiet" disabled={busy || title !== null} onClick={() => { setError(''); setPage(null) }}>Voltar à wiki</button>
-    <header className="page-header"><div><p className="context">{labels[page.type]}</p><h1>{page.title}</h1></div></header>
+    <button className="quiet" disabled={busy || title !== null} onClick={() => { opener.current = page.id; setError(''); setPage(null) }}>Voltar à wiki</button>
+    {onSearchBack && <button className="quiet" disabled={busy || title !== null} onClick={onSearchBack}>Voltar à busca</button>}
+    <header className="page-header"><div><p className="context">{campaign.name} · {labels[page.type]}</p>
+      <h1 ref={articleHeading} tabIndex={-1}>{page.title}</h1></div></header>
     {!campaign.archivedAt && (title === null
       ? <button type="button" disabled={busy} onClick={() => { setError(''); setTitle(page.title) }}>Renomear página</button>
       : <form className="panel campaign-form" onSubmit={(event) => void saveTitle(event, page)}>
@@ -152,8 +171,8 @@ export function Wiki({ campaign, initialPage, charactersOnly, onOpenSession, onB
           : featuredId === page.id ? 'Remover destaque' : 'Destacar personagem'}
       </button>}
     {feedback}
-    <div className="panel preview"><Markdown skipHtml remarkPlugins={[remarkGfm]}
-      components={{ ...markdownLayout, img: ({ alt }) => <span>{alt}</span> }}>{page.body}</Markdown></div>
+    <article className="panel preview wiki-reading" aria-label="Conteúdo da página"><Markdown skipHtml remarkPlugins={[remarkGfm]}
+      components={{ ...markdownLayout, img: ({ alt }) => <span>{alt}</span> }}>{page.body}</Markdown></article>
     <Fragment key={page.id}>
       <Attachments campaignUrl={`/api/campaigns/${campaign.id}`} documentId={page.id} archived={Boolean(campaign.archivedAt)} />
       <DocumentTags campaignUrl={`/api/campaigns/${campaign.id}`} documentId={page.id} archived={Boolean(campaign.archivedAt)} />
@@ -189,7 +208,8 @@ export function Wiki({ campaign, initialPage, charactersOnly, onOpenSession, onB
 
   return <>
     <button className="quiet" disabled={busy} onClick={onBack}>Voltar à campanha</button>
-    <header className="page-header"><div><p className="context">{campaign.name}</p><h1>{charactersOnly ? 'Personagens' : 'Wiki da campanha'}</h1></div>
+    {onSearchBack && <button className="quiet" disabled={busy} onClick={onSearchBack}>Voltar à busca</button>}
+    <header className="page-header"><div><p className="context">{campaign.name}</p><h1 ref={listHeading} tabIndex={-1}>{charactersOnly ? 'Personagens' : 'Wiki da campanha'}</h1></div>
       {!campaign.archivedAt && <button className="primary" disabled={busy} onClick={() => {
         setError('')
         setDraft({ id: crypto.randomUUID(), type: 'character', title: '', body: '' })
@@ -199,8 +219,8 @@ export function Wiki({ campaign, initialPage, charactersOnly, onOpenSession, onB
     {pages === null ? error ? <button onClick={() => { setError(''); setRefresh((value) => value + 1) }}>Recarregar wiki</button>
       : <p>Carregando páginas…</p>
       : !visiblePages?.length ? <p className="panel empty">{charactersOnly ? 'Nenhum personagem cadastrado.' : 'Nenhuma página cadastrada.'}</p>
-        : <ul className="session-list">{visiblePages.map((item) => <li key={item.id} className="panel">
-          <button className="quiet" disabled={busy} onClick={() => void open(item.id)}>{item.title}</button>
+        : <ul ref={list} className="session-list">{visiblePages.map((item) => <li key={item.id} className="panel">
+          <button className="quiet" data-wiki-page={item.id} disabled={busy} onClick={() => void open(item.id)}>{item.title}</button>
           <span>{labels[item.type]}</span>
         </li>)}</ul>}
   </>

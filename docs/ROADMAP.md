@@ -91,7 +91,7 @@ A [documentação de UX/UI](ux-ui/README.md) reúne a proposta revisada e o hist
 | UXR-03 | [Auditoria da interface existente](ux-ui/auditoria/uxr-03.md) | Concluída com pendências de validação humana e em dispositivos reais |
 | UXR-04 | [Arquitetura de informação e prototipação](ux-ui/prototipos/README.md) | Entregue para avaliação do mantenedor |
 | UXR-05 | [Consolidação da experiência e refinamento visual](ux-ui/prototipos/uxr-05.md) | Concluída. [Codex e decisões de experiência aprovados](ux-ui/design-system-codex.md) |
-| UXR-06 | [Implementação incremental com SDD/TDD](ux-ui/design-system-codex.md#divisão-proposta-da-uxr-06) | [UXR-06.1](specs/35-uxr-06-1-fundamentos-codex.md) implementada e refinada com auditoria no Windows. Refinamento aprovado pelo mantenedor. [UXR-06.2](specs/36-uxr-06-2-escrita-e-recuperacao.md) implementada, com aceite em dispositivos reais pendente. UXR-06.3–4 e UXR-07 aguardam autorização |
+| UXR-06 | [Implementação incremental com SDD/TDD](ux-ui/design-system-codex.md#divisão-proposta-da-uxr-06) | [UXR-06.1](specs/35-uxr-06-1-fundamentos-codex.md) implementada e refinada com auditoria no Windows. Refinamento aprovado pelo mantenedor. [UXR-06.2](specs/36-uxr-06-2-escrita-e-recuperacao.md) aprovada pelo mantenedor. [UXR-06.3](specs/37-uxr-06-3-busca-wiki-perspectivas.md) implementada, com validações humanas específicas pendentes. UXR-06.4 e UXR-07 aguardam autorização |
 | UXR-07 | Validação e aceite final | Pendente |
 
 ### Propostas funcionais após o ciclo de UX/UI

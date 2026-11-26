@@ -178,3 +178,5 @@ textarea { resize: vertical; min-height: 5rem; }
 .quick-navigation [role="option"][aria-selected="true"] { color: var(--accent); outline: 1px solid var(--accent); outline-offset: -1px; }
 
 .narrative-area { overflow-wrap: anywhere; }
+
+.wiki-reading { max-width: 68ch; margin-block: var(--space-3); min-height: 0; }

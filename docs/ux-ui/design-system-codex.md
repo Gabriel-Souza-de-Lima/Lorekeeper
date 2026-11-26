@@ -1,6 +1,6 @@
 # Design System Codex — referência da UXR-05
 
-O mantenedor selecionou **Codex** como referência visual do Arquivo Narrativo Vivo. A identidade é sóbria, compacta e literária. Tipografia, proporções, grafite, marfim e dourado definem a expressão visual. A referência está registrada abaixo. O mantenedor aprovou a UXR-05 e autorizou o [recorte UXR-06.1](../specs/35-uxr-06-1-fundamentos-codex.md). Após o refinamento, aprovou esse recorte e autorizou exclusivamente a próxima etapa, [UXR-06.2](../specs/36-uxr-06-2-escrita-e-recuperacao.md). A aprovação da direção orienta a implementação. O aceite da interface depende da validação de cada entrega. [Protótipo UXR-05](prototipos/uxr-05.html) · [45 requisitos](revisada/03-aceitacao-e-rastreabilidade.md) · [Auditoria UXR-03](auditoria/uxr-03.md)
+O mantenedor selecionou **Codex** como referência visual do Arquivo Narrativo Vivo. A identidade é sóbria, compacta e literária. Tipografia, proporções, grafite, marfim e dourado definem a expressão visual. A referência está registrada abaixo. O mantenedor aprovou a UXR-05 e autorizou o [recorte UXR-06.1](../specs/35-uxr-06-1-fundamentos-codex.md). Após o refinamento, aprovou esse recorte e autorizou a [UXR-06.2](../specs/36-uxr-06-2-escrita-e-recuperacao.md), agora aprovada. A entrega autorizada é [UXR-06.3](../specs/37-uxr-06-3-busca-wiki-perspectivas.md). A aprovação da direção orienta a implementação. O aceite da interface depende da validação de cada entrega. [Protótipo UXR-05](prototipos/uxr-05.html) · [45 requisitos](revisada/03-aceitacao-e-rastreabilidade.md) · [Auditoria UXR-03](auditoria/uxr-03.md)
 
 ```json
 {
@@ -100,7 +100,7 @@ Usar escala compacta de **4, 8, 12, 16, 24 e 32 CSS px** traduzida em rem para t
 
 ## Divisão proposta da UXR-06
 
-Cada recorte depende da integração e do CI pós-merge do anterior. A autorização vigente cobre apenas o segundo recorte. Os recortes 3 e 4 aguardam autorização posterior. Cada mudança terá especificação, Red → Green → Refactor para comportamento testável, verificação focal, regressão e CI `validar`. Preferir testes e componentes existentes. Fixar dados, ambiente e escala nas poucas comparações visuais necessárias.
+Cada recorte depende da integração e do CI pós-merge do anterior. A autorização vigente cobre apenas o terceiro recorte. O quarto recorte aguarda autorização posterior. Cada mudança terá especificação, Red → Green → Refactor para comportamento testável, verificação focal, regressão e CI `validar`. Preferir testes e componentes existentes. Fixar dados, ambiente e escala nas poucas comparações visuais necessárias.
 
 | Recorte | Dependência | Critérios de aceitação propostos | Validação |
 | --- | --- | --- | --- |
