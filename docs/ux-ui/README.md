@@ -19,6 +19,8 @@ Esta área reúne os requisitos de experiência, interação e consistência vis
 
 9. [UXR-05 — Arquivo Narrativo Vivo e decisões conceituais](prototipos/uxr-05.md)
 
+10. [Design System Codex — referência selecionada e plano incremental](design-system-codex.md)
+
 ## Histórico e rastreabilidade
 
 A [UXR-01 original](historico/uxr-01-proposta-original/README.md) preserva as 19 superfícies, os oito contextos e os 42 requisitos levantados. Sua matriz é histórica. Para comparar uma mudança, procure o mesmo ID na [matriz original](historico/uxr-01-proposta-original/03-aceitacao-e-rastreabilidade.md), na revisão individual e na matriz vigente. O relatório AUD identifica evidência, severidade e correção proposta. A matriz vigente detalha funcionalidades afetadas, método e evidência necessária.
@@ -35,4 +37,4 @@ Os 42 IDs originais são classificados na revisão individual como **Manter**, *
 | Implementado | Entregue em código e rastreado ao critério correspondente. |
 | Validado | Evidência de aceitação registrada para o contexto e método aplicáveis. |
 
-A UXR-03 registrou as evidências da interface atual. O mantenedor aprovou o diagnóstico da UXR-03 e autorizou a prototipação. A UXR-04 foi entregue e o mantenedor aprovou sete padrões de experiência no plano conceitual. A UXR-05 está em andamento. Permanecem abertas a navegação móvel definitiva, a apresentação das perspectivas, a organização específica dos destinos, os ambientes suportados e a direção visual. As lacunas incluem usabilidade por tarefa, leitores de tela, acessibilidade, toque, teclado virtual, dispositivos reais e avaliação estética humana. Consulte o [ciclo no roadmap](../ROADMAP.md#ciclo-de-uxui) para acompanhar as etapas. O aceite documental e o CI têm escopos diferentes da aprovação estética ou da conformidade WCAG 2.2 AA.
+A UXR-03 registrou as evidências da interface atual. O mantenedor aprovou o diagnóstico da UXR-03 e autorizou a prototipação. A UXR-04 foi entregue e o mantenedor aprovou sete padrões de experiência no plano conceitual. A UXR-05 está em andamento. O mantenedor selecionou Codex como direção visual de referência. Permanecem em avaliação os destinos, a navegação móvel, a apresentação das perspectivas, os ambientes suportados, a tipografia dos controles e o escopo inicial de personalização. As lacunas incluem usabilidade por tarefa, leitores de tela, acessibilidade, toque, teclado virtual, dispositivos reais e avaliação estética humana. Consulte o [ciclo no roadmap](../ROADMAP.md#ciclo-de-uxui) para acompanhar as etapas. O aceite documental e o CI têm escopos diferentes da aprovação estética ou da conformidade WCAG 2.2 AA.
