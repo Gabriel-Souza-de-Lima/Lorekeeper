@@ -17,6 +17,7 @@ import { Wiki } from './wiki.tsx'
 import './style.css'
 
 const campaignPath = '/api/campaigns'
+const narrowNavigation = '(max-width: 759px)'
 const statusLabels: Record<CampaignStatus, string> = { active: 'Ativa', paused: 'Pausada', finished: 'Encerrada' }
 
 type View =
@@ -31,7 +32,7 @@ type View =
   | { page: 'pending-items'; campaign: Campaign; itemId?: string }
   | { page: 'campaign-notes'; campaign: Campaign; noteId?: string }
   | { page: 'session-trash'; campaign: Campaign; rows: SessionSummary[] }
-  | { page: 'wiki'; campaign: Campaign; initialPage?: WikiDetails }
+  | { page: 'wiki'; campaign: Campaign; initialPage?: WikiDetails; charactersOnly?: boolean }
   | { page: 'session'; campaign: Campaign; session: Session }
 
 const campaignMetadata = [
@@ -93,10 +94,34 @@ function App() {
   const [working, setWorking] = useState(false)
   const [error, setError] = useState('')
 
+  const [navigationOpen, setNavigationOpen] = useState(() => !window.matchMedia(narrowNavigation).matches)
+  const pageHeading = useRef<HTMLElement>(null)
+  const focusDestination = useRef(false)
   const [quickOpen, setQuickOpen] = useState(false)
   const quickOrigin = useRef<HTMLElement | null>(null)
   const sessionNavigation = useRef<SessionNavigation>(null)
   const shortcutAvailable = !['text-import', 'information', 'pending-items', 'edit', 'new', 'quick-notes', 'campaign-notes', 'wiki'].includes(view.page)
+
+  const campaignContext = 'campaign' in view ? view.campaign : null
+  // Views with their own pending work use their existing return controls.
+  const canNavigate = shortcutAvailable && view.page !== 'session'
+
+  useEffect(() => {
+    if (!focusDestination.current) return
+    focusDestination.current = false
+    const heading = pageHeading.current?.querySelector('h1')
+    if (heading && !pageHeading.current?.contains(document.activeElement)) {
+      heading.tabIndex = -1
+      heading.focus()
+    }
+  }, [view])
+
+  function navigate(task: () => void) {
+    focusDestination.current = true
+    setError('')
+    if (window.matchMedia(narrowNavigation).matches) setNavigationOpen(false)
+    task()
+  }
 
   const openQuick = useCallback(() => {
     quickOrigin.current = document.activeElement instanceof HTMLElement ? document.activeElement : null
@@ -131,6 +156,7 @@ function App() {
     try {
       await task()
     } catch (failure) {
+      focusDestination.current = false
       setError(failure instanceof Error ? failure.message : 'A operação falhou.')
     } finally {
       setWorking(false)
@@ -143,11 +169,11 @@ function App() {
     setView({ page: 'dashboard' })
   }
 
-  async function openCampaign(id: string) {
+  async function openCampaign(id: string, page: 'campaign' | 'edit' = 'campaign') {
     const url = `${campaignPath}/${id}`
     const [campaign, rows] = await Promise.all([api<Campaign>(url), api<SessionSummary[]>(`${url}/sessions`)])
     setSessions(rows)
-    setView({ page: 'campaign', campaign })
+    setView({ page, campaign })
   }
 
   function campaignForm(initial?: Campaign) {
@@ -202,14 +228,7 @@ function App() {
         <header className="page-header">
           <div><p className="context">{locked ? 'Campanha arquivada' : statusLabels[campaign.status]}</p>
             <h1>{campaign.name}</h1>{campaign.description && <p>{campaign.description}</p>}</div>
-          <div className="actions">
-            <button disabled={working} onClick={() => { setError(''); setView({ page: 'information', campaign }) }}>Informações</button>
-            <button disabled={working} onClick={() => { setError(''); setView({ page: 'campaign-notes', campaign }) }}>
-              Anotações da campanha
-            </button>
-            <button disabled={working} onClick={() => { setError(''); setView({ page: 'wiki', campaign }) }}>
-              Wiki da campanha
-            </button>
+          <div className="actions campaign-management">
             <button disabled={working} onClick={() => void action(() => openTrash(campaign))}>Lixeira de sessões</button>
             {!locked && <button disabled={working} onClick={() => { setError(''); setView({ page: 'edit', campaign }) }}>
               Editar campanha
@@ -220,6 +239,21 @@ function App() {
             })}>{locked ? 'Reativar campanha' : 'Arquivar campanha'}</button>
           </div>
         </header>
+        <nav className="actions campaign-destinations" aria-label={`Campanha ${campaign.name}`}>
+          <button disabled={working} onClick={() => {
+            const heading = document.getElementById('campaign-sessions')
+            heading?.focus()
+          }}>Sessões</button>
+          <button disabled={working} onClick={() => navigate(() => setView({ page: 'wiki', campaign }))}>Wiki da campanha</button>
+          <button disabled={working} onClick={() => navigate(() => setView({ page: 'wiki', campaign, charactersOnly: true }))}>
+            Personagens
+          </button>
+          <button disabled={working} onClick={() => navigate(() => setView({ page: 'pending-items', campaign }))}>Pendências</button>
+          <button disabled={working} onClick={() => navigate(() => setView({ page: 'information', campaign }))}>Informações</button>
+          <button disabled={working} onClick={() => navigate(() => setView({ page: 'campaign-notes', campaign }))}>
+            Anotações da campanha
+          </button>
+        </nav>
         <div className="panel campaign-summary">
           <span>{campaign.system || 'Sistema a definir'}{campaign.rulesVersion && ` · ${campaign.rulesVersion}`}</span>
           <span>{campaign.sessionCount} {campaign.sessionCount === 1 ? 'sessão' : 'sessões'}</span>
@@ -231,7 +265,7 @@ function App() {
           onNote={(noteId) => setView({ page: 'campaign-notes', campaign, noteId })} />
         <Attachments key={url} campaignUrl={url} archived={locked} navigationPending={working} />
         <section>
-          <header className="page-header"><h2>Sessões</h2>
+          <header className="page-header"><h2 tabIndex={-1} id="campaign-sessions">Sessões</h2>
             {!locked && <button className="primary" disabled={working} onClick={() => openSession()}>Nova sessão</button>}
           </header>
           {sessions.length === 0 && <p className="panel empty">As sessões registradas vão aparecer aqui.</p>}
@@ -291,7 +325,7 @@ function App() {
       case 'new': return campaignForm()
       case 'edit': return campaignForm(view.campaign)
       case 'campaign': return campaignPage(view.campaign)
-      case 'wiki': return <Wiki campaign={view.campaign} initialPage={view.initialPage}
+      case 'wiki': return <Wiki campaign={view.campaign} initialPage={view.initialPage} charactersOnly={view.charactersOnly}
         onOpenSession={(id) => void action(async () => {
           const session = await api<Session>(`${campaignPath}/${view.campaign.id}/sessions/${id}`)
           setView({ page: 'session', campaign: view.campaign, session })
@@ -344,10 +378,10 @@ function App() {
           <header className="page-header">
             <h1>Campanhas</h1>
             <div className="actions">
-              <button disabled={working} onClick={() => { setError(''); setView({ page: 'quick-notes' }) }}>
-                Anotações rápidas
-              </button>
-              <button disabled={working} onClick={() => { setError(''); setView({ page: 'search' }) }}>Busca</button>
+              <button className="dashboard-shortcut" disabled={working}
+                onClick={() => navigate(() => setView({ page: 'quick-notes' }))}>Anotações rápidas</button>
+              <button className="dashboard-shortcut" disabled={working}
+                onClick={() => navigate(() => setView({ page: 'search' }))}>Busca</button>
               <button disabled={working} onClick={() => { setError(''); setView({ page: 'text-import' }) }}>Importar texto</button>
               <a className="quiet" href="/api/export" download>Exportar acervo</a>
               <button className="primary" disabled={working} onClick={() => { setError(''); setView({ page: 'new' }) }}>
@@ -369,12 +403,22 @@ function App() {
             <p className="panel empty">{archived ? 'Nenhuma campanha arquivada.' : 'Crie uma campanha para começar seu diário de sessões.'}</p>}
           {!loading && <div className="cards">
             {campaigns.map((campaign) => <article className="panel campaign-card" key={campaign.id}>
-              <p className="context">{statusLabels[campaign.status]}</p>
-              <h2><button className="quiet" disabled={working}
-                onClick={() => void action(() => openCampaign(campaign.id))}>{campaign.name}</button></h2>
-              {campaign.system && <p>{campaign.system}</p>}
-              <p>{campaign.sessionCount} {campaign.sessionCount === 1 ? 'sessão' : 'sessões'}
-                {campaign.lastSessionDate && ` · ${displayDate(campaign.lastSessionDate)}`}</p>
+              <h2 className="campaign-card-heading">
+                <button className="campaign-card-open" aria-label={campaign.name} disabled={working}
+                  onClick={() => navigate(() => void action(() => openCampaign(campaign.id)))}>
+                  <span className="context">{archived ? 'Arquivada' : statusLabels[campaign.status]}</span>
+                  <span className="campaign-card-title">{campaign.name}</span>
+                  <span className="campaign-card-meta">
+                    {campaign.system && `${campaign.system} · `}
+                    {campaign.sessionCount} {campaign.sessionCount === 1 ? 'sessão' : 'sessões'}
+                    {campaign.lastSessionDate && ` · ${displayDate(campaign.lastSessionDate)}`}
+                  </span>
+                </button>
+              </h2>
+              {!archived && <div className="campaign-card-actions">
+                <button className="quiet" aria-label={`Editar ${campaign.name}`} disabled={working}
+                  onClick={() => navigate(() => void action(() => openCampaign(campaign.id, 'edit')))}>Editar</button>
+              </div>}
             </article>)}
           </div>}
         </>
@@ -382,12 +426,37 @@ function App() {
     }
   }
 
-  return <>
-    <aside className="sidebar"><span className="brand">Lorekeeper</span>
-      <span className="sidebar-section">Diário de campanhas</span></aside>
-    <main>
+  return <div className={navigationOpen ? 'app-shell' : 'app-shell navigation-closed'}>
+    <aside className="sidebar">
+      <div className="sidebar-header">
+        <span className="brand">Lorekeeper</span>
+        <button className="navigation-toggle" type="button" aria-expanded={navigationOpen} aria-controls="sidebar-destinations"
+          onClick={() => setNavigationOpen((open) => !open)}>
+          <span className="navigation-icon" aria-hidden="true" />Navegação
+        </button>
+      </div>
+      <div id="sidebar-destinations" hidden={!navigationOpen}>
+        <nav className="sidebar-links" aria-label="Acervo">
+          <p className="context">Acervo</p>
+          <button className="quiet" aria-current={view.page === 'dashboard' ? 'page' : undefined}
+            disabled={working || !canNavigate} onClick={() => navigate(dashboard)}>Campanhas</button>
+          <button className="quiet" disabled={working || !canNavigate} aria-current={view.page === 'search' ? 'page' : undefined}
+            onClick={() => navigate(() => setView({ page: 'search' }))}>Busca</button>
+          <button className="quiet" disabled={working || !canNavigate} aria-current={view.page === 'quick-notes' ? 'page' : undefined}
+            onClick={() => navigate(() => setView({ page: 'quick-notes' }))}>Anotações rápidas</button>
+        </nav>
+        {campaignContext && <nav className="sidebar-links" aria-label={`Contexto de ${campaignContext.name}`}>
+          <p className="context">{campaignContext.name}</p>
+          <button className="quiet" aria-current={view.page === 'campaign' ? 'page' : undefined} disabled={working || !canNavigate}
+            onClick={() => navigate(() => void action(() => openCampaign(campaignContext.id)))}>Visão geral</button>
+        </nav>}
+      </div>
+    </aside>
+    <main ref={pageHeading}>
       {shortcutAvailable && <button className="quiet" type="button" disabled={working}
-        aria-keyshortcuts="Control+K Meta+K" onClick={openQuick}>Navegação rápida</button>}
+        aria-keyshortcuts="Control+K Meta+K" aria-label="Navegação rápida" aria-description="Localizar campanhas e favoritos" onClick={openQuick}>
+        Navegação rápida <span className="shortcut-context">· Favoritos</span>
+      </button>}
       {quickOpen && <QuickNavigation onNavigate={navigateQuick} onClose={() => {
         setQuickOpen(false)
         window.requestAnimationFrame(() => quickOrigin.current?.focus())
@@ -395,7 +464,7 @@ function App() {
       {error && <p role="alert" className="error panel">{error}</p>}
       {currentPage()}
     </main>
-  </>
+  </div>
 }
 
 createRoot(document.getElementById('root')!).render(<App />)

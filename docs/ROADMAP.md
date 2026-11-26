@@ -90,6 +90,6 @@ A [documentação de UX/UI](ux-ui/README.md) reúne a proposta revisada e o hist
 | Revisão do mantenedor | Aprovação dos requisitos para a UXR-03 | Concluído |
 | UXR-03 | [Auditoria da interface existente](ux-ui/auditoria/uxr-03.md) | Concluída com pendências de validação humana e em dispositivos reais |
 | UXR-04 | [Arquitetura de informação e prototipação](ux-ui/prototipos/README.md) | Entregue para avaliação do mantenedor |
-| UXR-05 | [Consolidação da experiência e refinamento visual](ux-ui/prototipos/uxr-05.md) | Em andamento. Padrões conceituais aprovados e [Codex selecionado como referência](ux-ui/design-system-codex.md); decisões finais em avaliação |
-| UXR-06 | [Implementação incremental com SDD/TDD](ux-ui/design-system-codex.md#divisão-proposta-da-uxr-06) | Aguarda conclusão da UXR-05 e autorização do mantenedor |
+| UXR-05 | [Consolidação da experiência e refinamento visual](ux-ui/prototipos/uxr-05.md) | Concluída. [Codex e decisões de experiência aprovados](ux-ui/design-system-codex.md) |
+| UXR-06 | [Implementação incremental com SDD/TDD](ux-ui/design-system-codex.md#divisão-proposta-da-uxr-06) | [UXR-06.1](specs/35-uxr-06-1-fundamentos-codex.md) implementada e validada em Chromium Linux. Aceite humano pendente. UXR-06.2–4 aguardam autorização |
 | UXR-07 | Validação e aceite final | Pendente |
