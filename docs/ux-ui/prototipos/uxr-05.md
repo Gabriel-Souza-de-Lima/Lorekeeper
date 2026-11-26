@@ -2,6 +2,8 @@
 
 **Estado:** em andamento, com padrões de experiência aprovados conceitualmente e identidade visual em avaliação. O HTML demonstra a proposta com dados fictícios em memória. O aceite conceitual serve de referência para avaliação e não autoriza implementação operacional. [UXR-04](README.md) · [45 requisitos vigentes](../revisada/03-aceitacao-e-rastreabilidade.md) · [Auditoria UXR-03](../auditoria/uxr-03.md)
 
+O mantenedor selecionou [Codex como referência](../design-system-codex.md). As alternativas abaixo documentam a exploração anterior. As decisões restantes seguem em avaliação.
+
 ## Decisões conceituais aprovadas
 
 | Padrão | Demonstração | Rastreabilidade |

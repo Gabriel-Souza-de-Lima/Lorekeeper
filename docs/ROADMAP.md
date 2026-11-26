@@ -90,6 +90,6 @@ A [documentação de UX/UI](ux-ui/README.md) reúne a proposta revisada e o hist
 | Revisão do mantenedor | Aprovação dos requisitos para a UXR-03 | Concluído |
 | UXR-03 | [Auditoria da interface existente](ux-ui/auditoria/uxr-03.md) | Concluída com pendências de validação humana e em dispositivos reais |
 | UXR-04 | [Arquitetura de informação e prototipação](ux-ui/prototipos/README.md) | Entregue para avaliação do mantenedor |
-| UXR-05 | [Consolidação da experiência e refinamento visual](ux-ui/prototipos/uxr-05.md) | Em andamento. Padrões conceituais aprovados; identidade visual em avaliação |
-| UXR-06 | Implementação incremental com SDD/TDD | Pendente |
+| UXR-05 | [Consolidação da experiência e refinamento visual](ux-ui/prototipos/uxr-05.md) | Em andamento. Padrões conceituais aprovados e [Codex selecionado como referência](ux-ui/design-system-codex.md); decisões finais em avaliação |
+| UXR-06 | [Implementação incremental com SDD/TDD](ux-ui/design-system-codex.md#divisão-proposta-da-uxr-06) | Aguarda conclusão da UXR-05 e autorização do mantenedor |
 | UXR-07 | Validação e aceite final | Pendente |
