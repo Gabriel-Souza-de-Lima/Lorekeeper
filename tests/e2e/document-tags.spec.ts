@@ -12,6 +12,7 @@ test('I3-07d: adiciona uma tag, reabre a sessão e remove a associação', async
     await page.goto(origin)
     await page.getByRole('button', { name: 'Bruma', exact: true }).click()
     await page.getByRole('button', { name: 'Nova sessão', exact: true }).click()
+    await page.getByText('Dados da sessão', { exact: true }).click()
     await page.getByLabel('Participantes').fill('Lia')
     await page.getByRole('button', { name: 'Salvar', exact: true }).click()
     await expect(page.getByRole('status')).toHaveText('Salvo no servidor')

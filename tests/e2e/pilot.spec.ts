@@ -20,6 +20,7 @@ test('I4-04a/b: registra em tela estreita e encontra a sessão em uma instância
     await page.getByLabel('Nome', { exact: true }).fill('Bruma fictícia')
     await page.getByRole('button', { name: 'Criar campanha', exact: true }).click()
     await page.getByRole('button', { name: 'Nova sessão', exact: true }).click()
+    await page.getByText('Dados da sessão', { exact: true }).click()
     await page.getByLabel('Título', { exact: true }).fill('Travessia da bruma')
     const text = [
       'A bússola apontou para o farol.',

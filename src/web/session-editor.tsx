@@ -33,6 +33,7 @@ export function SessionEditor({ navigationRef, campaignName, campaignUrl, sessio
   const { draft, documentId, created, ready, dirty, locallySaved, storageFailed, saving, failure, recoverable, recover, update, retry } = editor
 
   const notes = useRef<HTMLTextAreaElement>(null)
+  const [showPreview, setShowPreview] = useState(true)
   const [reference, setReference] = useState<InlineReference | null>(null)
   const dismissed = useRef<InlineReference | null>(null)
   const nextCaret = useRef<number | null>(null)
@@ -128,53 +129,17 @@ export function SessionEditor({ navigationRef, campaignName, campaignUrl, sessio
       <button className="quiet" onClick={back} disabled={saving}>Voltar à campanha</button>
       <header className="page-header">
         <div><p className="context">{campaignName}</p><h1>Editor de sessão</h1></div>
-        <div className="save-state">
-          <span role="status" className={failure || storageFailed ? 'error' : ''}>{status}</span>
-          {!archived && <button className="primary" disabled={!editor.canSave} onClick={() => void editor.save()}>Salvar</button>}
-          {!archived && created && !dirty && <button type="button" disabled={!ready || saving}
-            onClick={() => onTrash(documentId, draft.title)}>Excluir sessão</button>}
-          {!archived && dirty && (!created || failure?.status !== 409) && <button disabled={!ready || saving} onClick={() => {
-            if (window.confirm('Descartar as alterações locais e voltar à última versão confirmada?')) void editor.discard()
-          }}>Descartar alterações</button>}
-          {storageFailed && (!created || failure?.status !== 409) && dirty && <button onClick={retry}>Tentar novamente</button>}
-          {(failure || storageFailed) && dirty && <button onClick={download}>Baixar rascunho</button>}
-        </div>
       </header>
-      {created && <ImportSource sessionUrl={`${path}/${documentId}`} />}
-      {created && <RevisionHistory url={`${path}/${documentId}`} canRestore={!archived && ready && !dirty}
-        onRestore={editor.restoreRevision} />}
-      {created && failure?.status === 409 && <ConflictReview url={`${path}/${documentId}`}
-        draft={draft} baseVersion={editor.baseVersion} busy={!ready || saving} canKeep={locallySaved}
-        onKeep={back} onResolve={editor.resolveConflict} onDiscard={(server) => void editor.discardConflict(server)} />}
-      {!archived && !dirty && recoverable.length > 0 && <div className="actions">
-        {recoverable.map((candidate) => <button key={candidate.id} disabled={!ready}
-          onClick={() => void recover(candidate)}>
-          Recuperar rascunho · {new Date(candidate.updatedAt).toLocaleString('pt-BR')} ·{' '}
-          {candidate.fields.body.trim().slice(0, 72) || candidate.fields.title}
-        </button>)}
-      </div>}
-      <fieldset className="form-grid session-fields" disabled={archived || !ready}>
-        <label className="wide">Título<input value={draft.title} onChange={(e) => update('title', e.target.value)} /></label>
-        <label>Data real<input type="date" value={draft.date} onChange={(e) => update('date', e.target.value)} /></label>
-        <label>Número<input type="number" min="1" step="1" value={draft.number ?? ''}
-          onChange={(e) => update('number', e.target.value === '' ? null : e.target.valueAsNumber)} /></label>
-        <label>Data no universo<input value={draft.fictionalDate} onChange={(e) => update('fictionalDate', e.target.value)} /></label>
-        <label>Participantes<input value={draft.participants} onChange={(e) => update('participants', e.target.value)} /></label>
-      </fieldset>
-      <fieldset className="panel form-grid" disabled={archived || !ready}>
-        <label>Resumo da sessão<textarea rows={2} maxLength={600} value={draft.summary ?? ''}
-          onChange={(event) => update('summary', event.currentTarget.value)} /></label>
-        <label>Destaques da sessão<textarea rows={2} maxLength={2000} value={draft.highlights ?? ''}
-          placeholder="Um acontecimento por linha" onChange={(event) => update('highlights', event.currentTarget.value)} /></label>
-      </fieldset>
-      <div className="editor-grid">
+      <div className="session-writing">
         <div className="panel editor">
-          {!archived && !created && <SessionTemplates body={draft.body} disabled={!ready || saving}
-            onApply={(body) => {
-              nextCaret.current = body.length
-              setReference(null)
-              update('body', body)
-            }} />}
+          <div className="save-state">
+            <span role="status" className={failure || storageFailed ? 'error' : ''}>{status}</span>
+            {!archived && <button className="primary" disabled={!editor.canSave} onClick={() => void editor.save()}>Salvar</button>}
+            <button type="button" aria-expanded={showPreview} aria-controls="session-preview"
+              onClick={() => setShowPreview((visible) => !visible)}>
+              {showPreview ? 'Ocultar prévia' : 'Mostrar prévia'}
+            </button>
+          </div>
           <label htmlFor="session-notes">Anotações</label><textarea id="session-notes" ref={notes} disabled={archived || !ready} value={draft.body}
           placeholder="Registre o que aconteceu nesta sessão…"
           onChange={(event) => {
@@ -191,7 +156,52 @@ export function SessionEditor({ navigationRef, campaignName, campaignUrl, sessio
           <InlineWiki campaignUrl={campaignUrl} reference={archived || !ready ? null : reference}
             onInsert={insertInline} onCancel={cancelReference} />
         </div>
-        <section className="panel preview" aria-label="Prévia Markdown">
+        {!archived && !dirty && recoverable.length > 0 && <div className="actions">
+          {recoverable.map((candidate) => <button key={candidate.id} disabled={!ready}
+            onClick={() => void recover(candidate)}>
+            Recuperar rascunho · {new Date(candidate.updatedAt).toLocaleString('pt-BR')} ·{' '}
+            {candidate.fields.body.trim().slice(0, 72) || candidate.fields.title}
+          </button>)}
+        </div>}
+        {created && failure?.status === 409 && <ConflictReview url={`${path}/${documentId}`}
+          draft={draft} baseVersion={editor.baseVersion} busy={!ready || saving} canKeep={locallySaved}
+          onKeep={back} onResolve={editor.resolveConflict} onDiscard={(server) => void editor.discardConflict(server)} />}
+        {(created || dirty) && <div className="actions">
+          {!archived && created && !dirty && <button type="button" disabled={!ready || saving}
+            onClick={() => onTrash(documentId, draft.title)}>Excluir sessão</button>}
+          {!archived && dirty && (!created || failure?.status !== 409) && <button disabled={!ready || saving} onClick={() => {
+            if (window.confirm('Descartar as alterações locais e voltar à última versão confirmada?')) void editor.discard()
+          }}>Descartar alterações</button>}
+          {storageFailed && (!created || failure?.status !== 409) && dirty && <button onClick={retry}>Tentar novamente</button>}
+          {(failure || storageFailed) && dirty && <button onClick={download}>Baixar rascunho</button>}
+        </div>}
+        <details className="panel session-metadata">
+          <summary>Dados da sessão</summary>
+          <fieldset className="form-grid session-fields" disabled={archived || !ready}>
+            <label className="wide">Título<input value={draft.title} onChange={(e) => update('title', e.target.value)} /></label>
+            <label>Data real<input type="date" value={draft.date} onChange={(e) => update('date', e.target.value)} /></label>
+            <label>Número<input type="number" min="1" step="1" value={draft.number ?? ''}
+              onChange={(e) => update('number', e.target.value === '' ? null : e.target.valueAsNumber)} /></label>
+            <label>Data no universo<input value={draft.fictionalDate} onChange={(e) => update('fictionalDate', e.target.value)} /></label>
+            <label>Participantes<input value={draft.participants} onChange={(e) => update('participants', e.target.value)} /></label>
+          </fieldset>
+          <fieldset className="form-grid" disabled={archived || !ready}>
+            <label>Resumo da sessão<textarea rows={2} maxLength={600} value={draft.summary ?? ''}
+              onChange={(event) => update('summary', event.currentTarget.value)} /></label>
+            <label>Destaques da sessão<textarea rows={2} maxLength={2000} value={draft.highlights ?? ''}
+              placeholder="Um acontecimento por linha" onChange={(event) => update('highlights', event.currentTarget.value)} /></label>
+          </fieldset>
+        </details>
+        {!archived && !created && <SessionTemplates body={draft.body} disabled={!ready || saving}
+          onApply={(body) => {
+            nextCaret.current = body.length
+            setReference(null)
+            update('body', body)
+          }} />}
+        {created && <ImportSource sessionUrl={`${path}/${documentId}`} />}
+        {created && <RevisionHistory url={`${path}/${documentId}`} canRestore={!archived && ready && !dirty}
+          onRestore={editor.restoreRevision} />}
+        <section id="session-preview" className="panel preview" aria-label="Prévia Markdown" hidden={!showPreview}>
           <p className="context">Prévia Markdown</p>
           <Markdown skipHtml remarkPlugins={[remarkGfm]}
             components={{
