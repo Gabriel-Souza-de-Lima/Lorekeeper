@@ -13,6 +13,8 @@ O recorte usa a navegação em memória existente. Botões acionam transições 
 
 ## Evidência e aceite
 
+O refinamento local verifica UX61-01/03 com uma faixa recolhida que mantém acionador de 44 CSS px e foco dentro de seus limites. Os destinos da campanha ocupam a lateral expandida, com acesso equivalente na visão geral quando recolhida. UX61-02/04 preservam o cartão, a confirmação de saída e os contratos existentes. A ação **Nova sessão** precede os blocos secundários na entrada, inclusive quando a campanha está vazia.
+
 A avaliação automatizada deste recorte cobre Chromium Linux. Aceite humano da composição, zoom real, leitor de tela em Windows e toque/teclado virtual no Android dependem de ensaios próprios.
 
 ### Execução do recorte
@@ -33,3 +35,20 @@ Após sincronizar a `main`, instale as dependências com `npm ci`, gere o build 
 A aceitação humana do visual, zoom real, Windows/Chromium, leitor de tela e toque/teclado virtual em Android permanecem pendentes. O ensaio em viewport estreita confirma reflow e interação automatizada no Chromium Linux.
 
 **Regressão local.** Lint, análise de tipos e build aprovados. Passaram 5 testes unitários, 83 de integração e 45 E2E com dois workers, incluindo o cenário novo.
+
+### Auditoria e refinamento no Windows
+
+Base `bc97fb0`, [PR #75](https://github.com/Gabriel-Souza-de-Lima/Lorekeeper/pull/75) e [CI pós-merge](https://github.com/Gabriel-Souza-de-Lima/Lorekeeper/actions/runs/45744826045). Windows, monitor principal de 2560 × 1440, Chromium 159.0.8154.6, Node.js 24.22.3 e npm 11.19.1. Os ensaios usaram perfis isolados, servidores loopback em portas efêmeras e arquivos SQLite temporários. O navegador recebeu os bundles de `dist/` byte a byte, `index-Cb13HNMk.js` antes e `index-MLVgwbxW.js` depois. Na porta 3000, apenas o HTML e o JavaScript finais foram consultados.
+
+| Achado e severidade | Critérios | Correção e evidência |
+| --- | --- | --- |
+| Média. Em desktop, a faixa de 168 px deixava marca e botão ultrapassarem sua borda em aproximadamente 14 px, ainda que o documento não rolasse horizontalmente. | UX61-01/03 | Faixa de 72 px, ícone existente com nome acessível e acionador de 47 × 44 px. O foco fica dentro da faixa. A barra expandida continua com 224 px. |
+| Média. A lateral contextual oferecia apenas Visão geral e a maior parte dos destinos ficava no corpo da campanha. | UX61-03/04 | A navegação expandida agrupa Sessões, Wiki, Personagens, Pendências, Informações e Anotações da campanha. A visão geral oferece os destinos no corpo quando a lateral está recolhida. A sessão usa sua confirmação de saída existente. Vistas com proteção própria preservam seus retornos. |
+| Média. A ação principal ficava abaixo da retomada e dos anexos, inclusive em campanha vazia. Painéis aninhados e vazios competiam pela atenção. | UX61-04 | Nova sessão passou ao cabeçalho. A retomada apresenta entidades e anotações vinculadas quando existem. Ações administrativas e anexos ficam no grupo secundário. Na campanha populada amostrada, a ação passou de y≈1800 a y≈367 em 1280 CSS px. |
+| Baixa. O limite de 76 rem restringia também o dashboard e a visão geral. As margens de leitura nos demais módulos continuam adequadas ao recorte. | UX61-04 | Dashboard e campanha têm limite de 88 rem. A 1920 CSS px, o conteúdo útil da campanha mediu 1216 → 1408 px de largura total do elemento principal. Há margens deliberadas em telas muito largas. Formulários, documentos e editor mantêm seus limites existentes. |
+
+Foram comparados dashboard, campanha vazia e populada, barra aberta e fechada e viewport móvel. A massa fictícia incluiu campanha vazia, uma sessão, 16 sessões, nome longo, campanha arquivada, personagem, favorito, pendência e PNG. Em 320, 390, 768, 1280, 1920 e 2560 CSS px, 108 alternâncias cobriram dashboard, formulário de campanha, visão geral, busca, documento da wiki, pendências, informações, anotações da campanha e editor. Nas amostras, o documento e os controles medidos ficaram dentro dos limites. O diálogo de navegação rápida recebeu foco na consulta e devolveu ao acionador com Escape. As bordas, o contraste funcional, as dimensões e a ação independente do cartão passaram no E2E original.
+
+O zoom real da aba Chromium foi ajustado por `tabs.setZoom` em perfil descartável, em 100%, 125%, 150% e 200%. As larguras efetivas foram 1424, 1139, 949 e 712 CSS px, sem rolagem horizontal. A faixa recolhida passou a cabeçalho em fluxo em 200%. A comparação móvel foi emulada. Toque em aparelho físico, leitor de tela e aceite humano do refinamento continuam pendentes. O produto não tem uma página de configurações própria para medir.
+
+**Red → Green → Refactor.** O novo E2E reprovou a faixa em 168 px antes da correção. Depois aprovou dimensões, foco, destino ativo sem duplicação, hierarquia de entrada, redimensionamento e cancelamento de saída de um editor com rascunho. Na regressão inicial, o teste de campanhas procurava **Nova sessão** dentro do cabeçalho antigo de Sessões. O seletor passou a usar o nome exato na região principal e as verificações funcionais foram preservadas. Lint, typecheck e build passaram. A execução final aprovou 5 unitários, 83 integrações e 46 E2E com oito workers, sem testes ignorados. [E2E focal](../../tests/e2e/codex-foundations.spec.ts)

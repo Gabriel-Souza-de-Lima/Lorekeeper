@@ -2,6 +2,57 @@ import { resolve } from 'node:path'
 import { expect, test } from '@playwright/test'
 import { createE2EServer, finishE2EServer } from '../support/e2e-server.ts'
 
+test('UX61-01/03/04: faixa desktop, contexto da campanha e retomada vazia', async ({ page, request }) => {
+  const app = createE2EServer(':memory:', resolve('dist'))
+  try {
+    const origin = await app.listen({ host: '127.0.0.1', port: 0 })
+    const name = 'Arquivo fictício ' + 'Farol'.repeat(17)
+    expect((await request.post(origin + '/api/campaigns', { data: { name } })).status()).toBe(201)
+    await page.setViewportSize({ width: 1280, height: 800 })
+    await page.goto(origin)
+    await page.getByRole('button', { name, exact: true }).click()
+    const toggle = page.getByRole('button', { name: 'Navegação', exact: true })
+    const sidebar = page.locator('.sidebar')
+    const sideWidth = () => sidebar.evaluate((node) => node.getBoundingClientRect().width)
+    const expanded = await sideWidth()
+    await toggle.press('Enter')
+    await expect(toggle).toBeFocused()
+    expect(await sideWidth()).toBeLessThanOrEqual(80)
+    expect(expanded - await sideWidth()).toBeGreaterThanOrEqual(140)
+    const control = (await toggle.boundingBox())!
+    const rail = (await sidebar.boundingBox())!
+    expect(control.width).toBeGreaterThanOrEqual(44)
+    expect(control.height).toBeGreaterThanOrEqual(44)
+    expect(control.x - rail.x).toBeGreaterThanOrEqual(6)
+    expect(rail.x + rail.width - control.x - control.width).toBeGreaterThanOrEqual(6)
+    const destinations = page.getByRole('navigation', { name: `Campanha ${name}`, exact: true })
+    await expect(destinations.getByRole('button', { name: 'Personagens' })).toBeVisible()
+    await toggle.press('Enter')
+    await expect(sidebar.getByRole('button', { name: 'Visão geral' })).toHaveAttribute('aria-current', 'page')
+    await expect(sidebar.getByRole('button', { name: 'Personagens' })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Personagens' })).toHaveCount(1)
+    const create = page.getByRole('button', { name: 'Nova sessão' })
+    const recap = page.getByRole('region', { name: 'Retomar campanha' })
+    await expect(recap.getByText('Nenhuma sessão para retomar.')).toBeVisible()
+    expect((await create.boundingBox())!.y).toBeLessThan((await recap.boundingBox())!.y)
+    await expect(recap.getByText('Nenhum NPC ou localidade nas sessões recentes.')).toHaveCount(0)
+    await create.press('Enter')
+    await page.getByLabel('Anotações', { exact: true }).fill('Rascunho fictício protegido')
+    await expect(page.getByRole('status')).toContainText('rascunho protegido')
+    page.once('dialog', (dialog) => void dialog.dismiss())
+    await sidebar.getByRole('button', { name: 'Personagens' }).press('Enter')
+    await expect(page.getByLabel('Anotações', { exact: true })).toHaveValue('Rascunho fictício protegido')
+    page.once('dialog', (dialog) => void dialog.accept())
+    await sidebar.getByRole('button', { name: 'Personagens' }).press('Enter')
+    await expect(page.getByRole('heading', { name: 'Personagens' })).toBeFocused()
+    await page.setViewportSize({ width: 390, height: 800 })
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false')
+    await toggle.press('Enter')
+    await expect(destinations).toBeVisible()
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390)
+  } finally { await finishE2EServer(app, [page.context()], request) }
+})
+
 test('UX61-01/02/03: aciona o cartão, separa edição e mantém navegação compacta acessível', async ({ page, request }) => {
   const app = createE2EServer(':memory:', resolve('dist'))
   try {

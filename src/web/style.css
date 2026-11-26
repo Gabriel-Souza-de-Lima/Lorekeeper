@@ -53,12 +53,12 @@
 * { box-sizing: border-box; }
 body { margin: 0; }
 .app-shell { display: grid; grid-template-columns: 14rem minmax(0, 1fr); min-height: 100vh; min-height: 100dvh; }
-.app-shell.navigation-closed { grid-template-columns: 10.5rem minmax(0, 1fr); }
-.sidebar { padding: var(--space-4); background: var(--surface-raised); border-inline-end: 1px solid var(--border); }
-.sidebar-header, .sidebar-links { display: grid; gap: var(--space-2); }
+.app-shell.navigation-closed { grid-template-columns: 4.5rem minmax(0, 1fr); }
+.sidebar { min-width: 0; padding: var(--space-4); background: var(--surface-raised); border-inline-end: 1px solid var(--border); }
+.sidebar-header, .sidebar-links { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-2); }
 .sidebar-links { margin-block-start: var(--space-5); }
-.sidebar-links + .sidebar-links { border-top: 1px solid rgb(170 153 129 / 35%); padding-block-start: var(--space-3); }
-.brand { color: var(--accent); font: 700 1.75rem/1.2 var(--font-narrative); }
+.sidebar-links + .sidebar-links { border-top: 1px solid var(--border); padding-block-start: var(--space-3); }
+.brand { color: var(--accent); font: 700 1.75rem/1.2 var(--font-narrative); overflow-wrap: anywhere; }
 .navigation-toggle { display: flex; gap: var(--space-2); align-items: center; justify-content: start; }
 .navigation-icon {
   display: inline-block; width: 1.125rem; height: 1rem; flex: none; border: 1.5px solid currentColor;
@@ -67,13 +67,19 @@ body { margin: 0; }
 .navigation-icon::after { content: ''; position: absolute; inset: 0 auto 0 .3rem; border-inline-start: 1.5px solid; }
 .app-shell:not(.navigation-closed) .dashboard-shortcut { display: none; }
 .sidebar-links [aria-current="page"] { background: var(--surface); border-color: var(--border); font-weight: 700; }
+@media (min-width: 760px) {
+  .navigation-closed .sidebar { padding-inline: var(--space-3); }
+  .navigation-closed .brand, .navigation-closed .navigation-label { display: none; }
+  .navigation-closed .navigation-toggle { min-width: 44px; padding-inline: 0; justify-content: center; }
+}
 main { width: min(100%, 76rem); min-width: 0; margin-inline: auto; padding: var(--space-5) clamp(1rem, 4vw, 3rem); }
+.main-overview { width: min(100%, 88rem); container-type: inline-size; }
 h1, h2 { margin: 0; line-height: 1.2; font-family: var(--font-narrative); overflow-wrap: anywhere; }
 h1 { font-size: clamp(2rem, 5vw, 3rem); }
 h2 { font-size: 1.55rem; }
 p { margin: .65rem 0; overflow-wrap: anywhere; }
 button, input, select, textarea { font: inherit; }
-button { cursor: pointer; border: 1px solid var(--border); min-height: 44px; border-radius: var(--radius-control); padding: var(--space-2) var(--space-3); color: inherit; background: var(--surface); }
+button { cursor: pointer; border: 1px solid var(--border); min-height: 44px; max-width: 100%; border-radius: var(--radius-control); padding: var(--space-2) var(--space-3); color: inherit; background: var(--surface); overflow-wrap: anywhere; }
 button:hover:not(:disabled) { border-color: var(--accent); }
 button:active:not(:disabled) { text-decoration: underline; }
 button:disabled { cursor: default; color: var(--disabled); background: var(--surface); }
@@ -102,10 +108,16 @@ button.quiet { background: none; border-color: transparent; color: var(--accent)
 .campaign-card-open .context, .campaign-card-meta { font: .875rem/1.5 system-ui, sans-serif; color: var(--muted); }
 .campaign-card-actions { border-top: 1px solid var(--border); padding: var(--space-1) var(--space-4); }
 .campaign-destinations { margin-block-end: var(--space-3); }
-.campaign-management { align-self: start; }
 .shortcut-context { color: var(--muted); }
 .session-list .quiet { padding-left: 0; overflow-wrap: anywhere; }
 .campaign-summary { display: flex; flex-wrap: wrap; gap: .6rem 1.5rem; }
+.campaign-columns { display: grid; gap: var(--space-5); margin-block-start: var(--space-4); }
+.campaign-columns > div { min-width: 0; }
+.campaign-secondary { display: grid; align-content: start; gap: var(--space-3); }
+.campaign-columns .campaign-recap, .campaign-secondary .attachments { margin-block-start: 0; }
+@container (min-width: 57rem) {
+  .campaign-columns { grid-template-columns: minmax(0, 2fr) minmax(17rem, 1fr); align-items: start; }
+}
 .empty { color: var(--muted); }
 .campaign-form { margin-top: 1.25rem; max-width: 50rem; }
 .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .9rem; border: 0; padding: 0; margin: 0; min-width: 0; }
@@ -128,7 +140,7 @@ textarea { resize: vertical; min-height: 5rem; }
 [role="status"] { color: var(--info); }
 [role="status"].error { color: var(--danger); }
 
-@media (max-width: 759px) {
+@media (width < 760px) {
   .app-shell, .app-shell.navigation-closed { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr; }
   .sidebar { padding: var(--space-2) var(--space-4); border-inline-end: 0; border-bottom: 1px solid var(--border); }
   .sidebar-header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; }
@@ -141,6 +153,8 @@ textarea { resize: vertical; min-height: 5rem; }
 }
 
 .campaign-recap { display: grid; gap: 1rem; margin-top: 1rem; }
+.campaign-recap > .panel { padding: 0; border: 0; background: none; box-shadow: none; }
+.campaign-recap > .panel h2 { font-size: 1.125rem; }
 .campaign-recap h3 { margin: 0 0 .4rem; overflow-wrap: anywhere; }
 .campaign-recap blockquote { margin: .25rem 0; padding-inline-start: .65rem; border-inline-start: 2px solid var(--border); white-space: pre-wrap; overflow-wrap: anywhere; }
 

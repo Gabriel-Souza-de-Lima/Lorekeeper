@@ -60,19 +60,19 @@ export function CampaignResume({ campaign, busy, onSession, onWiki, onNote, onPe
           <ConfirmedRecap session={session} />
         </div>)}
       </section>}
-      <section>
+      {data.entities.length > 0 && <section>
         <h3>NPCs e localidades mencionados</h3>
-        {data.entities.length ? <ul className="session-list">{data.entities.map((entity) => <li key={entity.id}>
+        <ul className="session-list">{data.entities.map((entity) => <li key={entity.id}>
           <button className="quiet" disabled={busy} onClick={() => onWiki(entity.id)}>{entity.title}</button>
           <span>{entity.type === 'npc' ? 'NPC' : 'Localidade'}</span>
-        </li>)}</ul> : <p>Nenhum NPC ou localidade nas sessões recentes.</p>}
-      </section>
-      <section>
+        </li>)}</ul>
+      </section>}
+      {data.notes.length > 0 && <section>
         <h3>Anotações vinculadas</h3>
-        {data.notes.length ? <ul className="session-list">{data.notes.map((note) => <li key={note.id}>
+        <ul className="session-list">{data.notes.map((note) => <li key={note.id}>
           <button className="quiet" disabled={busy} onClick={() => onNote(note.id)}>{note.title}</button>
-        </li>)}</ul> : <p>Nenhuma anotação vinculada às sessões recentes.</p>}
-      </section>
+        </li>)}</ul>
+      </section>}
     </>}
     <PendingOverview campaign={campaign} busy={busy} onOpen={onPending} />
     <WikiOverview campaign={campaign} busy={busy} onOpen={onWiki} />

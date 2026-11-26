@@ -19,8 +19,7 @@ async function withServer(browser: Browser, database: string, scenario: (page: P
 }
 
 function newSessionButton(page: Page) {
-  return page.locator('header')
-    .filter({ has: page.getByRole('heading', { name: 'Sessões', exact: true }) })
+  return page.getByRole('main')
     .getByRole('button', { name: 'Nova sessão', exact: true })
 }
 
