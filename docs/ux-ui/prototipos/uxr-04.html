@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="arquivo">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lorekeeper — Protótipo UXR-04</title>
+<style>
+:root {
+  color-scheme: light;
+  --bg: #f2eee5; --panel: #fffaf0; --sub: #e9e1d2; --ink: #26211d; --muted: #5f5346;
+  --border: #796b58; --accent: #762e23; --on: white; --focus: #165d86;
+  --heading: Georgia, serif; --body: system-ui, sans-serif; --gap: 16px; --radius: 14px;
+}
+[data-theme="atlas"] {
+  color-scheme: dark;
+  --bg: #111821; --panel: #1b2734; --sub: #243447; --ink: #f0f6fb; --muted: #c0cfdf;
+  --border: #879bb1; --accent: #9ce8d0; --on: #112921; --focus: #ffc782;
+  --heading: system-ui, sans-serif;
+}
+[data-density="compacta"] { --gap: 12px; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 1rem/1.5 var(--body); }
+body.large { font-size: 1.125rem; }
+[hidden] { display: none !important; }
+a { color: var(--accent); text-underline-offset: .2em; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+button, input, textarea, select { font: inherit; color: inherit; }
+button, input, textarea, select {
+  border: 1px solid var(--border); background: var(--panel); border-radius: 8px; padding: .55rem .75rem;
+}
+button, .nav a { min-height: 44px; }
+button, summary { cursor: pointer; }
+button:hover, a:hover { text-decoration: underline; text-underline-offset: .2em; }
+button.primary { background: var(--accent); color: var(--on); border-color: var(--accent); font-weight: 700; }
+button[aria-pressed="true"], a[aria-current="page"] { background: var(--sub); font-weight: 700; }
+button:disabled { cursor: default; opacity: .72; }
+.skip { position: absolute; inset: .5rem auto auto .5rem; background: var(--panel); padding: .6rem; transform: translateY(-170%); z-index: 2; }
+.skip:focus { transform: none; }
+.layout { display: grid; grid-template-columns: 235px minmax(0, 1fr); min-height: 100vh; min-height: 100dvh; }
+.rail { background: var(--panel); border-inline-end: 1px solid var(--border); padding: 24px; }
+.brand { font: 700 1.75rem var(--heading); margin: 0 0 1.25rem; }
+.nav { display: grid; gap: 4px; }
+.nav a { display: flex; align-items: center; padding: .45rem .65rem; border-radius: 8px; }
+.nav + .nav { margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border); }
+.nav-label { font-size: .875em; color: var(--muted); margin: 0 0 .25rem; font-weight: 650; }
+main { width: min(100%, 1100px); margin-inline: auto; padding: clamp(16px, 4vw, 48px); min-width: 0; }
+h1,h2,h3 { line-height: 1.15; font-family: var(--heading); overflow-wrap: anywhere; }
+h1 { font-size: clamp(1.9rem, 4vw, 3rem); margin: .25em 0 .45em; }
+h2 { font-size: 1.25rem; margin: 0 0 .65em; }
+p { overflow-wrap: anywhere; }
+.meta { color: var(--muted); margin: .25rem 0 .7rem; }
+.panel { border: 1px solid var(--border); border-radius: var(--radius); background: var(--panel); padding: var(--gap); }
+.stack { display: grid; gap: var(--gap); }
+.row { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; }
+.spread { justify-content: space-between; }
+.settings { margin-bottom: var(--gap); }
+summary { min-height: 44px; padding-block: .55rem; }
+.field, .form label { display: grid; gap: 4px; min-width: 0; }
+.settings .row { align-items: end; padding-bottom: .5rem; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,250px),1fr)); gap: var(--gap); }
+.card { padding: 0; display: grid; }
+.card a { display: block; padding: var(--gap); min-height: 96px; border-radius: inherit; }
+.card a:hover { background: var(--sub); }
+.card a span { display: block; }
+.card .secondary { border-top: 1px solid var(--border); padding: 8px var(--gap); }
+.card .secondary .shortcut { display: inline-flex; align-items: center; min-height: 44px; padding: 0; }
+.context { margin: 0; font-weight: 650; color: var(--muted); }
+.editor-grid { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: var(--gap); align-items: start; }
+.one-column, .editor-grid:has(#preview[hidden]) { grid-template-columns: minmax(0, 1fr); }
+label { font-weight: 650; }
+textarea, input, select { max-width: 100%; }
+textarea { width: 100%; min-height: 12rem; resize: vertical; }
+#notes { min-height: clamp(12rem, 40vh, 26rem); margin-top: 6px; }
+.preview { white-space: pre-wrap; overflow-wrap: anywhere; margin: 0; }
+details.panel summary { font-weight: 700; }
+.form { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,150px),1fr)); gap: var(--gap); }
+.result { padding-inline-start: 1.3rem; }
+.result li { padding-block: .45rem; }
+.result a { display: inline-flex; align-items: center; min-height: 44px; }
+dialog { max-width: min(35rem, calc(100% - 2rem)); max-height: calc(100vh - 2rem); max-height: calc(100dvh - 2rem); color: var(--ink); }
+dialog::backdrop { background: rgb(0 0 0 / .55); }
+@media (max-width: 760px) {
+  .layout { grid-template-columns: minmax(0, 1fr); }
+  .rail { border-inline-end: 0; border-bottom: 1px solid var(--border); padding: 16px; }
+  .brand { margin-bottom: 8px; }
+  .nav { display: flex; flex-wrap: wrap; align-items: center; }
+  .nav + .nav { margin-top: 4px; padding-top: 4px; }
+  .nav-label { width: 100%; }
+  .editor-grid { grid-template-columns: minmax(0, 1fr); }
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#conteudo">Ir para o conteúdo</a>
+<div class="layout">
+<aside class="rail">
+  <p class="brand">Lorekeeper</p>
+  <nav class="nav" aria-label="Acervo">
+    <p class="nav-label">Acervo</p>
+    <a href="#campanhas" data-page="campanhas">Campanhas</a>
+    <a href="#busca" data-page="busca">Busca</a>
+    <a href="#captura" data-page="captura">Anotação rápida</a>
+  </nav>
+  <nav class="nav" aria-label="Campanha Costa da Bruma">
+    <p class="nav-label">Costa da Bruma</p>
+    <a href="#campanha" data-page="campanha">Visão geral</a>
+    <a href="#sessao" data-page="sessao">Sessão atual</a>
+    <a href="#conhecimento" data-page="conhecimento">Conhecimento</a>
+  </nav>
+</aside>
+<main id="conteudo" tabindex="-1">
+  <details class="settings">
+    <summary>Comparar aparência e layout</summary>
+    <div class="row">
+      <div class="field"><label for="theme">Identidade visual</label><select id="theme"><option value="arquivo">Arquivo de campo</option><option value="atlas">Atlas noturno</option></select></div>
+      <div class="field"><label for="density">Densidade</label><select id="density"><option value="ampla">Ampla</option><option value="compacta">Compacta</option></select></div>
+      <div class="field"><label for="size">Tamanho do texto</label><select id="size"><option value="padrao">Padrão</option><option value="maior">Maior</option></select></div>
+      <div class="field"><label for="layout">Editor no desktop</label><select id="layout"><option value="lado">Prévia lateral</option><option value="pilha">Coluna única</option></select></div>
+    </div>
+  </details>
+  <p class="meta">Protótipo com dados fictícios. Alterações ficam nesta página até fechar ou recarregar.</p>
+
+  <section data-view="campanhas">
+    <h1 tabindex="-1">Campanhas</h1>
+    <div class="cards">
+      <article class="panel card">
+        <a href="#campanha"><strong>Costa da Bruma</strong><span class="meta">Em andamento · 7 sessões</span></a>
+        <div class="secondary"><a href="#sessao" class="shortcut">Retomar sessão 7</a></div>
+      </article>
+    </div>
+  </section>
+
+  <section data-view="campanha" hidden>
+    <a href="#campanhas">Voltar às campanhas</a>
+    <h1 tabindex="-1">Costa da Bruma</h1>
+    <div class="cards">
+      <section class="panel stack"><div><h2>Sessão 7</h2><p class="meta">A luz na maré</p></div><a href="#sessao">Continuar escrevendo</a></section>
+      <section class="panel"><h2>Para retomar</h2><p>A vigia mencionou uma luz perto da torre. Falta comparar os relatos.</p><a href="#conhecimento">Consultar informações da campanha</a></section>
+    </div>
+  </section>
+
+  <section data-view="sessao" hidden>
+    <a id="editor-back" href="#campanha">Voltar à campanha</a>
+    <p class="context">Costa da Bruma · Sessão 7</p>
+    <h1 tabindex="-1">A luz na maré</h1>
+    <div class="stack">
+      <div id="editor" class="editor-grid">
+        <div class="panel">
+          <label for="notes">Anotações</label>
+          <textarea id="notes">A vigia viu uma luz perto da torre ao cair da maré.</textarea>
+          <div class="row">
+            <button type="button" class="primary" id="save">Salvar</button>
+            <button type="button" id="preview-toggle" aria-expanded="true" aria-controls="preview">Ocultar prévia</button>
+          </div>
+          <p role="status" id="save-status" class="meta">Versão inicial da demonstração.</p>
+          <div class="row" id="recovery" hidden>
+            <button type="button" id="retry">Reenviar operação</button>
+          </div>
+        </div>
+        <section id="preview" class="panel" aria-label="Prévia do texto"><h2>Prévia do texto</h2><p class="preview" id="preview-text"></p></section>
+      </div>
+      <details class="panel">
+        <summary>Dados da sessão</summary>
+        <div class="form"><label>Título de referência <input value="A luz na maré" readonly></label><label>Número <input value="7" readonly></label></div>
+      </details>
+      <details class="panel">
+        <summary>Histórico e simulação de falha</summary>
+        <p>Versão <output id="version">1</output> · demonstração local.</p>
+        <label><input type="checkbox" id="lose"> Simular perda da próxima confirmação</label>
+      </details>
+    </div>
+  </section>
+
+  <section data-view="busca" hidden>
+    <h1 tabindex="-1">Busca no acervo</h1>
+    <form id="search-form" class="panel stack">
+      <div class="form">
+        <label>Termo <input id="term" type="search" placeholder="Ex.: luz"></label>
+        <div class="field"><label for="scope">Campanha</label><select id="scope"><option>Todas</option><option>Costa da Bruma</option></select></div>
+        <div class="field"><label for="kind">Categoria</label><select id="kind"><option>Todas</option><option>Sessões</option><option>Informações</option></select></div>
+      </div>
+      <div><button class="primary">Buscar</button></div>
+    </form>
+    <p role="status" id="search-status"></p>
+    <h2 id="results-heading" tabindex="-1">Resultados</h2>
+    <ul class="result" id="results"></ul>
+  </section>
+
+  <section data-view="conhecimento" hidden>
+    <a id="knowledge-back" href="#campanha">Voltar à campanha</a>
+    <p class="context">Costa da Bruma</p>
+    <h1 tabindex="-1">Conhecimento</h1>
+    <section class="panel stack" aria-labelledby="knowledge-title">
+      <div class="row"><label for="subject">Consultar por</label>
+        <select id="subject"><option value="global">Registro global</option><option value="jogador">Jogador</option><option value="marina">Marina</option></select>
+      </div>
+      <div><h2 id="knowledge-title"></h2><p id="knowledge-text"></p><p class="meta" id="knowledge-source"></p></div>
+    </section>
+  </section>
+
+  <section data-view="captura" hidden>
+    <h1 tabindex="-1">Anotação rápida</h1>
+    <form id="capture-form" class="panel stack">
+      <label for="quick">Texto da anotação</label>
+      <textarea id="quick" required></textarea>
+      <div class="row"><button class="primary">Guardar na caixa de entrada</button><span role="status" id="capture-status"></span></div>
+    </form>
+    <h2>Caixa de entrada</h2>
+    <ul id="inbox"></ul>
+  </section>
+</main>
+</div>
+<dialog class="panel" id="leave" aria-labelledby="leave-title">
+  <h2 id="leave-title">Sair com alterações?</h2>
+  <p>O texto permanece nesta aba e pode ser perdido ao recarregar ou fechar.</p>
+  <form method="dialog" class="row">
+    <button value="stay" autofocus>Continuar escrevendo</button>
+    <button value="leave">Manter texto nesta aba e sair</button>
+  </form>
+</dialog>
+
+<script>
+const id = (name) => document.getElementById(name);
+const views = Array.from(document.querySelectorAll('[data-view]'));
+const notes = id('notes');
+let saved = notes.value;
+let version = 1;
+let uncertain = null;
+let current = 'campanhas';
+let destination = null;
+let searchOrigin = null;
+const specimens = [
+  {label: 'A luz na maré', terms: 'luz torre vigia maré', kind: 'Sessões', page: 'sessao'},
+  {label: 'A luz perto da torre', terms: 'luz torre maré rumor', kind: 'Informações', page: 'conhecimento'}
+];
+
+function render(page, focusId) {
+  current = views.some((view) => view.dataset.view === page) ? page : 'campanhas';
+  for (const view of views) view.hidden = view.dataset.view !== current;
+  for (const link of document.querySelectorAll('[data-page]')) {
+    if (link.dataset.page === current) link.setAttribute('aria-current', 'page');
+    else link.removeAttribute('aria-current');
+  }
+  for (const key of ['editor-back', 'knowledge-back']) {
+    const fromSearch = searchOrigin?.page === current;
+    id(key).href = fromSearch ? '#busca' : '#campanha';
+    id(key).textContent = fromSearch ? 'Voltar à busca' : 'Voltar à campanha';
+  }
+  const target = focusId && id(focusId);
+  if (focusId && !target) id('search-status').textContent = 'O resultado anterior não está mais disponível.';
+  (target || (focusId && id('results-heading')) || views.find((view) => !view.hidden).querySelector('h1')).focus();
+}
+
+function go(page, focusId) {
+  history.replaceState(null, '', '#' + page);
+  render(page, focusId);
+}
+
+document.addEventListener('click', (event) => {
+  const link = event.target.closest('a[href^="#"]');
+  if (!link || link.classList.contains('skip') || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+  event.preventDefault();
+  const page = link.hash.slice(1);
+  const fromResult = link.closest('#results');
+  const focusId = page === 'busca' ? searchOrigin?.id : null;
+  const follow = () => {
+    searchOrigin = fromResult ? {id: link.id, page} : null;
+    go(page, focusId);
+  };
+  if (current === 'sessao' && page !== current && (notes.value !== saved || uncertain)) {
+    destination = follow;
+    id('leave').returnValue = 'stay';
+    id('leave').showModal();
+  } else follow();
+});
+
+id('leave').addEventListener('close', () => {
+  const follow = destination;
+  destination = null;
+  if (id('leave').returnValue === 'leave') follow?.();
+});
+window.addEventListener('hashchange', () => render(location.hash.slice(1)));
+
+id('theme').addEventListener('change', (event) => document.documentElement.dataset.theme = event.target.value);
+id('density').addEventListener('change', (event) => document.documentElement.dataset.density = event.target.value);
+id('size').addEventListener('change', (event) => document.body.classList.toggle('large', event.target.value === 'maior'));
+id('layout').addEventListener('change', (event) => id('editor').classList.toggle('one-column', event.target.value === 'pilha'));
+
+function refreshEditor() {
+  id('preview-text').textContent = notes.value;
+  id('recovery').hidden = !uncertain;
+  id('save').disabled = Boolean(uncertain);
+  id('version').value = version;
+}
+notes.addEventListener('input', () => {
+  id('save-status').textContent = uncertain
+    ? 'Confirmação incerta. O texto mais recente permanece nesta aba.'
+    : notes.value === saved ? 'Sem alterações na demonstração.' : 'Texto alterado nesta aba.';
+  refreshEditor();
+});
+id('save').addEventListener('click', () => {
+  if (notes.value === saved) {
+    id('save-status').textContent = 'Sem alterações na demonstração.';
+    return;
+  }
+  saved = notes.value;
+  version += 1;
+  if (id('lose').checked) {
+    uncertain = saved;
+    id('lose').checked = false;
+    id('save-status').textContent = 'Confirmação incerta na simulação. Reenvie a mesma operação.';
+  } else {
+    id('save-status').textContent = 'Gravação simulada confirmada.';
+  }
+  refreshEditor();
+});
+id('retry').addEventListener('click', () => {
+  uncertain = null;
+  id('save-status').textContent = notes.value === saved
+    ? 'Gravação simulada confirmada, sem duplicação.'
+    : 'Gravação anterior confirmada. Texto mais recente ainda está nesta aba.';
+  refreshEditor();
+  id('save').focus();
+});
+id('preview-toggle').addEventListener('click', (event) => {
+  const preview = id('preview');
+  preview.hidden = !preview.hidden;
+  event.target.setAttribute('aria-expanded', String(!preview.hidden));
+  event.target.textContent = preview.hidden ? 'Mostrar prévia' : 'Ocultar prévia';
+});
+
+id('search-form').addEventListener('submit', (event) => {
+  event.preventDefault();
+  const term = id('term').value.trim().toLocaleLowerCase('pt-BR');
+  const category = id('kind').value;
+  const scope = id('scope').value;
+  const matches = specimens.filter((item) => (scope === 'Todas' || scope === 'Costa da Bruma') &&
+    (category === 'Todas' || category === item.kind) && (item.label + ' ' + item.terms).toLocaleLowerCase('pt-BR').includes(term));
+  id('results').replaceChildren();
+  for (const item of matches) {
+    const li = document.createElement('li');
+    const link = document.createElement('a');
+    link.id = 'resultado-' + item.page;
+    link.href = '#' + item.page;
+    link.textContent = item.label;
+    li.append(link, ' · Costa da Bruma · ' + item.kind);
+    id('results').append(li);
+  }
+  id('search-status').textContent = matches.length ? matches.length + ' resultado(s).' : 'Nenhum resultado. Altere o termo ou os filtros.';
+});
+
+const perspectives = {
+  global: ['Registro global', 'Rumor: uma luz aparece perto da torre na maré baixa. A vigia sustenta o relato, mas uma inspeção ainda é necessária.', 'Origem: relato da vigia, sessão 7.'],
+  jogador: ['Conhecimento do jogador', 'A vigia relatou uma luz perto da torre.', 'Atribuição explícita da sessão 7.'],
+  marina: ['O que Marina sabe', 'Marina ouviu falar de uma luz perto da torre.', 'Descoberta atribuída na sessão 7.']
+};
+function showPerspective() {
+  const [title, text, source] = perspectives[id('subject').value];
+  id('knowledge-title').textContent = title;
+  id('knowledge-text').textContent = text;
+  id('knowledge-source').textContent = source;
+}
+id('subject').addEventListener('change', showPerspective);
+
+id('capture-form').addEventListener('submit', (event) => {
+  event.preventDefault();
+  const text = id('quick').value.trim();
+  if (!text) return;
+  const item = document.createElement('li');
+  item.textContent = text;
+  id('inbox').append(item);
+  id('quick').value = '';
+  id('capture-status').textContent = 'Anotação guardada nesta demonstração.';
+});
+refreshEditor();
+showPerspective();
+render(location.hash.slice(1));
+</script>
+</body>
+</html>

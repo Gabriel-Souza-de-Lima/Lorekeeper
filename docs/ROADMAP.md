@@ -89,7 +89,7 @@ A [documentação de UX/UI](ux-ui/README.md) reúne a proposta revisada e o hist
 | UXR-02 | Auditoria independente | Concluído |
 | Revisão do mantenedor | Aprovação dos requisitos para a UXR-03 | Concluído |
 | UXR-03 | [Auditoria da interface existente](ux-ui/auditoria/uxr-03.md) | Concluída com pendências de validação humana e em dispositivos reais |
-| UXR-04 | Arquitetura de informação e prototipação | Aguarda autorização do mantenedor |
-| UXR-05 | Aprovação da experiência e identidade visual | Pendente |
+| UXR-04 | [Arquitetura de informação e prototipação](ux-ui/prototipos/README.md) | Entregue para avaliação do mantenedor |
+| UXR-05 | Aprovação da experiência e identidade visual | Aguarda avaliação e autorização do mantenedor |
 | UXR-06 | Implementação incremental com SDD/TDD | Pendente |
 | UXR-07 | Validação e aceite final | Pendente |
