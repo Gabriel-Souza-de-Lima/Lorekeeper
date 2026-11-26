@@ -1,0 +1,624 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="athenaeum" data-type="editorial" data-geometry="encadernada" data-depth="camadas" data-ornament="leve" data-art="margem">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lorekeeper — Arquivo Narrativo Vivo</title>
+<style>
+:root {
+  color-scheme: light;
+  --bg: #f2eee5; --panel: #fffaf0; --sub: #e9e1d2; --ink: #26211d; --muted: #5f5346;
+  --border: #796b58; --accent: #762e23; --on: white; --focus: #165d86;
+  --heading: Georgia, serif; --body: system-ui, sans-serif; --gap: 16px; --radius: 14px;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 1rem/1.5 var(--body); }
+body.large { font-size: 1.125rem; }
+[hidden] { display: none !important; }
+a { color: var(--accent); text-underline-offset: .2em; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+button, input, textarea, select { font: inherit; color: inherit; }
+button, input, textarea, select {
+  border: 1px solid var(--border); background: var(--panel); border-radius: 8px; padding: .55rem .75rem;
+}
+button, .nav a { min-height: 44px; }
+button, summary { cursor: pointer; }
+button:hover, a:hover { text-decoration: underline; text-underline-offset: .2em; }
+button.primary { background: var(--accent); color: var(--on); border-color: var(--accent); font-weight: 700; }
+button[aria-pressed="true"], a[aria-current="page"] { background: var(--sub); font-weight: 700; }
+button:disabled { cursor: default; opacity: .72; }
+.skip { position: absolute; inset: .5rem auto auto .5rem; background: var(--panel); padding: .6rem; transform: translateY(-170%); z-index: 2; }
+.skip:focus { transform: none; }
+.layout { display: grid; grid-template-columns: 235px minmax(0, 1fr); min-height: 100vh; min-height: 100dvh; }
+.rail { background: var(--panel); border-inline-end: 1px solid var(--border); padding: 24px; }
+.brand { font: 700 1.75rem var(--heading); margin: 0 0 1.25rem; }
+.nav { display: grid; gap: 4px; }
+.nav a { display: flex; align-items: center; padding: .45rem .65rem; border-radius: 8px; }
+.nav + .nav { margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border); }
+.nav-label { font-size: .875em; color: var(--muted); margin: 0 0 .25rem; font-weight: 650; }
+main { width: min(100%, 1100px); margin-inline: auto; padding: clamp(16px, 4vw, 48px); min-width: 0; }
+h1,h2,h3 { line-height: 1.15; font-family: var(--heading); overflow-wrap: anywhere; }
+h1 { font-size: clamp(1.9rem, 4vw, 3rem); margin: .25em 0 .45em; }
+h2 { font-size: 1.25rem; margin: 0 0 .65em; }
+p { overflow-wrap: anywhere; }
+.meta { color: var(--muted); margin: .25rem 0 .7rem; }
+.panel { border: 1px solid var(--border); border-radius: var(--radius); background: var(--panel); padding: var(--gap); }
+.stack { display: grid; gap: var(--gap); }
+.row { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; }
+.spread { justify-content: space-between; }
+.settings { margin-bottom: var(--gap); }
+summary { min-height: 44px; padding-block: .55rem; }
+.field, .form label { display: grid; gap: 4px; min-width: 0; }
+.settings .row { align-items: end; padding-bottom: .5rem; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,250px),1fr)); gap: var(--gap); }
+.card { padding: 0; display: grid; }
+.card a { display: block; padding: var(--gap); min-height: 96px; border-radius: inherit; }
+.card a:hover { background: var(--sub); }
+.card a span { display: block; }
+.card .secondary { border-top: 1px solid var(--border); padding: 8px var(--gap); }
+.card .secondary .shortcut { display: inline-flex; align-items: center; min-height: 44px; padding: 0; }
+.context { margin: 0; font-weight: 650; color: var(--muted); }
+.editor-grid { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: var(--gap); align-items: start; }
+.one-column, .editor-grid:has(#preview[hidden]) { grid-template-columns: minmax(0, 1fr); }
+label { font-weight: 650; }
+textarea, input, select { max-width: 100%; }
+textarea { width: 100%; min-height: 12rem; resize: vertical; }
+#notes { min-height: clamp(12rem, 40vh, 26rem); margin-top: 6px; }
+.preview { white-space: pre-wrap; overflow-wrap: anywhere; margin: 0; }
+details.panel summary { font-weight: 700; }
+.form { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,150px),1fr)); gap: var(--gap); }
+.result { padding-inline-start: 1.3rem; }
+.result li { padding-block: .45rem; }
+.result a { display: inline-flex; align-items: center; min-height: 44px; }
+dialog { max-width: min(35rem, calc(100% - 2rem)); max-height: calc(100vh - 2rem); max-height: calc(100dvh - 2rem); color: var(--ink); }
+dialog::backdrop { background: rgb(0 0 0 / .55); }
+@media (max-width: 760px) {
+  .layout { grid-template-columns: minmax(0, 1fr); }
+  .rail { border-inline-end: 0; border-bottom: 1px solid var(--border); padding: 16px; }
+  .brand { margin-bottom: 8px; }
+  .nav { display: flex; flex-wrap: wrap; align-items: center; }
+  .nav + .nav { margin-top: 4px; padding-top: 4px; }
+  .nav-label { width: 100%; }
+  .editor-grid { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* Papéis compartilhados e valores sRGB de fallback. */
+:root {
+  color-scheme: light;
+  --bg: #e7e8d9; --panel: #f8f5e8; --sub: #daddc9; --ink: #242b20; --muted: #465442;
+  --border: #636c55; --accent: #384c32; --on: #fff8e5; --focus: #6c4327; --orn: #88613c;
+  --ring: 3px; --radius: 16px; --inset: 6px; --gap: 20px; --rail-width: 264px;
+}
+[data-theme="nocturne"], [data-theme="codex"] { color-scheme: dark; }
+[data-theme="nocturne"] {
+  --bg: #171b32; --panel: #222842; --sub: #303653; --ink: #f2edf9; --muted: #c6c3dd;
+  --border: #9199bd; --accent: #c4b4fc; --on: #201635; --focus: #e3cdfe; --orn: #9b9ac0;
+}
+[data-theme="chronicle"] {
+  --bg: #eee0cc; --panel: #fff2dc; --sub: #efd9b8; --ink: #352419; --muted: #5e4734;
+  --border: #81634b; --accent: #783d29; --on: #fff5e4; --focus: #704323; --orn: #99683f;
+}
+[data-theme="codex"] {
+  --bg: #20201f; --panel: #2c2925; --sub: #3c362d; --ink: #fff2d6; --muted: #d5c7ab;
+  --border: #aa9981; --accent: #edca7b; --on: #34270c; --focus: #ffe6a4; --orn: #aa8a53;
+}
+@supports (color: oklch(60% .1 120)) {
+  [data-theme="athenaeum"] { --accent: oklch(39% .054 135); --orn: oklch(54% .08 68); }
+  [data-theme="nocturne"] { --accent: oklch(82% .1 294); --orn: oklch(70% .06 283); }
+  [data-theme="chronicle"] { --accent: oklch(44% .092 45); --orn: oklch(58% .087 61); }
+  [data-theme="codex"] { --accent: oklch(86% .103 84); --orn: oklch(66% .078 76); }
+}
+[data-type="serifa"] { --body: Georgia, serif; }
+[data-type="sans"] { --heading: system-ui, sans-serif; }
+[data-geometry="reta"] { --radius: 6px; }
+[data-geometry="suave"] { --radius: 24px; }
+[data-density="compacta"] { --gap: 12px; }
+.layout { grid-template-columns: var(--rail-width) minmax(0,1fr); }
+.rail { padding: 20px; background: var(--sub); }
+.rail-head { margin-block-end: 1.6rem; }
+.rail .brand { margin: 0; font-size: 1.85rem; letter-spacing: -.035em; }
+.rail #nav-toggle { display: inline-flex; align-items: center; gap: .5em; text-align: start; }
+.rail-closed { --rail-width: 190px; }
+.icon { display: inline-block; width: 1em; height: 1em; flex: 0 0 auto; transform: translateY(.035em); }
+.icon-nav { border: 1.5px solid currentColor; border-radius: 2px; background: linear-gradient(to right,transparent 29%,currentColor 30% 41%,transparent 42%); }
+.nav + .nav, .folio, .card .secondary { border-color: var(--border); }
+.folio { border-bottom: 1px solid var(--border); margin-bottom: var(--gap); position: relative; }
+.folio .settings { margin: 0; }
+.lab { margin-bottom: var(--gap); max-width: 820px; }
+.lab select { width: 100%; }
+main { padding-top: clamp(16px, 3vw, 34px); }
+.cover { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,.64fr); gap: var(--gap); align-items: center; padding-block: var(--gap); }
+.cover h1 { font-size: clamp(2.2rem, 6vw, 4.3rem); letter-spacing: -.04em; }
+.engraving { width: 100%; max-width: 440px; height: auto; justify-self: center; color: var(--orn); }
+[data-art="nenhuma"] .engraving { display: none; }
+[data-art="nenhuma"] .cover, [data-art="faixa"] .cover { grid-template-columns: minmax(0,1fr); }
+[data-art="faixa"] .engraving { order: -1; justify-self: start; width: min(100%,380px); }
+@supports (mask-image: linear-gradient(#000,transparent)) {
+  .engraving { mask-image: linear-gradient(to bottom, #000 78%, transparent); }
+}
+.panel { border-radius: var(--radius); }
+[data-depth="camadas"] .panel { box-shadow: 0 7px 16px rgb(0 0 0 / .12); }
+[data-depth="plana"] .panel { box-shadow: none; }
+.card > a { border-radius: var(--radius) var(--radius) 0 0; padding: var(--gap); padding-inline-start: calc(var(--gap) + 6px); }
+.volume { position: relative; grid-template-rows: 1fr auto; }
+.volume > a { text-decoration: none; }
+.volume > a h2 { text-decoration: underline; text-underline-offset: .15em; }
+.volume .secondary { padding-inline-start: calc(var(--gap) + 6px); }
+.volume::before { content: ''; pointer-events: none; position: absolute; inset: 8px auto 8px 6px; width: 2px; background: var(--orn); }
+.volume h2 { font-size: 1.5rem; margin: .35em 0; }
+.volume p { color: var(--ink); margin-block: .55em; }
+[data-ornament="nenhuma"] .volume::before { display: none; }
+[data-ornament="marcada"] .volume::before { width: 4px; box-shadow: 3px 0 0 rgb(120 90 55 / .35); }
+[data-ornament="marcada"] .cover {
+  background-image: linear-gradient(110deg, var(--sub), transparent 75%);
+  background-image: linear-gradient(110deg in oklch, var(--sub), transparent 75%);
+  padding-inline: var(--gap); border-radius: var(--radius);
+}
+[data-ornament="marcada"] .volume {
+  box-shadow: inset 0 0 0 3px rgb(140 110 70 / .28);
+}
+:focus-visible { outline-color: var(--focus); }
+.editor-grid > .panel { min-width: 0; }
+.editor-grid .panel textarea, .panel input:not([type="checkbox"]), .panel select {
+  border-radius: max(2px, calc(var(--radius) - var(--inset)));
+}
+.reading { max-width: 68ch; line-height: 1.75; margin-block: var(--gap); }
+.reading h2 { font-size: clamp(1.6rem, 4vw, 2.4rem); }
+.incipit::first-letter { font: 1.6em var(--heading); color: var(--accent); }
+.reading blockquote { border-inline-start: 2px solid var(--orn); padding-inline-start: 1rem; margin-inline: 0; font-family: var(--heading); }
+#save-status { min-height: 1.5em; }
+summary:focus-visible { border-radius: 6px; }
+@media (max-width: 760px) {
+  .layout { grid-template-columns: minmax(0, 1fr); }
+  .rail { padding: 8px 16px; }
+  .rail-head { margin-block-end: 4px; }
+  .rail .brand { font-size: 1.35rem; }
+  .cover { grid-template-columns: minmax(0,1fr); }
+  [data-art="margem"] .engraving { display: none; }
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#conteudo">Ir para o conteúdo</a>
+<div class="layout">
+<aside class="rail">
+  <div class="row spread rail-head"><p class="brand">Lorekeeper</p><button type="button" id="nav-toggle" aria-expanded="true" aria-controls="nav-groups"><span class="icon icon-nav" aria-hidden="true"></span><span id="nav-toggle-text">Recolher navegação</span></button></div>
+  <div id="nav-groups">
+    <nav class="nav" aria-label="Acervo">
+      <p class="nav-label">Acervo</p>
+      <a href="#campanhas" data-page="campanhas">Campanhas</a>
+      <a href="#busca" data-page="busca">Busca</a>
+      <a href="#captura" data-page="captura">Anotação rápida</a>
+    </nav>
+    <nav class="nav" id="campaign-nav" aria-label="Campanha Costa da Bruma">
+      <p class="nav-label" id="rail-campaign">Costa da Bruma</p>
+      <a href="#campanha" data-page="campanha">Visão geral</a>
+      <a href="#sessao" data-page="sessao">Sessão atual</a>
+      <a href="#wiki" data-page="wiki">Wiki</a>
+      <a href="#conhecimento" data-page="conhecimento">Informações e perspectivas</a>
+    </nav>
+  </div>
+</aside>
+<main id="conteudo" tabindex="-1">
+  <div class="row spread folio"><p class="meta">Protótipo · dados fictícios</p><details class="settings">
+    <summary>Comparar aparência</summary>
+    <div class="form lab panel">
+      <div class="field"><label for="theme">Paleta</label><select id="theme"><option value="athenaeum">Athenaeum</option><option value="nocturne">Nocturne</option><option value="chronicle">Chronicle</option><option value="codex">Codex</option></select></div>
+      <div class="field"><label for="type">Tipografia</label><select id="type"><option value="editorial">Títulos serifados</option><option value="serifa">Leitura serifada</option><option value="sans">Sem serifa</option></select></div>
+      <div class="field"><label for="geometry">Geometria</label><select id="geometry"><option value="encadernada">Encadernada</option><option value="reta">Retilínea</option><option value="suave">Suave</option></select></div>
+      <div class="field"><label for="density">Densidade</label><select id="density"><option value="ampla">Ampla</option><option value="compacta">Compacta</option></select></div>
+      <div class="field"><label for="depth">Profundidade</label><select id="depth"><option value="camadas">Camadas</option><option value="plana">Plana</option></select></div>
+      <div class="field"><label for="ornament">Ornamentação</label><select id="ornament"><option value="leve">Leve</option><option value="nenhuma">Nenhuma</option><option value="marcada">Marcada</option></select></div>
+      <div class="field"><label for="art">Ilustração</label><select id="art"><option value="margem">Margem</option><option value="faixa">Faixa acima do título</option><option value="nenhuma">Nenhuma</option></select></div>
+      <div class="field"><label for="layout">Editor no desktop</label><select id="layout"><option value="lado">Prévia lateral</option><option value="pilha">Coluna única</option></select></div>
+      <div><button type="button" id="export">Exportar combinação visual (JSON)</button><p id="export-status" role="status" class="meta"></p></div>
+    </div>
+  </details></div>
+
+  <section data-view="campanhas">
+    <header class="cover"><div><h1 tabindex="-1">Campanhas</h1><p class="meta">Sessões, relatos e descobertas do seu acervo.</p></div><canvas class="engraving" aria-hidden="true" width="440" height="200"></canvas></header>
+    <div class="cards">
+      <article class="panel card volume">
+        <a href="#campanha" data-campaign="bruma"><span class="meta">Em andamento · 7 sessões</span><h2>Costa da Bruma</h2><p>Uma luz ronda a torre a cada maré baixa.</p></a>
+        <div class="secondary"><a href="#sessao" data-campaign="bruma" class="shortcut">Retomar sessão 7</a></div>
+      </article>
+      <article class="panel card volume">
+        <a href="#campanha" data-campaign="serra"><span class="meta">Em andamento · 3 sessões</span><h2>Serra dos Sinos</h2><p>Um eco percorre os caminhos da antiga abadia.</p></a>
+        <div class="secondary"><a href="#sessao" data-campaign="serra" class="shortcut">Retomar sessão 3</a></div>
+      </article>
+      <article class="panel card volume">
+        <a href="#campanha" data-campaign="vale"><span class="meta">Arquivada · 12 sessões</span><h2>Vale do Vidro</h2><p>O mapa recuperado no fim da travessia.</p></a>
+        <div class="secondary"><a href="#wiki" data-campaign="vale" class="shortcut">Consultar a wiki</a></div>
+      </article>
+    </div>
+  </section>
+
+  <section data-view="campanha" hidden>
+    <a href="#campanhas">Voltar às campanhas</a>
+    <header class="cover"><div><p class="context" id="campaign-state"></p><h1 id="campaign-title" tabindex="-1"></h1><p id="campaign-intro"></p></div><canvas class="engraving" aria-hidden="true" width="440" height="200"></canvas></header>
+    <div class="cards">
+      <section class="panel stack"><div><h2 id="campaign-session"></h2><p id="campaign-session-title" class="meta"></p></div><a id="resume" href="#sessao">Continuar escrevendo</a></section>
+      <section class="panel"><h2>Para retomar</h2><p id="campaign-lead"></p><a href="#conhecimento">Consultar informações da campanha</a></section>
+      <section class="panel"><h2>Wiki da campanha</h2><p id="campaign-wiki"></p><a href="#wiki">Abrir a wiki</a></section>
+    </div>
+  </section>
+
+  <section data-view="sessao" hidden>
+    <a id="editor-back" href="#campanha">Voltar à campanha</a>
+    <p id="session-context" class="context"></p>
+    <h1 id="session-title" tabindex="-1"></h1>
+    <div class="stack">
+      <div id="editor" class="editor-grid">
+        <div class="panel">
+          <label for="notes">Anotações</label>
+          <textarea id="notes">A vigia viu uma luz perto da torre ao cair da maré.</textarea>
+          <div class="row">
+            <button type="button" class="primary" id="save">Salvar</button>
+            <button type="button" id="preview-toggle" aria-expanded="true" aria-controls="preview">Ocultar prévia</button>
+          </div>
+          <p role="status" id="save-status" class="meta">Versão inicial da demonstração.</p>
+          <div class="row" id="recovery" hidden>
+            <button type="button" id="retry">Reenviar operação</button>
+          </div>
+        </div>
+        <section id="preview" class="panel" aria-label="Prévia do texto"><h2>Prévia do texto</h2><p class="preview" id="preview-text"></p></section>
+      </div>
+      <details class="panel">
+        <summary>Dados da sessão</summary>
+        <div class="form"><label>Título de referência <input id="session-reference" readonly></label><label>Número <input id="session-number" readonly></label></div>
+      </details>
+      <details class="panel">
+        <summary>Histórico e simulação de falha</summary>
+        <p>Versão <output id="version">1</output> · demonstração local.</p>
+        <label><input type="checkbox" id="lose"> Simular perda da próxima confirmação</label>
+      </details>
+    </div>
+  </section>
+
+  <section data-view="busca" hidden>
+    <h1 tabindex="-1">Busca no acervo</h1>
+    <form id="search-form" class="panel stack">
+      <div class="form">
+        <label>Termo <input id="term" type="search" placeholder="Ex.: luz"></label>
+        <div class="field"><label for="scope">Campanha</label><select id="scope"><option>Todas</option><option>Costa da Bruma</option><option>Serra dos Sinos</option><option>Vale do Vidro</option></select></div>
+        <div class="field"><label for="kind">Categoria</label><select id="kind"><option>Todas</option><option>Sessões</option><option>Informações</option><option>Wiki</option></select></div>
+      </div>
+      <div><button class="primary">Buscar</button></div>
+    </form>
+    <p role="status" id="search-status"></p>
+    <h2 id="results-heading" tabindex="-1">Resultados</h2>
+    <ul class="result" id="results"></ul>
+  </section>
+
+  <section data-view="conhecimento" hidden>
+    <a id="knowledge-back" href="#campanha">Voltar à campanha</a>
+    <p class="context" id="knowledge-campaign"></p>
+    <h1 tabindex="-1">Conhecimento</h1>
+    <section class="panel stack" aria-labelledby="knowledge-title">
+      <div class="row"><label for="subject">Consultar por</label>
+        <select id="subject"><option value="global">Registro global</option><option value="jogador">Jogador</option><option value="marina">Marina</option></select>
+      </div>
+      <div><h2 id="knowledge-title"></h2><p id="knowledge-text"></p><p class="meta" id="knowledge-source"></p></div>
+    </section>
+  </section>
+
+  <section data-view="wiki" hidden>
+    <a id="wiki-back" href="#campanha">Voltar à campanha</a>
+    <p class="context" id="wiki-campaign"></p>
+    <h1 tabindex="-1">Wiki</h1>
+    <article class="panel reading">
+      <p class="meta" id="wiki-kind"></p>
+      <h2 id="wiki-title"></h2>
+      <p class="incipit" id="wiki-text"></p>
+      <blockquote id="wiki-quote"></blockquote>
+      <p id="wiki-source" class="meta"></p>
+      <a href="#conhecimento">Consultar informações e perspectivas</a>
+    </article>
+  </section>
+
+  <section data-view="captura" hidden>
+    <h1 tabindex="-1">Anotação rápida</h1>
+    <form id="capture-form" class="panel stack">
+      <label for="quick">Texto da anotação</label>
+      <textarea id="quick" required></textarea>
+      <div class="row"><button class="primary">Guardar na caixa de entrada</button><span role="status" id="capture-status"></span></div>
+    </form>
+    <h2>Caixa de entrada</h2>
+    <ul id="inbox"></ul>
+  </section>
+</main>
+</div>
+<dialog class="panel" id="leave" aria-labelledby="leave-title">
+  <h2 id="leave-title">Sair com alterações?</h2>
+  <p>O texto permanece nesta aba e pode ser perdido ao recarregar ou fechar.</p>
+  <form method="dialog" class="row">
+    <button value="stay" autofocus>Continuar escrevendo</button>
+    <button value="leave">Manter texto nesta aba e sair</button>
+  </form>
+</dialog>
+
+<script>
+const id = (name) => document.getElementById(name);
+const views = Array.from(document.querySelectorAll('[data-view]'));
+const notes = id('notes');
+const records = {
+  bruma: {
+    name: 'Costa da Bruma', state: 'Em andamento', number: 7, title: 'A luz na maré',
+    intro: 'Na costa, as lanternas da torre respondem ao ritmo das águas.',
+    lead: 'A vigia mencionou uma luz perto da torre. Falta comparar os relatos.',
+    wiki: ['Lugar', 'Torre da Maré', 'O farol abriga uma escada de granito e um livro de sinais. A vigia o consulta antes de anotar cada luz avistada.', '“Na maré baixa, a terceira luz aponta para terra.”'],
+    draft: 'A vigia viu uma luz perto da torre ao cair da maré.',
+    global: 'Rumor: a luz aparece na maré baixa. O relato da vigia sustenta a hipótese; a origem ainda é incerta.',
+    player: 'A vigia relatou uma luz perto da torre.', marina: 'Marina ouviu falar de uma luz perto da torre.'
+  },
+  serra: {
+    name: 'Serra dos Sinos', state: 'Em andamento', number: 3, title: 'O sino partido',
+    intro: 'Trilhas de pedra sobem até as ruínas da abadia.',
+    lead: 'O sino tocou durante a neblina. Vale localizar a torre que permaneceu de pé.',
+    wiki: ['Lugar', 'Abadia dos Ecos', 'O vento atravessa as janelas altas. O antigo caminho de pedra ainda aparece sob a vegetação.', '“Ouvi o sino antes de enxergar a abadia.”'],
+    draft: 'Marina ouviu um sino quando a trilha sumiu na névoa.',
+    global: 'Relato: o sino parecia vir da torre norte. A posição exata permanece em dúvida.',
+    player: 'O grupo encontrou um badalo no caminho.', marina: 'Marina ouviu um sino vindo das ruínas.'
+  },
+  vale: {
+    name: 'Vale do Vidro', state: 'Arquivada · somente leitura', number: 12, title: 'A última travessia',
+    intro: 'O grupo fechou a expedição com um mapa e um inventário de marcos.',
+    lead: 'A trilha final está registrada no mapa de marcos.',
+    wiki: ['Artefato', 'Mapa de marcos', 'O mapa liga as pontes de pedra aos marcos de vidro encontrados durante a travessia final.', '“A terceira ponte marca o fim do vale.”'],
+    draft: 'O mapa foi guardado ao fim da travessia.',
+    global: 'Registro: a última ponte foi marcada no mapa.',
+    player: 'O grupo encontrou a última ponte.', marina: 'Marina registrou a terceira ponte.'
+  }
+};
+for (const row of Object.values(records)) {
+  row.saved = row.draft;
+  row.version = 1;
+  row.uncertain = false;
+  row.status = 'Versão inicial da demonstração.';
+}
+let campaign = 'bruma';
+let current = 'campanhas';
+let destination = null;
+let searchOrigin = null;
+const active = () => records[campaign];
+const specimens = Object.entries(records).flatMap(([key, row]) => [
+  {key, label: row.title, terms: row.draft, kind: 'Sessões', page: 'sessao'},
+  {key, label: 'Informações · ' + row.name, terms: row.global, kind: 'Informações', page: 'conhecimento'},
+  {key, label: row.wiki[1], terms: row.wiki[2], kind: 'Wiki', page: 'wiki'}
+]);
+
+function showCampaign() {
+  const row = active();
+  for (const [name, value] of Object.entries({
+    'rail-campaign': row.name, 'campaign-state': row.state, 'campaign-title': row.name,
+    'campaign-intro': row.intro, 'campaign-session': 'Sessão ' + row.number,
+    'campaign-session-title': row.title, 'campaign-lead': row.lead, 'campaign-wiki': row.wiki[1],
+    'session-title': row.title, 'session-context': row.name + ' · Sessão ' + row.number,
+    'wiki-campaign': row.name, 'wiki-kind': row.wiki[0], 'wiki-title': row.wiki[1],
+    'wiki-text': row.wiki[2], 'wiki-quote': row.wiki[3], 'wiki-source': 'Origem · Sessão ' + row.number,
+    'knowledge-campaign': row.name, 'save-status': row.status
+  })) id(name).textContent = value;
+  id('campaign-nav').setAttribute('aria-label', 'Campanha ' + row.name);
+  id('resume').textContent = campaign === 'vale' ? 'Ler sessão arquivada' : 'Continuar escrevendo';
+  notes.value = row.draft;
+  notes.readOnly = campaign === 'vale';
+  id('session-reference').value = row.title;
+  id('session-number').value = row.number;
+  refreshEditor();
+  showPerspective();
+}
+
+function render(page, focusId) {
+  current = views.some((view) => view.dataset.view === page) ? page : 'campanhas';
+  for (const view of views) view.hidden = view.dataset.view !== current;
+  for (const link of document.querySelectorAll('[data-page]')) {
+    if (link.dataset.page === current) link.setAttribute('aria-current', 'page');
+    else link.removeAttribute('aria-current');
+  }
+  showCampaign();
+  for (const key of ['editor-back', 'knowledge-back', 'wiki-back']) {
+    const fromSearch = searchOrigin?.page === current;
+    id(key).href = fromSearch ? '#busca' : '#campanha';
+    id(key).textContent = fromSearch ? 'Voltar à busca' : 'Voltar à campanha';
+  }
+  const target = focusId && id(focusId);
+  if (focusId && !target) id('search-status').textContent = 'O resultado anterior não está mais disponível.';
+  (target || (focusId && id('results-heading')) || views.find((view) => !view.hidden).querySelector('h1')).focus();
+}
+
+function go(page, focusId) {
+  history.replaceState(null, '', '#' + page);
+  render(page, focusId);
+}
+
+document.addEventListener('click', (event) => {
+  const link = event.target.closest('a[href^="#"]');
+  if (!link || link.classList.contains('skip') || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+  event.preventDefault();
+  const page = link.hash.slice(1);
+  const fromResult = link.closest('#results');
+  const focusId = page === 'busca' ? searchOrigin?.id : null;
+  const follow = () => {
+    if (link.dataset.campaign && link.dataset.campaign !== campaign) {
+      campaign = link.dataset.campaign;
+      id('subject').value = 'global';
+      id('lose').checked = false;
+    }
+    searchOrigin = fromResult ? {id: link.id, page} : null;
+    go(page, focusId);
+  };
+  if (current === 'sessao' && page !== current && (active().draft !== active().saved || active().uncertain)) {
+    destination = follow;
+    id('leave').returnValue = 'stay';
+    id('leave').showModal();
+  } else follow();
+});
+
+id('leave').addEventListener('close', () => {
+  const follow = destination;
+  destination = null;
+  if (id('leave').returnValue === 'leave') follow?.();
+});
+window.addEventListener('hashchange', () => render(location.hash.slice(1)));
+
+const root = document.documentElement;
+function setNavigation(collapsed) {
+  const groups = id('nav-groups');
+  groups.hidden = collapsed;
+  id('nav-toggle').setAttribute('aria-expanded', String(!groups.hidden));
+  id('nav-toggle-text').textContent = groups.hidden ? 'Expandir navegação' : 'Recolher navegação';
+  root.classList.toggle('rail-closed', groups.hidden);
+}
+id('nav-toggle').addEventListener('click', () => setNavigation(!id('nav-groups').hidden));
+setNavigation(window.matchMedia('(max-width: 760px)').matches);
+
+const appearance = ['theme', 'type', 'geometry', 'density', 'depth', 'ornament', 'art', 'layout'];
+function applyAppearance() {
+  for (const key of appearance) root.dataset[key] = id(key).value;
+  id('editor').classList.toggle('one-column', id('layout').value === 'pilha');
+  drawEngravings();
+}
+for (const key of appearance) id(key).addEventListener('change', applyAppearance);
+id('export').addEventListener('click', () => {
+  const configuration = {schemaVersion: 1, prototype: 'UXR-05'};
+  for (const key of appearance) configuration[key] = id(key).value;
+  const url = URL.createObjectURL(new Blob([JSON.stringify(configuration, null, 2) + '\n'], {type: 'application/json'}));
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'lorekeeper-uxr-05.json';
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  id('export-status').textContent = 'Combinação visual exportada.';
+});
+function refreshEditor() {
+  const row = active();
+  id('preview-text').textContent = row.draft;
+  id('recovery').hidden = !row.uncertain;
+  id('save').disabled = row.uncertain || campaign === 'vale';
+  id('lose').disabled = campaign === 'vale';
+  id('version').value = row.version;
+  id('save-status').textContent = campaign === 'vale' ? 'Campanha arquivada · somente leitura.' : row.status;
+}
+notes.addEventListener('input', () => {
+  const row = active();
+  row.draft = notes.value;
+  row.status = row.uncertain
+    ? 'Confirmação incerta. O texto mais recente permanece nesta aba.'
+    : row.draft === row.saved ? 'Sem alterações na demonstração.' : 'Texto alterado nesta aba.';
+  refreshEditor();
+});
+id('save').addEventListener('click', () => {
+  const row = active();
+  if (row.draft === row.saved) row.status = 'Sem alterações na demonstração.';
+  else {
+    row.saved = row.draft;
+    row.version += 1;
+    row.uncertain = id('lose').checked;
+    id('lose').checked = false;
+    row.status = row.uncertain ? 'Confirmação incerta na simulação. Reenvie a mesma operação.' : 'Gravação simulada confirmada.';
+  }
+  refreshEditor();
+});
+id('retry').addEventListener('click', () => {
+  const row = active();
+  row.uncertain = false;
+  row.status = row.draft === row.saved ? 'Gravação simulada confirmada, sem duplicação.'
+    : 'Gravação anterior confirmada. Texto mais recente ainda está nesta aba.';
+  refreshEditor();
+  id('save').focus();
+});
+id('preview-toggle').addEventListener('click', (event) => {
+  const preview = id('preview');
+  preview.hidden = !preview.hidden;
+  event.target.setAttribute('aria-expanded', String(!preview.hidden));
+  event.target.textContent = preview.hidden ? 'Mostrar prévia' : 'Ocultar prévia';
+});
+
+id('search-form').addEventListener('submit', (event) => {
+  event.preventDefault();
+  const term = id('term').value.trim().toLocaleLowerCase('pt-BR');
+  const category = id('kind').value;
+  const scope = id('scope').value;
+  const matches = specimens.filter((item) => (scope === 'Todas' || scope === records[item.key].name) &&
+    (category === 'Todas' || category === item.kind) && (item.label + ' ' + item.terms).toLocaleLowerCase('pt-BR').includes(term));
+  id('results').replaceChildren();
+  for (const item of matches) {
+    const li = document.createElement('li');
+    const link = document.createElement('a');
+    link.id = 'resultado-' + item.key + '-' + item.page;
+    link.dataset.campaign = item.key;
+    link.href = '#' + item.page;
+    link.textContent = item.label;
+    li.append(link, ' · ' + records[item.key].name + ' · ' + item.kind);
+    id('results').append(li);
+  }
+  id('search-status').textContent = matches.length ? matches.length + ' resultado(s).' : 'Nenhum resultado. Altere o termo ou os filtros.';
+});
+
+function showPerspective() {
+  const row = active();
+  const subject = id('subject').value;
+  const titles = {global: 'Registro global', jogador: 'Conhecimento do jogador', marina: 'O que Marina sabe'};
+  const keys = {global: 'global', jogador: 'player', marina: 'marina'};
+  id('knowledge-title').textContent = titles[subject];
+  id('knowledge-text').textContent = row[keys[subject]];
+  id('knowledge-source').textContent = (subject === 'global' ? 'Origem do registro' : 'Descoberta atribuída') + ' · Sessão ' + row.number;
+}
+id('subject').addEventListener('change', showPerspective);
+
+id('capture-form').addEventListener('submit', (event) => {
+  event.preventDefault();
+  const text = id('quick').value.trim();
+  if (!text) return;
+  const item = document.createElement('li');
+  item.textContent = text;
+  id('inbox').append(item);
+  id('quick').value = '';
+  id('capture-status').textContent = 'Anotação guardada nesta demonstração.';
+});
+// Vinheta cartográfica original. O canvas é decorativo e nunca cobre textos ou controles.
+function drawEngravings() {
+  const pigment = getComputedStyle(root).getPropertyValue('--orn').trim();
+  for (const canvas of document.querySelectorAll('.engraving')) drawEngraving(canvas, pigment);
+}
+function drawEngraving(canvas, pigment) {
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width;
+  const h = canvas.height;
+  if (!ctx) return;
+  ctx.clearRect(0, 0, w, h);
+  ctx.strokeStyle = pigment;
+  ctx.fillStyle = pigment;
+  ctx.lineWidth = 1.25;
+  const line = (points) => {
+    ctx.beginPath();
+    points.forEach(([x,y], index) => index ? ctx.lineTo(x,y) : ctx.moveTo(x,y));
+    ctx.stroke();
+  };
+  for (const radius of [52, 59, 72]) {
+    ctx.beginPath();
+    ctx.arc(w/2,91,radius,0,Math.PI*2);
+    ctx.stroke();
+  }
+  for (let i = 0; i < 16; i++) {
+    const t = i * Math.PI / 8;
+    line([[220 + 74 * Math.cos(t), 91 + 74 * Math.sin(t)], [220 + 83 * Math.cos(t), 91 + 83 * Math.sin(t)]]);
+  }
+  line([[220,16],[230,80],[290,91],[230,101],[220,166],[210,101],[150,91],[210,80],[220,16]]);
+  line([[220,16],[220,166]]);
+  line([[150,91],[290,91]]);
+  for (let i = 0; i < 7; i++) {
+    const y = 119 + i * 8;
+    line(Array.from({length: 81}, (_, j) => [j * 5.5, y + 3 * Math.sin(j * .45 + i * .7)]));
+  }
+  ctx.font = '14px Georgia';
+  ctx.textAlign = 'center';
+  ctx.clearRect(211,0,18,15);
+  ctx.fillText('N',220,13);
+}
+
+applyAppearance();
+render(location.hash.slice(1));
+</script>
+</body>
+</html>
