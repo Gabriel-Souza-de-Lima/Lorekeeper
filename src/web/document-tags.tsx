@@ -1,3 +1,4 @@
+import { usePendingNavigation } from './navigation-guard.tsx'
 import { useEffect, useId, useState, type FormEvent } from 'react'
 import type { DocumentTag } from '../contracts.ts'
 import { api } from './api.ts'
@@ -15,6 +16,9 @@ export function DocumentTags({ campaignUrl, documentId, archived }: {
   const [busy, setBusy] = useState(false)
   const [attempt, setAttempt] = useState(0)
   const [failed, setFailed] = useState(false)
+  usePendingNavigation(busy ? { label: 'Operação de tag em andamento', blocked: true }
+    : name.trim() ? { label: 'Tag ainda não vinculada', discard: true } : null)
+
   const [error, setError] = useState('')
 
   useEffect(() => {

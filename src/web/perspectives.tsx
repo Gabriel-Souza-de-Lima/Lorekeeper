@@ -1,3 +1,4 @@
+import { usePendingNavigation } from './navigation-guard.tsx'
 import { useEffect, useRef, useState } from 'react'
 import type { NarrativeDetail } from '../narrative.ts'
 import { activeDiscoveries, discoveryKinds, knowledgeLabel, type Discovery, type DiscoveryInput,
@@ -85,6 +86,11 @@ export function PerspectivePanel({ campaignId, item, targets, archived, onEditin
   const [conflict, setConflict] = useState(false)
   const [busy, setBusy] = useState(false)
   const [refresh, setRefresh] = useState(0)
+  usePendingNavigation(busy ? { label: 'Operação de perspectiva em andamento', blocked: true }
+    : draft ? { label: 'Perspectiva ainda não confirmada', blocked: Boolean(draft.operation) && !conflict,
+      keep: status === 'Rascunho protegido neste navegador',
+      discard: status === 'Falha no armazenamento local' && !draft.operation ? true : undefined } : null)
+
   const current = useRef<Draft | null>(null)
   const release = useRef<(() => void) | null>(null)
   const queue = useRef<Promise<unknown>>(Promise.resolve())

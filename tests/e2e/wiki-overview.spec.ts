@@ -25,7 +25,7 @@ test('I3-04a/b: opera missão e acessa destaque na visão geral', async ({ page,
     await expect(page.getByRole('button', { name: 'Remover destaque' })).toBeVisible()
     await page.getByRole('button', { name: 'Voltar à wiki' }).click()
     await page.getByRole('button', { name: 'Voltar à campanha' }).click()
-    await expect(missions.getByText('Nenhuma missão aberta.')).toBeVisible()
+    await expect(missions).toHaveCount(0)
     const featured = page.getByRole('region', { name: 'Personagem em destaque' })
     await featured.getByRole('button', { name: 'Guia da Bruma' }).click()
     await expect(page.getByRole('heading', { name: 'Guia da Bruma' })).toBeVisible()

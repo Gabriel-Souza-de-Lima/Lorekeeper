@@ -236,7 +236,7 @@ test('UX63-03: resposta atrasada não troca a perspectiva ativa nem cruza campan
     await subject.selectOption(first.actors[0])
     await previousCampaign.received
     await page.getByRole('button', { name: 'Voltar à campanha' }).click()
-    await page.getByRole('button', { name: 'Voltar ao painel' }).click()
+    await page.getByRole('navigation', { name: 'Acervo' }).getByRole('button', { name: 'Campanhas', exact: true }).click()
     await enter('Serra fictícia')
     await subject.selectOption(second.actors[0])
     await expect(query.getByRole('heading', { name: 'Marina em Serra fictícia' })).toBeVisible()

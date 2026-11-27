@@ -38,6 +38,7 @@ test('P5-01/04/07: envia o primeiro PDF assim que os anexos da sessão estão di
     })
     await page.goto(origin)
     await page.getByRole('button', { name: 'Ilhas', exact: true }).click()
+    await page.getByText('Anexos da campanha', { exact: true }).click()
     const panel = page.getByRole('region', { name: 'Anexos' })
     const file = panel.getByLabel('Arquivo', { exact: true })
     const send = panel.getByRole('button', { name: 'Enviar anexo' })
@@ -78,6 +79,7 @@ test('P5-01/03/07/11: mostra imagem e remove só o vínculo confirmado', async (
     expect((await request.post(origin + '/api/campaigns', { data: { name: 'Ilhas' } })).status()).toBe(201)
     await page.goto(origin)
     await page.getByRole('button', { name: 'Ilhas', exact: true }).click()
+    await page.getByText('Anexos da campanha', { exact: true }).click()
     const attachments = page.getByRole('region', { name: 'Anexos' })
     await expect(attachments.getByText('Nenhum anexo vinculado.')).toBeVisible({ timeout: 4000 })
     await attachments.getByLabel('Arquivo').setInputFiles({ name: 'mapa.png', mimeType: 'image/png', buffer: Buffer.from(

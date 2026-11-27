@@ -27,15 +27,14 @@ export function WikiOverview({ campaign, busy, onOpen }: {
       <button className="quiet" disabled={busy} onClick={() => onOpen(featuredCharacterId)}>
         {featuredCharacterTitle}</button>
     </section>}
-    <section aria-label="Missões abertas" className="panel">
+    {(failed || quests === null || quests.length > 0) && <section aria-label="Missões abertas" className="panel">
       <h2>Missões abertas</h2>
       {failed ? <><p role="alert">Não foi possível carregar as missões.</p>
         <button onClick={() => { setFailed(false); setAttempt((value) => value + 1) }}>Recarregar missões</button></>
         : quests === null ? <p>Carregando missões…</p>
-          : quests.length === 0 ? <p>Nenhuma missão aberta.</p>
-            : <ul className="session-list">{quests.map((quest) => <li key={quest.id}>
+          : <ul className="session-list">{quests.map((quest) => <li key={quest.id}>
               <button className="quiet" disabled={busy} onClick={() => onOpen(quest.id)}>{quest.title}</button>
             </li>)}</ul>}
-    </section>
+    </section>}
   </>
 }

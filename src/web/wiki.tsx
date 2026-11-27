@@ -1,3 +1,4 @@
+import { useLeave, usePendingNavigation } from './navigation-guard.tsx'
 import { Attachments } from './attachments.tsx'
 import { Fragment, useEffect, useLayoutEffect, useRef, useState, type FormEvent } from 'react'
 import Markdown from 'react-markdown'
@@ -36,6 +37,11 @@ export function Wiki({ campaign, initialPage, charactersOnly, onOpenSession, onB
   const listHeading = useRef<HTMLHeadingElement>(null)
   const opener = useRef<string>(null)
   const list = useRef<HTMLUListElement>(null)
+
+  const leave = useLeave()
+  usePendingNavigation(busy || uncertain ? { label: 'Operação da wiki em andamento ou sem confirmação', blocked: true }
+    : draft && (draft.title || draft.body || draft.type !== 'character') ? { label: 'Nova página da wiki ainda não confirmada', discard: true }
+    : title !== null && title !== page?.title ? { label: 'Renomeação da página ainda não confirmada', discard: true } : null)
 
   useLayoutEffect(() => {
     if (articleHeading.current) articleHeading.current.focus()
@@ -122,7 +128,9 @@ export function Wiki({ campaign, initialPage, charactersOnly, onOpenSession, onB
       setPages((items) => items?.map((item) => item.id === updated.id ? { ...item, title: updated.title } : item) ?? null)
       setRefresh((value) => value + 1)
       setTitle(null)
+      setUncertain(false)
     } catch (failure) {
+      if (failure instanceof ApiError && (failure.status === 0 || failure.status >= 500)) setUncertain(true)
       setTitleConflict(failure instanceof ApiError && failure.status === 409)
       setError(failure instanceof Error ? failure.message : 'Não foi possível renomear a página.')
     } finally {
@@ -138,6 +146,7 @@ export function Wiki({ campaign, initialPage, charactersOnly, onOpenSession, onB
       setPage(latest)
       setRefresh((value) => value + 1)
       setTitleConflict(false)
+      setUncertain(false)
     } catch (failure) {
       setError(failure instanceof Error ? failure.message : 'Não foi possível consultar o título.')
     } finally {
@@ -147,8 +156,8 @@ export function Wiki({ campaign, initialPage, charactersOnly, onOpenSession, onB
 
   const feedback = error && <p className="error" role="alert">{error}</p>
   if (page) return <>
-    <button className="quiet" disabled={busy || title !== null} onClick={() => { opener.current = page.id; setError(''); setPage(null) }}>Voltar à wiki</button>
-    {onSearchBack && <button className="quiet" disabled={busy || title !== null} onClick={onSearchBack}>Voltar à busca</button>}
+    <button className="quiet" disabled={busy} onClick={() => leave(() => { opener.current = page.id; setError(''); setTitle(null); setTitleConflict(false); setPage(null) })}>Voltar à wiki</button>
+    {onSearchBack && <button className="quiet" disabled={busy} onClick={() => leave(onSearchBack)}>Voltar à busca</button>}
     <header className="page-header"><div><p className="context">{campaign.name} · {labels[page.type]}</p>
       <h1 ref={articleHeading} tabIndex={-1}>{page.title}</h1></div></header>
     {!campaign.archivedAt && (title === null
@@ -171,12 +180,12 @@ export function Wiki({ campaign, initialPage, charactersOnly, onOpenSession, onB
           : featuredId === page.id ? 'Remover destaque' : 'Destacar personagem'}
       </button>}
     {feedback}
-    <article className="panel preview wiki-reading" aria-label="Conteúdo da página"><Markdown skipHtml remarkPlugins={[remarkGfm]}
-      components={{ ...markdownLayout, img: ({ alt }) => <span>{alt}</span> }}>{page.body}</Markdown></article>
+    {page.body.trim() && <article className="panel preview wiki-reading" aria-label="Conteúdo da página"><Markdown skipHtml remarkPlugins={[remarkGfm]}
+      components={{ ...markdownLayout, img: ({ alt }) => <span>{alt}</span> }}>{page.body}</Markdown></article>}
     <Fragment key={page.id}>
       <Attachments campaignUrl={`/api/campaigns/${campaign.id}`} documentId={page.id} archived={Boolean(campaign.archivedAt)} />
       <DocumentTags campaignUrl={`/api/campaigns/${campaign.id}`} documentId={page.id} archived={Boolean(campaign.archivedAt)} />
-      <WikiBacklinks url={`${url}/${page.id}/backlinks`} busy={busy || title !== null} onOpen={onOpenSession} />
+      <WikiBacklinks url={`${url}/${page.id}/backlinks`} busy={busy || title !== null} onOpen={(id) => leave(() => onOpenSession(id))} />
     </Fragment>
   </>
   if (draft) return <>
@@ -192,13 +201,12 @@ export function Wiki({ campaign, initialPage, charactersOnly, onOpenSession, onB
       </fieldset>
       <div className="actions">
         <button className="primary" disabled={busy}>{uncertain ? 'Repetir envio' : 'Criar página'}</button>
-        <button type="button" disabled={busy} onClick={() => {
-          if (draft.body && !window.confirm('Sair do formulário e descartar o texto local?')) return
+        <button type="button" disabled={busy} onClick={() => leave(() => {
           setDraft(null)
           setError('')
           setUncertain(false)
           setRefresh((value) => value + 1)
-        }}>Voltar à wiki</button>
+        })}>Voltar à wiki</button>
       </div>
       {feedback}
     </form>
@@ -207,8 +215,8 @@ export function Wiki({ campaign, initialPage, charactersOnly, onOpenSession, onB
   const visiblePages = charactersOnly ? pages?.filter(({ type }) => type === 'character') : pages
 
   return <>
-    <button className="quiet" disabled={busy} onClick={onBack}>Voltar à campanha</button>
-    {onSearchBack && <button className="quiet" disabled={busy} onClick={onSearchBack}>Voltar à busca</button>}
+    <button className="quiet" disabled={busy} onClick={() => leave(onBack)}>Voltar à campanha</button>
+    {onSearchBack && <button className="quiet" disabled={busy} onClick={() => leave(onSearchBack)}>Voltar à busca</button>}
     <header className="page-header"><div><p className="context">{campaign.name}</p><h1 ref={listHeading} tabIndex={-1}>{charactersOnly ? 'Personagens' : 'Wiki da campanha'}</h1></div>
       {!campaign.archivedAt && <button className="primary" disabled={busy} onClick={() => {
         setError('')

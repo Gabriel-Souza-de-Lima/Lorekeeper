@@ -1,3 +1,4 @@
+import { usePendingNavigation } from './navigation-guard.tsx'
 import { useEffect, useId, useState } from 'react'
 import type { SessionSummary, WikiSummary } from '../contracts.ts'
 import { api, displayDate } from './api.ts'
@@ -19,6 +20,8 @@ export function SessionWikiLinks({ sessionUrl, campaignUrl, archived, draftOnly,
   const [pages, setPages] = useState<WikiSummary[]>([])
   const [selected, setSelected] = useState('')
   const [busy, setBusy] = useState(false)
+  usePendingNavigation(busy ? { label: 'Operação de vínculo da wiki em andamento', blocked: true } : null)
+
   const [error, setError] = useState('')
   const [failed, setFailed] = useState(false)
   const [attempt, setAttempt] = useState(0)

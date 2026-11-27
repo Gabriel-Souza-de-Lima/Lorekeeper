@@ -108,3 +108,11 @@ Cada recorte depende da integração e do CI pós-merge do anterior. A [UXR-07](
 | 2. Escrita e recuperação | Recorte 1 integrado | Editor em coluna única, campo e Salvar no bloco principal; prévia e expansão preservam texto e foco; falha e conflito mantêm rascunho, versões e reenvio único. | E2E de manual-save, drafts, revisions, templates e vínculos; conferir gravação local e servidor, 320 px, teclado e dispositivo. |
 | 3. Busca, wiki e perspectivas | Recorte 2 e decisão de escopo aprovados | Retorno retém filtros e foco ou informa alvo indisponível; leitura indica origem; respostas atrasadas não misturam campanha, pessoa ou evidência. | E2E de search, wiki e perspectives; inversão de resposta e homônimos; roteiro de leitura assistiva. |
 | 4. Superfícies restantes e regressão | Recortes 1–3 integrados | Transporte dos padrões às tarefas existentes de captura, pendências, arquivo e portabilidade; preservação funcional dos 45 requisitos, com evidência ou pendência explícita por critério aplicável. | Suíte completa e matriz normativa por processo; zoom, espaçamento, foco, toque, teclado virtual, leitor de tela e avaliação de tarefas nos ambientes aprovados. A UXR-07 reúne o aceite final. |
+
+## Refinamento da navegação e da visão geral
+
+No desktop, a lateral recolhida mantém acervo e campanha numa faixa de 72 CSS px. Os botões preservam nome acessível, dica textual, indicação do destino ativo e alvo mínimo de 44 CSS px. A família linear usa o mesmo peso de traço e caixas alinhadas em ambas as composições. A navegação móvel continua expansível em fluxo normal. Localização rápida e Favoritos pertencem ao acervo. Busca permanece como tarefa independente.
+
+A visão geral prioriza uma lista de cartões de sessão com superfície principal acionável e ação de lixeira independente. O resumo confirmado é apresentado integralmente dentro do limite já suportado pelo campo. Anexos e administração ficam em seções secundárias. A wiki só renderiza a superfície de leitura quando há conteúdo.
+
+O diálogo de saída usa os tokens semânticos Codex e identifica as operações envolvidas. Cancelar devolve o foco ao controle de origem. Os comandos disponíveis refletem as garantias do módulo. [Critérios do refinamento](../specs/39-uxr-07-refinamento.md)

@@ -124,3 +124,20 @@ Use uma instância fictícia do Lorekeeper em porta independente e banco novo, c
 4. **Sessão de RPG e revisão visual.** Ao longo das tarefas, marque ações difíceis de encontrar, texto cortado, tempo percebido e clareza de Codex. Confira um favorito, uma pendência e um anexo mostrando seus estados. Por fim, explique com suas palavras para que servem ZIP e backup e confirme que o destino da lixeira é compreendido.
 
 O refinamento pode seguir para essa rodada humana. O encerramento do ciclo depende do resultado do roteiro e da decisão explícita do mantenedor. A P11 aguarda autorização própria.
+
+## Refinamento após a avaliação humana
+
+A validação anterior é histórica. O [SDD do refinamento](../../specs/39-uxr-07-refinamento.md) registra as alterações e a evidência por critério. Este complemento atualiza a rastreabilidade para as superfícies modificadas. As demais linhas da matriz de 45 requisitos mantêm o escopo e as limitações anteriores.
+
+| Requisitos | Evidência do refinamento | Avaliação restante |
+| --- | --- | --- |
+| G02/G04/G07, F01/F02/F03/F06 | Lista única, resumo confirmado e clique principal independente da lixeira. Quatro sessões, incluindo uma sem resumo, cobertas em E2E. | Clareza da lista para consultar campanhas muito extensas. |
+| G01/G05–G08, F11, D05/D11 | Sessões ganha foco e indicador ativo. Lateral recolhida funciona por teclado e Favoritos tem acesso próprio. Reflow exercitado em 320, 390, 768, 1280 e 1920 CSS px. | Leitor de tela, toque e teclado virtual em dispositivo real. |
+| G04/G05/G09/G13, F03–F05/F07/F08/F11–F16 | Diálogo comum exercitado com edição, cancelamento, foco, confirmação, descarte, requisição em andamento e falha de confirmação. Regressão exercita recuperação, concorrência e retorno contextual à busca. | Navegação por histórico, recarga e fechamento dependem dos avisos que o navegador permite apresentar. |
+| G03/G12, F08, D13 | Personagem sem descrição mantém os controles e vínculos sem região de leitura vazia. | Revisão visual com as configurações de contraste e tecnologia assistiva do mantenedor. |
+
+Para o novo aceite, use dados fictícios e execute também estes passos:
+
+1. Abra uma campanha com pelo menos quatro sessões, resuma uma delas e deixe outra sem resumo. Confira a ordenação, o resumo completo, o foco ao escolher Sessões a partir da wiki e o acesso à lixeira e aos anexos.
+2. Edite uma sessão sem salvar. Tente sair pela lateral e pela localização rápida. Confira Cancelar e o retorno de foco. Em tentativas separadas, confirme a gravação e mantenha um rascunho protegido, depois abra a sessão novamente.
+3. Repita com uma página da wiki em criação e com um arquivo selecionado. Compare os comandos apresentados. No desktop, recolha a lateral e use os ícones e Favoritos. No mobile, abra o menu em fluxo e confira a leitura de um personagem sem descrição.

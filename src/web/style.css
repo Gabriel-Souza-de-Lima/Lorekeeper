@@ -66,7 +66,7 @@ body { margin: 0; }
 }
 .navigation-icon::after { content: ''; position: absolute; inset: 0 auto 0 .3rem; border-inline-start: 1.5px solid; }
 .app-shell:not(.navigation-closed) .dashboard-shortcut { display: none; }
-.sidebar-links [aria-current="page"] { background: var(--surface); border-color: var(--border); font-weight: 700; }
+:is(.sidebar-links, .campaign-destinations) :is([aria-current="page"], [aria-current="location"]) { background: var(--surface); border-color: var(--border); font-weight: 700; }
 @media (min-width: 760px) {
   .navigation-closed .sidebar { padding-inline: var(--space-3); }
   .navigation-closed .brand, .navigation-closed .navigation-label { display: none; }
@@ -111,13 +111,6 @@ button.quiet { background: none; border-color: transparent; color: var(--accent)
 .shortcut-context { color: var(--muted); }
 .session-list .quiet { padding-left: 0; overflow-wrap: anywhere; }
 .campaign-summary { display: flex; flex-wrap: wrap; gap: .6rem 1.5rem; }
-.campaign-columns { display: grid; gap: var(--space-5); margin-block-start: var(--space-4); }
-.campaign-columns > div { min-width: 0; }
-.campaign-secondary { display: grid; align-content: start; gap: var(--space-3); }
-.campaign-columns .campaign-recap, .campaign-secondary .attachments { margin-block-start: 0; }
-@container (min-width: 57rem) {
-  .campaign-columns { grid-template-columns: minmax(0, 2fr) minmax(17rem, 1fr); align-items: start; }
-}
 .empty { color: var(--muted); }
 .campaign-form { margin-top: 1.25rem; max-width: 50rem; }
 .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .9rem; border: 0; padding: 0; margin: 0; min-width: 0; }
@@ -158,11 +151,6 @@ textarea { resize: vertical; min-height: 5rem; }
   .editor textarea { min-height: 40vh; }
 }
 
-.campaign-recap { display: grid; gap: 1rem; margin-top: 1rem; }
-.campaign-recap > .panel { padding: 0; border: 0; background: none; box-shadow: none; }
-.campaign-recap > .panel h2 { font-size: 1.125rem; }
-.campaign-recap h3 { margin: 0 0 .4rem; overflow-wrap: anywhere; }
-.campaign-recap blockquote { margin: .25rem 0; padding-inline-start: .65rem; border-inline-start: 2px solid var(--border); white-space: pre-wrap; overflow-wrap: anywhere; }
 
 .attachments { margin-block: 1rem; overflow-wrap: anywhere; }
 .attachments .attachment { justify-content: flex-start; align-items: flex-start; }
@@ -208,3 +196,29 @@ input[type="file"]::file-selector-button {
   font: inherit; min-height: 44px; color: var(--ink); background: var(--surface-raised);
   border: 1px solid var(--border); border-radius: var(--radius-control); margin-inline-end: var(--space-2);
 }
+
+.campaign-session-section { margin-block: var(--space-5); }
+.session-list .campaign-session-card { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0; padding: 0; }
+.campaign-session-open {
+  display: grid; gap: var(--space-1); text-align: start; padding: var(--space-4);
+  border: 1px solid transparent; border-radius: var(--radius-panel) var(--radius-panel) 0 0;
+}
+.session-summary { color: var(--muted); white-space: pre-wrap; overflow-wrap: anywhere; }
+.campaign-extra { display: grid; gap: var(--space-4); }
+.campaign-extra summary { min-height: 44px; cursor: pointer; padding-block: var(--space-2); }
+.campaign-extra .attachments { margin: 0; box-shadow: none; }
+
+.sidebar-links > button, .campaign-destinations > button {
+  display: flex; align-items: center; gap: var(--space-2);
+}
+.destination-icon { flex: none; translate: 0 .025em; }
+@media (width >= 760px) {
+  .navigation-closed .sidebar-links .context, .navigation-closed .sidebar-links .destination-label { display: none; }
+  .navigation-closed .sidebar-links > button { min-width: 44px; padding-inline: 0; justify-content: center; }
+  .navigation-closed .campaign-destinations, .navigation-closed .dashboard-shortcut { display: none; }
+}
+@media (width < 760px) {
+  .navigation-closed #sidebar-destinations { display: none; }
+}
+.navigation-protection { overflow: auto; max-height: calc(100dvh - 2rem); max-width: min(32rem, calc(100% - 2rem)); color: var(--ink); }
+.navigation-protection::backdrop { background: rgb(0 0 0 / 55%); }

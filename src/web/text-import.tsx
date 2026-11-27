@@ -1,3 +1,4 @@
+import { useLeave, usePendingNavigation } from './navigation-guard.tsx'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import type { Campaign, Session, SessionImportSource } from '../contracts.ts'
 import { maxImportBytes, readImportFile, validImportText } from '../text-import.ts'
@@ -29,6 +30,10 @@ export function TextImport({ onBack, onOpen }: { onBack: () => void; onOpen: (ca
   const selection = useRef(0)
   const operation = useRef<{ key: string; campaign: Campaign; request: ImportRequest } | null>(null)
   const campaign = campaigns.find(({ id }) => id === campaignId)
+
+  const leave = useLeave()
+  usePendingNavigation(busy || uncertain ? { label: 'Importação em andamento ou aguardando confirmação', blocked: true }
+    : file || title || source || text || campaignId ? { label: 'Importação ainda não confirmada', discard: true } : null)
 
   useEffect(() => {
     let active = true
@@ -98,9 +103,7 @@ export function TextImport({ onBack, onOpen }: { onBack: () => void; onOpen: (ca
   }
 
   return <>
-    <button className="quiet" disabled={busy} onClick={() => {
-      if (!uncertain || window.confirm('A importação pode ter sido confirmada. Sair sem verificar a resposta?')) onBack()
-    }}>Voltar ao painel</button>
+    <button className="quiet dashboard-shortcut" disabled={busy} onClick={() => leave(onBack)}>Voltar ao painel</button>
     <header className="page-header"><h1>Importar texto</h1></header>
     {error && <p className="error" role="alert">{error}</p>}
     {campaigns.length === 0 && <button type="button" onClick={() => {

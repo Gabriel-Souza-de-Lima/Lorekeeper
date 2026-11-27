@@ -5,7 +5,7 @@ import { createHash, randomUUID } from 'node:crypto'
 import Fastify from 'fastify'
 import staticFiles from '@fastify/static'
 import { campaignStatuses } from '../contracts.ts'
-import type { Campaign, CampaignFields, Session, SessionFields, SessionImportSource, SessionSummary } from '../contracts.ts'
+import type { Campaign, CampaignFields, CampaignSessionSummary, Session, SessionFields, SessionImportSource, SessionSummary } from '../contracts.ts'
 import { openDatabase } from './database.ts'
 import { registerAttachments } from './attachments.ts'
 import { registerPendingItems } from './pending-items.ts'
@@ -158,8 +158,8 @@ export function createApp(database: string, webRoot?: string) {
   const sessionSelect = `
     FROM documents d JOIN sessions s ON s.document_id = d.id
     WHERE d.campaign_id = ? AND d.type = 'session' AND s.trashed_at IS NULL`
-  const listSessions = db.prepare<[id: string], SessionSummary>(`
-    SELECT d.id, d.title, s.session_date AS date, s.number ${sessionSelect}
+  const listSessions = db.prepare<[id: string], CampaignSessionSummary>(`
+    SELECT d.id, d.title, s.session_date AS date, s.number, s.summary ${sessionSelect}
     ORDER BY s.session_date DESC, d.created_at DESC, d.id DESC`)
   const selectSession = db.prepare<[campaignId: string, sessionId: string], Session>(`
     SELECT d.id, d.title, d.body, d.version, s.session_date AS date, s.fictional_date AS fictionalDate,

@@ -2,7 +2,7 @@ import { resolve } from 'node:path'
 import { expect, test } from '@playwright/test'
 import { createE2EServer, finishE2EServer } from '../support/e2e-server.ts'
 
-test('UX61-01/03/04: faixa desktop, contexto da campanha e retomada vazia', async ({ page, request }) => {
+test('UX61-01/03/04: faixa desktop, contexto da campanha e lista vazia', async ({ page, request }) => {
   const app = createE2EServer(':memory:', resolve('dist'))
   try {
     const origin = await app.listen({ host: '127.0.0.1', port: 0 })
@@ -32,18 +32,19 @@ test('UX61-01/03/04: faixa desktop, contexto da campanha e retomada vazia', asyn
     await expect(sidebar.getByRole('button', { name: 'Personagens' })).toBeVisible()
     await expect(page.getByRole('button', { name: 'Personagens' })).toHaveCount(1)
     const create = page.getByRole('button', { name: 'Nova sessão' })
-    const recap = page.getByRole('region', { name: 'Retomar campanha' })
-    await expect(recap.getByText('Nenhuma sessão para retomar.')).toBeVisible()
+    const recap = page.getByRole('region', { name: 'Sessões', exact: true })
+    await expect(recap.getByText('Nenhuma sessão registrada')).toBeVisible()
     expect((await create.boundingBox())!.y).toBeLessThan((await recap.boundingBox())!.y)
     await expect(recap.getByText('Nenhum NPC ou localidade nas sessões recentes.')).toHaveCount(0)
     await create.press('Enter')
     await page.getByLabel('Anotações', { exact: true }).fill('Rascunho fictício protegido')
     await expect(page.getByRole('status')).toContainText('rascunho protegido')
-    page.once('dialog', (dialog) => void dialog.dismiss())
+    const guard = page.getByRole('dialog', { name: 'Alterações pendentes' })
     await sidebar.getByRole('button', { name: 'Personagens' }).press('Enter')
+    await guard.getByRole('button', { name: 'Cancelar' }).press('Enter')
     await expect(page.getByLabel('Anotações', { exact: true })).toHaveValue('Rascunho fictício protegido')
-    page.once('dialog', (dialog) => void dialog.accept())
     await sidebar.getByRole('button', { name: 'Personagens' }).press('Enter')
+    await guard.getByRole('button', { name: 'Continuar mantendo o rascunho' }).press('Enter')
     await expect(page.getByRole('heading', { name: 'Personagens' })).toBeFocused()
     await page.setViewportSize({ width: 390, height: 800 })
     await expect(toggle).toHaveAttribute('aria-expanded', 'false')
@@ -73,10 +74,10 @@ test('UX61-01/02/03: aciona o cartão, separa edição e mantém navegação com
     await page.getByRole('navigation', { name: 'Campanha Costa fictícia' }).getByRole('button', { name: 'Personagens' }).press('Enter')
     await expect(page.getByRole('heading', { name: 'Personagens' })).toBeFocused()
     await page.getByRole('button', { name: 'Voltar à campanha' }).click()
-    await page.getByRole('button', { name: 'Voltar ao painel' }).click()
+    await page.getByRole('navigation', { name: 'Acervo' }).getByRole('button', { name: 'Campanhas', exact: true }).click()
     await open.press('Enter')
     await expect(page.getByRole('heading', { name: 'Costa fictícia', level: 1 })).toBeFocused()
-    await page.getByRole('button', { name: 'Voltar ao painel' }).click()
+    await page.getByRole('navigation', { name: 'Acervo' }).getByRole('button', { name: 'Campanhas', exact: true }).click()
     await card.getByRole('button', { name: 'Editar Costa fictícia' }).press('Enter')
     await expect(page.getByRole('heading', { name: 'Editar campanha' })).toBeVisible()
     const input = page.getByRole('textbox', { name: 'Nome', exact: true })
@@ -112,9 +113,9 @@ test('UX61-01/02/03: aciona o cartão, separa edição e mantém navegação com
     expect(contrast.focus).toBeGreaterThanOrEqual(3)
     expect(contrast.outline).toBe('3px')
     await page.getByRole('button', { name: 'Cancelar' }).click()
-    await page.getByRole('button', { name: 'Voltar ao painel' }).click()
+    await page.getByRole('navigation', { name: 'Acervo' }).getByRole('button', { name: 'Campanhas', exact: true }).click()
 
-    for (const width of [320, 390, 768, 1280]) {
+    for (const width of [320, 390, 768, 1280, 1920]) {
       await page.setViewportSize({ width, height: 800 })
       await page.reload()
       const toggle = page.getByRole('button', { name: 'Navegação', exact: true })
@@ -124,7 +125,8 @@ test('UX61-01/02/03: aciona o cartão, separa edição e mantém navegação com
       expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(width)
       await toggle.press('Enter')
       await expect(toggle).toBeFocused()
-      await expect(page.getByRole('navigation', { name: 'Acervo' })).toBeHidden()
+      if (width < 760) await expect(page.getByRole('navigation', { name: 'Acervo' })).toBeHidden()
+      else await expect(page.getByRole('navigation', { name: 'Acervo' })).toBeVisible()
       await open.press('Enter')
       await expect(page.getByRole('heading', { name: 'Costa fictícia', level: 1 })).toBeFocused()
       expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(width)
