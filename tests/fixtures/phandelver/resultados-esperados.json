@@ -1,0 +1,6 @@
+{
+  "campanhaCompleta": {"sessoesAtivas":8,"sessoesRecentes":["s8","s7","s6"],"missoesTotal":12,"missoesAtivas":2,"missoesEncerradas":10,"pendenciasTotal":24,"pendenciasAbertas":8,"pendenciasFechadas":16,"personagensJogadores":4,"npcs":18,"personagensENpcs":22,"localidades":13,"wikiOriginal":35,"informacoes":12,"anexos":6,"notas":8},
+  "carga": {"pendenciasExtras":20,"pendenciasTotal":44,"pendenciasAbertas":28,"pendenciasFechadas":16,"paginasAbertasComOito":4},
+  "limitesPainel": {"sessoes":3,"missoes":3,"pendencias":3,"personagensDestacados":4},
+  "observacao":"Contagens da fixture intermediária antes de alterações do usuário. As 12 missões podem aparecer adicionalmente na wiki do produto, sem duplicação; não contam como personagens."
+}

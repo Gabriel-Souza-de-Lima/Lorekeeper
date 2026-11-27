@@ -124,3 +124,7 @@ Em grades de formulário, rótulos e controles começam no topo da célula. As c
 Use `field-actions` para campos rotulados ligados a botões. Alinhe pela base dos controles e permita quebra quando o espaço pedir. O ajuste cobre Alterar estado, Adicionar tag e Renomear anexo. Grupos de botões, abas e estados de salvamento preservam seu alinhamento contextual, com feedback em linha própria quando necessário. Preservam-se foco visível, semântica de validação, dimensões mínimas e estados indisponíveis.
 
 A ordem do Acervo é Busca, Campanhas, Anotações rápidas, Favoritos e Navegação rápida. Visão geral é a entrada única da campanha e apresenta sua lista de sessões. Sobre fica em grupo próprio após os demais destinos. [Critérios atualizados](../specs/39-uxr-07-refinamento.md#organização-final-solicitada-pelo-mantenedor)
+
+### Phandelver V2
+
+A [especificação Phandelver V2](../specs/40-phandelver-v2.md) registra a prioridade aprovada dos painéis atuais, catálogo de sessões independente e grupos compactos de pendências, missões e anexos. As alterações serão incorporadas por etapa. A identidade Codex e o editor operacional permanecem como base.

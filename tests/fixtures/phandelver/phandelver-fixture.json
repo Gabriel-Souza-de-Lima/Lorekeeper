@@ -1,0 +1,2387 @@
+{
+  "schema": "lorekeeper-test-fixture/v1",
+  "campaign": {
+    "title": "A Mina Perdida de Phandelver",
+    "system": "D&D 5e (aventura de 2014)",
+    "player": "Elara Vento-de-Tinta",
+    "source": "A Mina Perdida de Phandelver v1.7 — PDF enviado",
+    "simulation": "Percurso fictício de mesa; datas, personagens, escolhas e falas indiretas simulados. Não é transcrição nem campanha oficial jogada."
+  },
+  "sessions": [
+    {
+      "id": "s1",
+      "number": 1,
+      "date": "2026-09-05",
+      "title": "A carroça e os cavalos sem cavaleiros",
+      "summary": "Uma escolta simples virou um resgate. Chegamos ao esconderijo dos Dentefino, libertamos Sildar e descobrimos que Gundren e seu mapa foram levados.",
+      "notes": [
+        "Gundren me contratou em Neverwinter para levar suprimentos a Barthen, em Phandalin. O pagamento combinado é de 10 po para cada um. Ele saiu antes com Sildar. Viajo com Borin, Maela e Lio; sou responsável por registrar as pistas e evitar que a gente se perca.",
+        "Na Trilha Triboar reconhecemos os cavalos de Gundren e Sildar, mortos por flechas. Os alforjes estavam vazios e encontrei um tubo de mapas sem nada dentro. Depois do ataque dos goblins, Lio seguiu as pegadas; escondemos a carroça e acompanhamos a trilha, evitando o laço e o fosso. Um goblin capturado disse que o chefe da tribo se chamava Rei Grol; depois o deixamos ir.",
+        "O covil tinha um riacho e lobos acorrentados. Maela ofereceu comida aos animais. Uma enxurrada nos obrigou a voltar alguns passos. Yeemik ameaçou o prisioneiro e tentou usar a gente contra Klarg. Não aceitei confiar nele; Borin protegeu Sildar enquanto Maela o estabilizava após a queda. Derrotamos Klarg e encontramos caixas com um leão azul.",
+        "Depois de libertado, Sildar contou que os irmãos Buscapedra localizaram a mina perdida do antigo Pacto de Phandelver. Um tal Aranha Negra teria ordenado a captura. O mapa e Gundren provavelmente estão com o chefe dos Dentefino, no Castelo Dentefino. Sildar também procura Iarno Alberk, que desapareceu em Phandalin. Ele ofereceu 50 po pela escolta do grupo."
+      ],
+      "personal": "Acho que o ataque foi planejado para pegar Gundren, não apenas roubar a carroça. Ainda não sei se Aranha Negra é pessoa, grupo ou apelido. Não quero perder o tubo vazio como pista.",
+      "level": 2,
+      "sourcePages": "4, 6–12"
+    },
+    {
+      "id": "s2",
+      "number": 2,
+      "date": "2026-09-12",
+      "title": "Uma vila sob pressão",
+      "summary": "Entregamos os suprimentos, ouvimos relatos dos moradores e descobrimos várias pistas e pedidos de ajuda. A Mansão Tresendar tornou-se nosso próximo destino.",
+      "notes": [
+        "Barthen pagou o combinado e falou dos irmãos Tharden e Nundro, que não aparecem há dez dias. Linene reconheceu as caixas do leão azul; combinamos a devolução e recebemos 50 po pelo grupo. Sildar conseguiu pagar sua escolta. A Estalagem Stonehill virou nossa base.",
+        "Trilena relatou o assassinato de Thel Dendrar e o desaparecimento da família. Daran, do pomar, apontou a Mansão Tresendar como esconderijo dos Marcarrubra e pediu que investigássemos mortos-vivos no Poço da Velha Coruja. Halia ofereceu 100 po para eliminar Cajavidro e entregar sua correspondência; achei o pedido específico demais. Não aceitei a oferta.",
+        "Qelline nos apresentou Carp, que viu bandidos saindo de um túnel perto da mansão. Também indicou Reidoth, nas ruínas da Árvore Trovão. Irmã Garaele pediu que levássemos um pente de prata a Agatha e perguntássemos pelo grimório de Arco Suave, por três poções. Harbin anunciou 100 po pelos orcs no Cume da Wyvern.",
+        "Sildar pediu ajuda para encontrar Iarno e localizar o castelo; ofereceu 500 po pela derrota do chefe dos Dentefino. Na rua, os Marcarrubra exigiram nossos pertences; resistimos. Um fugiu em direção à mansão. Combinamos entrar pelo caminho descrito por Carp."
+      ],
+      "personal": "Halia talvez esteja tentando tomar o lugar do Cajavidro. É impressão minha, não fato. Quero saber se a gangue e os goblins respondem à mesma pessoa. Borin prefere ir diretamente ao castelo; decidimos ajudar a família primeiro.",
+      "level": 2,
+      "sourcePages": "14–19"
+    },
+    {
+      "id": "s3",
+      "number": 3,
+      "date": "2026-09-19",
+      "title": "A verdade sob Tresendar",
+      "summary": "Resgatamos os Dendrar, prendemos o líder dos Marcarrubra e encontramos correspondência ligando a gangue ao Aranha Negra.",
+      "notes": [
+        "Carp mostrou a entrada. Uma criatura de um olho, o nothic, falou dentro da minha cabeça; negociamos comida e passagem, sem prometer vítimas. Encontramos o corpo de Thel e libertamos Mirna, Nars e Nilsa das celas. Mirna mencionou um colar de esmeraldas escondido na antiga loja de sua família em Árvore Trovão.",
+        "Encontramos bugbears ameaçando Droop, um goblin assustado. Maela o protegeu; ele nos contou que o castelo fica ao norte, mas não sabia o caminho preciso. Lio encontrou uma passagem para os aposentos do mago. Capturamos Cajavidro antes que escapasse. Seu nome era Iarno Alberk, justamente o homem que Sildar procurava.",
+        "Li a carta que ordenava a Iarno impedir nossa interferência e encaminhar mapas anões. No interrogatório, Iarno disse que o Aranha Negra era um drow procurando a Forja das Magias; não sabia a localização da mina. Um diário de Urmon descrevia o Pacto e uma maça perdida encomendada para sacerdotes de Lathander.",
+        "Entregamos Iarno a Sildar, recebemos 200 po e não entregamos a carta a Halia. A família Dendrar voltou para casa. Não sabemos ainda a extensão da rede de cúmplices. Droop ficou em segurança fora do covil."
+      ],
+      "personal": "Eu estava errado em pensar que Iarno era outra vítima. A carta confirma a ligação entre as duas gangues, mas não prova minha hipótese sobre Halia. Guardei uma cópia resumida da carta.",
+      "level": 3,
+      "sourcePages": "19–26"
+    },
+    {
+      "id": "s4",
+      "number": 4,
+      "date": "2026-09-26",
+      "title": "A pergunta que só podia ser feita uma vez",
+      "summary": "Visitamos Agatha, negociamos com o mago do Poço da Velha Coruja e afastamos a ameaça orc no Cume da Wyvern.",
+      "notes": [
+        "Seguimos para Conyberry e encontramos o abrigo de Agatha. Maela entregou o pente de Garaele. Só pudemos fazer uma pergunta. Cumprimos o combinado: ela disse ter trocado o grimório de Arco Suave com Tsernoth, em Iriaebor, há mais de cem anos. Não sabia seu destino atual.",
+        "No Poço da Velha Coruja, vimos mortos-vivos e um homem de vestes vermelhas. Reconheci a tatuagem ligada à necromancia. Ele se apresentou como Hamun Kost; conversamos e ele conteve os zumbis. Estava interessado nas ruínas e pediu que afastássemos os orcs; também queria que Agatha identificasse o construtor da torre, mas já tínhamos gasto nossa pergunta.",
+        "No Cume da Wyvern encontramos os saqueadores de Brughor e um ogro. O grupo os derrotou. Retornamos a Phandalin e relatamos a situação a Daran, Harbin e Garaele. Recebemos as três poções e o pagamento de Harbin. Mantivemos o acordo de não provocar Kost, sem concluir que ele seja inofensivo."
+      ],
+      "personal": "O conhecimento de Agatha é poderoso, mas não é ilimitado: a pista do grimório tem um século. Não quero confundir a missão concluída com o paradeiro atual do livro. A tatuagem de Kost merece registro; não encontrei ligação dele com o Aranha Negra.",
+      "level": 3,
+      "sourcePages": "27–29, 35"
+    },
+    {
+      "id": "s5",
+      "number": 5,
+      "date": "2026-10-03",
+      "title": "Ruínas da Árvore Trovão",
+      "summary": "Encontramos Reidoth, recuperamos a herança de Mirna e obtivemos indicações para o Castelo Dentefino. Afastamos o dragão da torre.",
+      "notes": [
+        "Reidoth nos recebeu em uma casa protegida nas ruínas. Disse que plantas hostis, mortos-vivos e aranhas ocupavam a vila e alertou para um dragão verde na torre. Deu indicações do Castelo Dentefino. Poderia guiar-nos à mina em troca de expulsar o dragão.",
+        "Encontramos a antiga loja de ervas de Mirna e recuperamos o colar. Evitamos os homens mascarados que rondavam o leste, sem assumir que eram agentes do Aranha Negra. Borin e Maela insistiram em ajudar Reidoth; enfrentamos o dragão com cuidado e ele acabou voando para longe. Não o matamos nem sabemos para onde foi.",
+        "Reidoth confirmou que manteria o acordo de nos guiar se necessário. Decidimos primeiro resgatar Gundren. De volta à vila, entregamos o colar a Mirna. Ela ficou emocionada; não aceitei vendê-lo como recompensa."
+      ],
+      "personal": "A gente quase morreu pelo dragão. Lio ouviu o nome Venomfang quando conversou com um mascarado, mas eu não estava junto; ele me contou depois. Quero separar o que vi do que ouvi.",
+      "level": 4,
+      "sourcePages": "30–34"
+    },
+    {
+      "id": "s6",
+      "number": 6,
+      "date": "2026-10-10",
+      "title": "O rei e o mapa perdido",
+      "summary": "Localizamos o Castelo Dentefino, resgatamos Gundren e recuperamos o mapa. Voltamos a Phandalin antes de partir para a mina.",
+      "notes": [
+        "Seguimos as indicações de Reidoth. No castelo em ruínas, enfrentamos os guardas e libertamos um urso-coruja sem tentar matá-lo. Encontramos Gundren inconsciente perto do Rei Grol, que discutia com uma figura aparentemente drow. Durante o confronto, ela revelou ser uma criatura metamorfa; impedimos que fugisse com o mapa. Grol foi derrotado.",
+        "Lio encontrou o mapa de Gundren escondido sob o colchão. Maela cuidou do anão. Ele confirmou que o Aranha Negra orquestrou sua captura. Nos relatos que reunimos apareceu o nome Nezznar; ainda não o vimos pessoalmente.",
+        "Escoltamos Gundren de volta a Phandalin. Ele nos pagou 25 po por pessoa e prometeu ao grupo uma parte dos ganhos da mina. Sildar pagou a recompensa combinada pela derrota do chefe. Gundren pediu que o acompanhássemos para descobrir o destino de Tharden e Nundro. Compramos rações e cordas, descansamos e combinamos partir pela manhã."
+      ],
+      "personal": "O metamorfo torna qualquer identificação visual menos confiável. Vou tratar nomes e rostos como pistas separadas. Gundren está vivo; os irmãos ainda são uma incógnita.",
+      "level": 4,
+      "sourcePages": "35–41"
+    },
+    {
+      "id": "s7",
+      "number": 7,
+      "date": "2026-10-17",
+      "title": "As ondas no escuro",
+      "summary": "Entramos na Caverna Onda Eco, encontramos Tharden morto e exploramos galerias infestadas. Descobrimos a origem do eco e sinais da busca pela forja.",
+      "notes": [
+        "Gundren nos levou até a entrada seguindo o mapa recuperado. O acampamento dos irmãos estava devastado; reconheceu o corpo de Tharden. Não havia sinal de Nundro. Gundren ficou em segurança enquanto avançamos.",
+        "As galerias tinham restos de uma batalha antiga, mortos-vivos e fungos perigosos. Evitamos uma área de esporos, vencemos carniçais e passamos pela antiga fundição, onde uma caveira em chamas nos obrigou a recuar. Voltamos preparados e contornamos o perigo; não quero presumir que tudo na mina esteja seguro.",
+        "O barulho que deu nome ao lugar vem de uma câmara com água que bate nas rochas. Encontramos vestígios recentes de escavação e bugbears. Parece que alguém já está procurando algo na mina. Vimos sinais de uma antiga oficina, mas não entramos antes de descansar."
+      ],
+      "personal": "A morte de Tharden me fez abandonar a ideia de que os irmãos estavam apenas escondidos. Nundro ainda pode estar vivo. Meu objetivo agora é sair com ele, não enriquecer.",
+      "level": 4,
+      "sourcePages": "42–47, 48–49"
+    },
+    {
+      "id": "s8",
+      "number": 8,
+      "date": "2026-10-24",
+      "title": "A forja e o fim da teia",
+      "summary": "Resgatamos Nundro, derrotamos Nezznar e asseguramos a Forja das Magias. Voltamos a Phandalin com os sobreviventes e deixamos registrado o que ainda falta resolver.",
+      "notes": [
+        "Encontramos Mormesk, uma aparição que guardava seus pertences. Trocamos um pergaminho por acesso aos livros e anotamos um mapa de outra masmorra, sem aceitar seu pedido de destruir o guardião. Na oficina da Forja das Magias, uma criatura de vários olhos ainda acreditava cumprir uma antiga ordem. Convencemos o espectador de que sua tarefa terminara e ele desapareceu.",
+        "A chama verde ainda tinha magia, mas os encantamentos que vimos eram temporários. Identificamos uma maça ligada a Lathander e um peitoral com um dragão dourado; Maela e Borin ficaram com eles por acordo do grupo. Não sabemos como restaurar a força original da forja.",
+        "No templo de Dumathoin, o drow se identificou como Nezznar, o Aranha Negra. Derrotamos suas aranhas e aliados; ele morreu no combate. Com a chave encontrada, libertamos Nundro dos aposentos vizinhos. Ele confirmou que fora mantido prisioneiro. Voltamos com os dois irmãos vivos e reportamos os acontecimentos a Sildar.",
+        "Gundren e Nundro planejam reabrir a mina e ofereceram ao grupo 10% dos lucros. Phandalin nos recebeu bem. Ainda precisamos esclarecer o futuro da forja, o mapa de Mormesk, o paradeiro do dragão e o que Halia pretendia com a carta. Encerramos a aventura principal, não todas as histórias."
+      ],
+      "personal": "O ouro não apaga o que aconteceu a Tharden. Quero voltar algum dia, mas antes precisamos registrar o que realmente sabemos. Não tenho prova sobre as intenções de Halia nem sobre a posição atual do dragão.",
+      "level": 5,
+      "sourcePages": "47–51"
+    }
+  ],
+  "wiki": [
+    {
+      "id": "w1",
+      "name": "Elara Vento-de-Tinta",
+      "kind": "Personagem",
+      "first": 1,
+      "featured": true,
+      "updates": [
+        [
+          1,
+          "Minha personagem. Humana maga, aprendiz de escriba. Gundren já me ajudou a encontrar trabalho; registro pistas e fontes."
+        ]
+      ]
+    },
+    {
+      "id": "w2",
+      "name": "Borin Escudo-de-Ferro",
+      "kind": "Personagem",
+      "first": 1,
+      "featured": true,
+      "updates": [
+        [
+          1,
+          "Anão guerreiro. Prefere enfrentar perigos diretamente e protege o grupo."
+        ],
+        [
+          7,
+          "A morte de Tharden o afetou; assumiu a dianteira nas galerias."
+        ]
+      ]
+    },
+    {
+      "id": "w3",
+      "name": "Maela Luz do Alvorecer",
+      "kind": "Personagem",
+      "first": 1,
+      "featured": true,
+      "updates": [
+        [
+          1,
+          "Meio-elfa clériga de Lathander. Cuida dos feridos e prefere negociar."
+        ],
+        [
+          8,
+          "Recebeu a maça da forja por decisão do grupo."
+        ]
+      ]
+    },
+    {
+      "id": "w4",
+      "name": "Lio Passo-Leve",
+      "kind": "Personagem",
+      "first": 1,
+      "featured": true,
+      "updates": [
+        [
+          1,
+          "Halfling ladino. Batedor, rastreia caminhos e encontra objetos escondidos."
+        ],
+        [
+          5,
+          "Ouviu o nome do dragão diretamente de um mascarado; contou a Elara após o encontro."
+        ]
+      ]
+    },
+    {
+      "id": "w5",
+      "name": "Gundren Buscapedra",
+      "kind": "NPC",
+      "first": 1,
+      "updates": [
+        [
+          1,
+          "Contratante da escolta. Desaparecido com o mapa."
+        ],
+        [
+          6,
+          "Resgatado. Mapa recuperado; quer encontrar os irmãos."
+        ],
+        [
+          8,
+          "Vai administrar a mina com Nundro; prometeu 10% dos lucros ao grupo."
+        ]
+      ],
+      "featured": true
+    },
+    {
+      "id": "w6",
+      "name": "Sildar Hallwinter",
+      "kind": "NPC",
+      "first": 1,
+      "updates": [
+        [
+          1,
+          "Escolta de Gundren e membro da Aliança dos Lordes; resgatado."
+        ],
+        [
+          2,
+          "Instalado em Phandalin; procura Iarno e oferece recompensa pelo castelo."
+        ],
+        [
+          3,
+          "Recebeu Iarno em custódia."
+        ],
+        [
+          6,
+          "Pagou recompensa pela derrota de Grol."
+        ]
+      ],
+      "featured": true
+    },
+    {
+      "id": "w7",
+      "name": "Phandalin",
+      "kind": "Localidade",
+      "first": 1,
+      "updates": [
+        [
+          1,
+          "Destino da carroça."
+        ],
+        [
+          2,
+          "Vila fronteiriça; comércio pressionado pelos Marcarrubra."
+        ],
+        [
+          3,
+          "Família Dendrar resgatada e gangue neutralizada."
+        ],
+        [
+          8,
+          "Mina recuperada; expectativa de prosperidade."
+        ]
+      ],
+      "featured": false
+    },
+    {
+      "id": "w8",
+      "name": "Castelo Dentefino",
+      "kind": "Localidade",
+      "first": 1,
+      "updates": [
+        [
+          1,
+          "Local mencionado por Sildar; provável destino de Gundren."
+        ],
+        [
+          5,
+          "Reidoth forneceu indicações."
+        ],
+        [
+          6,
+          "Explorado; Grol derrotado e mapa recuperado."
+        ]
+      ],
+      "featured": false
+    },
+    {
+      "id": "w9",
+      "name": "Aranha Negra",
+      "kind": "NPC",
+      "first": 1,
+      "updates": [
+        [
+          1,
+          "Codinome mencionado por Sildar. Identidade desconhecida."
+        ],
+        [
+          3,
+          "Carta liga a figura aos Marcarrubra; Iarno diz que é drow e busca a forja."
+        ],
+        [
+          6,
+          "Nome Nezznar surgiu dos relatos reunidos."
+        ],
+        [
+          8,
+          "Identificou-se no templo de Dumathoin e foi derrotado."
+        ]
+      ],
+      "featured": false
+    },
+    {
+      "id": "w10",
+      "name": "Iarno Alberk",
+      "kind": "NPC",
+      "first": 1,
+      "updates": [
+        [
+          1,
+          "Mago desaparecido procurado por Sildar."
+        ],
+        [
+          3,
+          "Identificado como Cajavidro. Preso e entregue a Sildar."
+        ]
+      ],
+      "featured": false
+    },
+    {
+      "id": "w11",
+      "name": "Halia Thronton",
+      "kind": "NPC",
+      "first": 2,
+      "updates": [
+        [
+          2,
+          "Responsável pelo Câmbio de Minério. Ofereceu 100 po para eliminar Cajavidro e obter cartas."
+        ],
+        [
+          3,
+          "Não recebeu a carta. Intenções desconhecidas."
+        ]
+      ],
+      "featured": false
+    },
+    {
+      "id": "w12",
+      "name": "Mirna Dendrar",
+      "kind": "NPC",
+      "first": 3,
+      "updates": [
+        [
+          3,
+          "Resgatada com os filhos; indicou uma herança em Árvore Trovão."
+        ],
+        [
+          5,
+          "Colar devolvido."
+        ]
+      ],
+      "featured": false
+    },
+    {
+      "id": "w13",
+      "name": "Irmã Garaele",
+      "kind": "NPC",
+      "first": 2,
+      "updates": [
+        [
+          2,
+          "Clériga de Tymora; pediu ajuda com Agatha."
+        ],
+        [
+          4,
+          "Recebeu a resposta e entregou três poções."
+        ]
+      ],
+      "featured": false
+    },
+    {
+      "id": "w14",
+      "name": "Daran Edermath",
+      "kind": "NPC",
+      "first": 2,
+      "updates": [
+        [
+          2,
+          "Ex-aventureiro do pomar. Pediu investigação do Poço."
+        ],
+        [
+          4,
+          "Recebeu relatório sobre Kost."
+        ]
+      ],
+      "featured": false
+    },
+    {
+      "id": "w15",
+      "name": "Reidoth",
+      "kind": "NPC",
+      "first": 2,
+      "updates": [
+        [
+          2,
+          "Druida indicado por Qelline; ainda não o conhecemos."
+        ],
+        [
+          5,
+          "Deu direções do castelo; ofereceu ajuda com a mina em troca de afastar o dragão."
+        ]
+      ],
+      "featured": false
+    },
+    {
+      "id": "w16",
+      "name": "Hamun Kost",
+      "kind": "NPC",
+      "first": 4,
+      "updates": [
+        [
+          4,
+          "Mago de Thay, necromante; controla os zumbis do Poço. Acordo temporário."
+        ]
+      ],
+      "featured": false
+    },
+    {
+      "id": "w17",
+      "name": "Agatha",
+      "kind": "NPC",
+      "first": 4,
+      "updates": [
+        [
+          4,
+          "Banshee de Conyberry; respondeu uma pergunta em troca do pente."
+        ]
+      ],
+      "featured": false
+    },
+    {
+      "id": "w18",
+      "name": "Nundro Buscapedra",
+      "kind": "NPC",
+      "first": 1,
+      "updates": [
+        [
+          1,
+          "Irmão de Gundren."
+        ],
+        [
+          2,
+          "Não visto há dez dias, segundo Barthen."
+        ],
+        [
+          8,
+          "Resgatado da mina; vai administrá-la com Gundren."
+        ]
+      ],
+      "featured": false
+    },
+    {
+      "id": "w19",
+      "name": "Tharden Buscapedra",
+      "kind": "NPC",
+      "first": 1,
+      "updates": [
+        [
+          1,
+          "Irmão de Gundren."
+        ],
+        [
+          2,
+          "Não visto há dez dias, segundo Barthen."
+        ],
+        [
+          7,
+          "Corpo encontrado na entrada da mina."
+        ]
+      ],
+      "featured": false
+    },
+    {
+      "id": "w20",
+      "name": "Caverna Onda Eco",
+      "kind": "Localidade",
+      "first": 1,
+      "updates": [
+        [
+          1,
+          "Mina perdida do Pacto de Phandelver, segundo Sildar."
+        ],
+        [
+          6,
+          "Localização recuperada no mapa."
+        ],
+        [
+          7,
+          "Explorada parcialmente; Tharden encontrado morto."
+        ],
+        [
+          8,
+          "Forja localizada; Nundro resgatado e Nezznar derrotado."
+        ]
+      ],
+      "featured": false
+    },
+    {
+      "id": "w21",
+      "name": "Trilha Triboar",
+      "kind": "Localidade",
+      "first": 1,
+      "updates": [
+        [
+          1,
+          "Local da emboscada e caminho para Phandalin."
+        ]
+      ],
+      "featured": false
+    },
+    {
+      "id": "w22",
+      "name": "Esconderijo Dentefino",
+      "kind": "Localidade",
+      "first": 1,
+      "updates": [
+        [
+          1,
+          "Covil de Klarg; Sildar libertado e caixas recuperadas."
+        ]
+      ],
+      "featured": false
+    },
+    {
+      "id": "w23",
+      "name": "Barthen Provisões",
+      "kind": "Localidade",
+      "first": 2,
+      "updates": [
+        [
+          2,
+          "Destino da escolta; Elmar pagou 10 po por pessoa."
+        ]
+      ],
+      "featured": false
+    },
+    {
+      "id": "w24",
+      "name": "Transações Escudo Leão",
+      "kind": "Localidade",
+      "first": 2,
+      "updates": [
+        [
+          2,
+          "Linene recebeu os bens recuperados."
+        ]
+      ],
+      "featured": false
+    },
+    {
+      "id": "w25",
+      "name": "Estalagem Stonehill",
+      "kind": "Localidade",
+      "first": 2,
+      "updates": [
+        [
+          2,
+          "Base em Phandalin e fonte de relatos dos moradores."
+        ]
+      ],
+      "featured": false
+    },
+    {
+      "id": "w26",
+      "name": "Mansão Tresendar",
+      "kind": "Localidade",
+      "first": 2,
+      "updates": [
+        [
+          2,
+          "Possível base da gangue, segundo Daran e Carp."
+        ],
+        [
+          3,
+          "Confirmada como esconderijo dos Marcarrubra."
+        ]
+      ],
+      "featured": false
+    },
+    {
+      "id": "w27",
+      "name": "Droop",
+      "kind": "NPC",
+      "first": 3,
+      "updates": [
+        [
+          3,
+          "Goblin libertado dos bugbears; conhece o esconderijo, mas não a rota do castelo."
+        ]
+      ],
+      "featured": false
+    },
+    {
+      "id": "w28",
+      "name": "Poço da Velha Coruja",
+      "kind": "Localidade",
+      "first": 2,
+      "updates": [
+        [
+          2,
+          "Relatos de mortos-vivos."
+        ],
+        [
+          4,
+          "Kost acampou nas ruínas com zumbis."
+        ]
+      ],
+      "featured": false
+    },
+    {
+      "id": "w29",
+      "name": "Cume da Wyvern",
+      "kind": "Localidade",
+      "first": 2,
+      "updates": [
+        [
+          2,
+          "Harbin ofereceu recompensa por afastar orcs."
+        ],
+        [
+          4,
+          "Saqueadores derrotados."
+        ]
+      ],
+      "featured": false
+    },
+    {
+      "id": "w30",
+      "name": "Árvore Trovão",
+      "kind": "Localidade",
+      "first": 2,
+      "updates": [
+        [
+          2,
+          "Ruínas onde Reidoth pode estar."
+        ],
+        [
+          5,
+          "Dragão afastado; herança recuperada."
+        ]
+      ],
+      "featured": false
+    },
+    {
+      "id": "w31",
+      "name": "Venomfang",
+      "kind": "NPC",
+      "first": 5,
+      "updates": [
+        [
+          5,
+          "Dragão verde afastado, não morto. Nome relatado por Lio."
+        ]
+      ],
+      "featured": false
+    },
+    {
+      "id": "w32",
+      "name": "Rei Grol",
+      "kind": "NPC",
+      "first": 1,
+      "updates": [
+        [
+          1,
+          "Chefe dos Dentefino, citado por um goblin capturado."
+        ],
+        [
+          6,
+          "Derrotado no castelo."
+        ]
+      ],
+      "featured": false
+    },
+    {
+      "id": "w33",
+      "name": "Forja das Magias",
+      "kind": "Localidade",
+      "first": 1,
+      "updates": [
+        [
+          1,
+          "Lugar lendário descrito por Sildar."
+        ],
+        [
+          3,
+          "Alvo do Aranha Negra, segundo Iarno."
+        ],
+        [
+          8,
+          "Chama verde encontrada; encantamento temporário."
+        ]
+      ],
+      "featured": false
+    },
+    {
+      "id": "w34",
+      "name": "Mormesk",
+      "kind": "NPC",
+      "first": 8,
+      "updates": [
+        [
+          8,
+          "Aparição na mina. Negociou acesso a livros em troca de pergaminho."
+        ]
+      ],
+      "featured": false
+    },
+    {
+      "id": "w35",
+      "name": "Espectador",
+      "kind": "NPC",
+      "first": 8,
+      "updates": [
+        [
+          8,
+          "Guardião da forja. Foi convencido a encerrar sua tarefa."
+        ]
+      ],
+      "featured": false
+    }
+  ],
+  "pending": [
+    {
+      "id": "p1",
+      "title": "Encontrar Gundren",
+      "type": "Pergunta",
+      "first": 1,
+      "description": "Onde levaram Gundren após a emboscada?",
+      "history": [
+        [
+          1,
+          "Aberta",
+          "Registro inicial"
+        ],
+        [
+          1,
+          "Em andamento",
+          "Sildar indica o castelo."
+        ],
+        [
+          6,
+          "Concluída",
+          "Gundren resgatado."
+        ]
+      ],
+      "links": [
+        "w5",
+        "w8"
+      ]
+    },
+    {
+      "id": "p2",
+      "title": "Recuperar o mapa desaparecido",
+      "type": "Pista",
+      "first": 1,
+      "description": "O tubo vazio sugere que o mapa foi roubado.",
+      "history": [
+        [
+          1,
+          "Aberta",
+          "Registro inicial"
+        ],
+        [
+          6,
+          "Concluída",
+          "Mapa recuperado no castelo."
+        ]
+      ],
+      "links": [
+        "w5"
+      ]
+    },
+    {
+      "id": "p3",
+      "title": "Identificar o Aranha Negra",
+      "type": "Pergunta",
+      "first": 1,
+      "description": "Quem ordenou a captura?",
+      "history": [
+        [
+          1,
+          "Aberta",
+          "Registro inicial"
+        ],
+        [
+          3,
+          "Em andamento",
+          "Iarno afirma que é um drow."
+        ],
+        [
+          8,
+          "Concluída",
+          "Identidade confirmada pelo próprio Nezznar."
+        ]
+      ],
+      "links": [
+        "w9"
+      ]
+    },
+    {
+      "id": "p4",
+      "title": "Devolver caixas do leão azul",
+      "type": "Tarefa",
+      "first": 1,
+      "description": "Descobrir o dono das caixas recuperadas.",
+      "history": [
+        [
+          1,
+          "Aberta",
+          "Registro inicial"
+        ],
+        [
+          2,
+          "Concluída",
+          "Linene recebeu os bens."
+        ]
+      ],
+      "links": []
+    },
+    {
+      "id": "p5",
+      "title": "Localizar Iarno",
+      "type": "Pergunta",
+      "first": 1,
+      "description": "Sildar não recebe notícias do mago.",
+      "history": [
+        [
+          1,
+          "Aberta",
+          "Registro inicial"
+        ],
+        [
+          3,
+          "Concluída",
+          "Era Cajavidro; entregue a Sildar."
+        ]
+      ],
+      "links": [
+        "w10"
+      ]
+    },
+    {
+      "id": "p6",
+      "title": "Encontrar Tharden",
+      "type": "Pergunta",
+      "first": 2,
+      "description": "Barthen não o vê há dez dias.",
+      "history": [
+        [
+          2,
+          "Aberta",
+          "Registro inicial"
+        ],
+        [
+          6,
+          "Em andamento",
+          "Acompanhar Gundren à mina."
+        ],
+        [
+          7,
+          "Concluída",
+          "Encontramos seu corpo."
+        ]
+      ],
+      "links": [
+        "w19"
+      ]
+    },
+    {
+      "id": "p7",
+      "title": "Encontrar Nundro",
+      "type": "Pergunta",
+      "first": 2,
+      "description": "Segundo irmão desaparecido.",
+      "history": [
+        [
+          2,
+          "Aberta",
+          "Registro inicial"
+        ],
+        [
+          6,
+          "Em andamento",
+          "Partir para a mina."
+        ],
+        [
+          8,
+          "Concluída",
+          "Nundro libertado."
+        ]
+      ],
+      "links": [
+        "w18"
+      ]
+    },
+    {
+      "id": "p8",
+      "title": "Investigar desaparecimento dos Dendrar",
+      "type": "Pista",
+      "first": 2,
+      "description": "Trilena relatou o sumiço da família.",
+      "history": [
+        [
+          2,
+          "Aberta",
+          "Registro inicial"
+        ],
+        [
+          3,
+          "Concluída",
+          "Mirna e filhos voltaram à vila."
+        ]
+      ],
+      "links": [
+        "w12"
+      ]
+    },
+    {
+      "id": "p9",
+      "title": "Verificar o túnel de Carp",
+      "type": "Pista",
+      "first": 2,
+      "description": "Possível entrada sob a mansão.",
+      "history": [
+        [
+          2,
+          "Aberta",
+          "Registro inicial"
+        ],
+        [
+          3,
+          "Concluída",
+          "Entrada confirmada."
+        ]
+      ],
+      "links": []
+    },
+    {
+      "id": "p10",
+      "title": "Por que Halia quer as cartas?",
+      "type": "Hipótese",
+      "first": 2,
+      "description": "Suspeito que queira influência sobre a gangue. Não tenho prova.",
+      "history": [
+        [
+          2,
+          "Aberta",
+          "Registro inicial"
+        ],
+        [
+          3,
+          "Em andamento",
+          "Decidimos não entregar a carta."
+        ]
+      ],
+      "links": [
+        "w11"
+      ]
+    },
+    {
+      "id": "p11",
+      "title": "Consultar Agatha sobre o grimório",
+      "type": "Pergunta",
+      "first": 2,
+      "description": "Pedido de Garaele; levar pente de prata.",
+      "history": [
+        [
+          2,
+          "Aberta",
+          "Registro inicial"
+        ],
+        [
+          4,
+          "Concluída",
+          "Obtemos o nome de Tsernoth e informamos Garaele."
+        ]
+      ],
+      "links": [
+        "w13"
+      ]
+    },
+    {
+      "id": "p12",
+      "title": "Investigar mortos-vivos no Poço",
+      "type": "Pista",
+      "first": 2,
+      "description": "Relatos de garimpeiros a Daran.",
+      "history": [
+        [
+          2,
+          "Aberta",
+          "Registro inicial"
+        ],
+        [
+          4,
+          "Concluída",
+          "Encontramos Kost e relatamos."
+        ]
+      ],
+      "links": [
+        "w14"
+      ]
+    },
+    {
+      "id": "p13",
+      "title": "Localizar o Castelo Dentefino",
+      "type": "Pergunta",
+      "first": 2,
+      "description": "Consultar Reidoth ou outros informantes.",
+      "history": [
+        [
+          2,
+          "Aberta",
+          "Registro inicial"
+        ],
+        [
+          5,
+          "Concluída",
+          "Reidoth deu indicações."
+        ]
+      ],
+      "links": [
+        "w15",
+        "w8"
+      ]
+    },
+    {
+      "id": "p14",
+      "title": "Afastar orcs do Cume",
+      "type": "Tarefa",
+      "first": 2,
+      "description": "Aviso de Harbin Wester.",
+      "history": [
+        [
+          2,
+          "Aberta",
+          "Registro inicial"
+        ],
+        [
+          4,
+          "Concluída",
+          "Saqueadores derrotados; recompensa recebida."
+        ]
+      ],
+      "links": []
+    },
+    {
+      "id": "p15",
+      "title": "Entender o objetivo da Forja",
+      "type": "Pergunta",
+      "first": 3,
+      "description": "O diário e Iarno indicam interesse na magia.",
+      "history": [
+        [
+          3,
+          "Aberta",
+          "Registro inicial"
+        ],
+        [
+          7,
+          "Em andamento",
+          "Encontramos sinais de busca recente."
+        ],
+        [
+          8,
+          "Concluída",
+          "A forja permite encantamentos temporários."
+        ]
+      ],
+      "links": [
+        "w20",
+        "w9"
+      ]
+    },
+    {
+      "id": "p16",
+      "title": "Recuperar herança de Mirna",
+      "type": "Tarefa",
+      "first": 3,
+      "description": "Colar escondido na antiga loja de ervas.",
+      "history": [
+        [
+          3,
+          "Aberta",
+          "Registro inicial"
+        ],
+        [
+          5,
+          "Concluída",
+          "Colar devolvido."
+        ]
+      ],
+      "links": [
+        "w12"
+      ]
+    },
+    {
+      "id": "p17",
+      "title": "Qual o destino atual do grimório?",
+      "type": "Pergunta",
+      "first": 4,
+      "description": "A informação de Agatha é antiga; quem o tem agora?",
+      "history": [
+        [
+          4,
+          "Aberta",
+          "Registro inicial"
+        ]
+      ],
+      "links": [
+        "w17"
+      ]
+    },
+    {
+      "id": "p18",
+      "title": "Pergunta de Kost sobre o construtor",
+      "type": "Pergunta",
+      "first": 4,
+      "description": "Kost deseja saber quem construiu a torre; Agatha já respondeu uma pergunta.",
+      "history": [
+        [
+          4,
+          "Aberta",
+          "Registro inicial"
+        ],
+        [
+          4,
+          "Cancelada",
+          "Não prometemos uma segunda pergunta."
+        ]
+      ],
+      "links": [
+        "w16"
+      ]
+    },
+    {
+      "id": "p19",
+      "title": "O que os mascarados queriam?",
+      "type": "Hipótese",
+      "first": 5,
+      "description": "Reidoth viu figuras mascaradas; não sabemos sua finalidade.",
+      "history": [
+        [
+          5,
+          "Aberta",
+          "Registro inicial"
+        ]
+      ],
+      "links": [
+        "w15"
+      ]
+    },
+    {
+      "id": "p20",
+      "title": "Paradeiro de Venomfang",
+      "type": "Pista",
+      "first": 5,
+      "description": "O dragão fugiu da torre; pode retornar.",
+      "history": [
+        [
+          5,
+          "Aberta",
+          "Registro inicial"
+        ],
+        [
+          5,
+          "Em andamento",
+          "Alertar moradores e acompanhar relatos."
+        ]
+      ],
+      "links": []
+    },
+    {
+      "id": "p21",
+      "title": "Verificar segurança da mina",
+      "type": "Tarefa",
+      "first": 7,
+      "description": "Perigos ainda não totalmente mapeados.",
+      "history": [
+        [
+          7,
+          "Aberta",
+          "Registro inicial"
+        ],
+        [
+          8,
+          "Em andamento",
+          "Ameaças centrais derrotadas; revisar áreas restantes."
+        ]
+      ],
+      "links": [
+        "w20"
+      ]
+    },
+    {
+      "id": "p22",
+      "title": "Restaurar a força da Forja",
+      "type": "Pergunta",
+      "first": 8,
+      "description": "O que seria necessário para produzir encantamentos permanentes?",
+      "history": [
+        [
+          8,
+          "Aberta",
+          "Registro inicial"
+        ]
+      ],
+      "links": [
+        "w20"
+      ]
+    },
+    {
+      "id": "p23",
+      "title": "Investigar o mapa de Mormesk",
+      "type": "Pista",
+      "first": 8,
+      "description": "Mapa encontrado nos livros; destino ainda não visitado.",
+      "history": [
+        [
+          8,
+          "Aberta",
+          "Registro inicial"
+        ]
+      ],
+      "links": []
+    },
+    {
+      "id": "p24",
+      "title": "Registrar acordo dos lucros",
+      "type": "Tarefa",
+      "first": 8,
+      "description": "Confirmar condições práticas e prestação de contas dos 10%.",
+      "history": [
+        [
+          8,
+          "Aberta",
+          "Registro inicial"
+        ]
+      ],
+      "links": [
+        "w5",
+        "w18"
+      ]
+    }
+  ],
+  "quests": [
+    {
+      "id": "q1",
+      "title": "Entregar os suprimentos de Gundren",
+      "first": 1,
+      "description": "Entregar a carroça a Barthen; 10 po por pessoa.",
+      "history": [
+        [
+          1,
+          "Aberta",
+          "Missão registrada"
+        ],
+        [
+          2,
+          "Concluída",
+          "Entrega e pagamento confirmados."
+        ]
+      ],
+      "links": [],
+      "type": "Missão"
+    },
+    {
+      "id": "q2",
+      "title": "Escoltar Sildar até Phandalin",
+      "first": 1,
+      "description": "Levar Sildar em segurança; 50 po para o grupo.",
+      "history": [
+        [
+          1,
+          "Aberta",
+          "Missão registrada"
+        ],
+        [
+          2,
+          "Concluída",
+          "Chegada e pagamento."
+        ]
+      ],
+      "links": [
+        "w6"
+      ],
+      "type": "Missão"
+    },
+    {
+      "id": "q3",
+      "title": "Resgatar Gundren e recuperar o mapa",
+      "first": 1,
+      "description": "Encontrar o castelo e libertar Gundren.",
+      "history": [
+        [
+          1,
+          "Aberta",
+          "Missão registrada"
+        ],
+        [
+          2,
+          "Em andamento",
+          "Sildar ofereceu 500 po pela derrota do chefe."
+        ],
+        [
+          6,
+          "Concluída",
+          "Mapa e anão recuperados."
+        ]
+      ],
+      "links": [
+        "w5",
+        "w8"
+      ],
+      "type": "Missão"
+    },
+    {
+      "id": "q4",
+      "title": "Libertar Phandalin dos Marcarrubra",
+      "first": 2,
+      "description": "Neutralizar Cajavidro e libertar os prisioneiros.",
+      "history": [
+        [
+          2,
+          "Aberta",
+          "Missão registrada"
+        ],
+        [
+          3,
+          "Concluída",
+          "Iarno entregue; 200 po."
+        ]
+      ],
+      "links": [
+        "w7",
+        "w10"
+      ],
+      "type": "Missão"
+    },
+    {
+      "id": "q5",
+      "title": "A barganha da banshee",
+      "first": 2,
+      "description": "Levar pente e obter informação sobre Arco Suave.",
+      "history": [
+        [
+          2,
+          "Aberta",
+          "Missão registrada"
+        ],
+        [
+          4,
+          "Concluída",
+          "Resposta entregue a Garaele; três poções."
+        ]
+      ],
+      "links": [
+        "w13"
+      ],
+      "type": "Missão"
+    },
+    {
+      "id": "q6",
+      "title": "Encrenca na Velha Coruja",
+      "first": 2,
+      "description": "Investigar atividade no Poço e relatar a Daran.",
+      "history": [
+        [
+          2,
+          "Aberta",
+          "Missão registrada"
+        ],
+        [
+          4,
+          "Concluída",
+          "Relatório entregue."
+        ]
+      ],
+      "links": [
+        "w14"
+      ],
+      "type": "Missão"
+    },
+    {
+      "id": "q7",
+      "title": "Problema orc",
+      "first": 2,
+      "description": "Afastar saqueadores do Cume da Wyvern.",
+      "history": [
+        [
+          2,
+          "Aberta",
+          "Missão registrada"
+        ],
+        [
+          4,
+          "Concluída",
+          "Recompensa de 100 po recebida."
+        ]
+      ],
+      "links": [],
+      "type": "Missão"
+    },
+    {
+      "id": "q8",
+      "title": "Herança de Mirna",
+      "first": 3,
+      "description": "Recuperar colar de esmeraldas.",
+      "history": [
+        [
+          3,
+          "Aberta",
+          "Missão registrada"
+        ],
+        [
+          5,
+          "Concluída",
+          "Colar devolvido."
+        ]
+      ],
+      "links": [
+        "w12"
+      ],
+      "type": "Missão"
+    },
+    {
+      "id": "q9",
+      "title": "Ajudar Reidoth",
+      "first": 5,
+      "description": "Afastar o dragão da torre.",
+      "history": [
+        [
+          5,
+          "Aberta",
+          "Missão registrada"
+        ],
+        [
+          5,
+          "Concluída",
+          "Venomfang fugiu."
+        ]
+      ],
+      "links": [
+        "w15"
+      ],
+      "type": "Missão"
+    },
+    {
+      "id": "q10",
+      "title": "Recuperar a Caverna Onda Eco",
+      "first": 6,
+      "description": "Descobrir o destino dos irmãos e impedir Aranha Negra.",
+      "history": [
+        [
+          6,
+          "Aberta",
+          "Missão registrada"
+        ],
+        [
+          7,
+          "Em andamento",
+          "Mina explorada parcialmente."
+        ],
+        [
+          8,
+          "Concluída",
+          "Nundro resgatado e Nezznar derrotado."
+        ]
+      ],
+      "links": [
+        "w18",
+        "w19",
+        "w20"
+      ],
+      "type": "Missão"
+    },
+    {
+      "id": "q11",
+      "title": "Acompanhar a reabertura da mina",
+      "first": 8,
+      "description": "Retornar após a avaliação das galerias e acompanhar o acordo.",
+      "history": [
+        [
+          8,
+          "Aberta",
+          "Missão registrada"
+        ]
+      ],
+      "links": [
+        "w5",
+        "w18"
+      ],
+      "type": "Missão"
+    },
+    {
+      "id": "q12",
+      "title": "Explorar o destino do mapa antigo",
+      "first": 8,
+      "description": "Possível aventura futura; nenhuma expedição iniciada.",
+      "history": [
+        [
+          8,
+          "Aberta",
+          "Missão registrada"
+        ]
+      ],
+      "links": [],
+      "type": "Missão"
+    }
+  ],
+  "information": [
+    {
+      "id": "i1",
+      "title": "A captura foi direcionada?",
+      "first": 1,
+      "events": [
+        [
+          1,
+          "Hipótese",
+          "Tubo vazio e relato de Sildar indicam ataque planejado.",
+          "Observação de Elara + relato de Sildar"
+        ],
+        [
+          3,
+          "Confirmada",
+          "A carta de Iarno confirma interesse específico nos mapas e no grupo.",
+          "Correspondência apreendida"
+        ]
+      ],
+      "subjects": [
+        [
+          "player",
+          1
+        ],
+        [
+          "w1",
+          1
+        ],
+        [
+          "w2",
+          1
+        ],
+        [
+          "w3",
+          1
+        ],
+        [
+          "w4",
+          1
+        ]
+      ],
+      "links": [
+        "w5",
+        "w9"
+      ]
+    },
+    {
+      "id": "i2",
+      "title": "Iarno foi vítima da gangue?",
+      "first": 1,
+      "events": [
+        [
+          1,
+          "Hipótese",
+          "É possível que Iarno tenha sido capturado.",
+          "Sildar relata desaparecimento"
+        ],
+        [
+          3,
+          "Refutada",
+          "Iarno era o próprio Cajavidro, não um prisioneiro.",
+          "Captura e reconhecimento por Sildar"
+        ]
+      ],
+      "subjects": [
+        [
+          "player",
+          1
+        ],
+        [
+          "w1",
+          1
+        ],
+        [
+          "w2",
+          1
+        ],
+        [
+          "w3",
+          1
+        ],
+        [
+          "w4",
+          1
+        ]
+      ],
+      "links": [
+        "w10"
+      ]
+    },
+    {
+      "id": "i3",
+      "title": "A mina do Pacto existe",
+      "first": 1,
+      "events": [
+        [
+          1,
+          "Relato",
+          "Sildar diz que os irmãos localizaram a Caverna Onda Eco.",
+          "Sildar"
+        ],
+        [
+          6,
+          "Confirmada",
+          "Gundren confirma e recuperamos o mapa.",
+          "Mapa recuperado e Gundren"
+        ],
+        [
+          7,
+          "Confirmada",
+          "Entramos na mina.",
+          "Observação direta"
+        ]
+      ],
+      "subjects": [
+        [
+          "player",
+          1
+        ],
+        [
+          "w1",
+          1
+        ],
+        [
+          "w2",
+          1
+        ],
+        [
+          "w3",
+          1
+        ],
+        [
+          "w4",
+          1
+        ]
+      ],
+      "links": [
+        "w20"
+      ]
+    },
+    {
+      "id": "i4",
+      "title": "Halia quer controlar a gangue?",
+      "first": 2,
+      "events": [
+        [
+          2,
+          "Hipótese",
+          "O pedido pelas cartas pode esconder interesse próprio.",
+          "Impressão de Elara"
+        ],
+        [
+          3,
+          "Hipótese",
+          "A carta foi preservada; ainda não há evidência sobre a intenção de Halia.",
+          "Decisão do grupo"
+        ]
+      ],
+      "subjects": [
+        [
+          "player",
+          2
+        ],
+        [
+          "w1",
+          2
+        ]
+      ],
+      "links": [
+        "w11"
+      ]
+    },
+    {
+      "id": "i5",
+      "title": "O paradeiro do grimório",
+      "first": 4,
+      "events": [
+        [
+          4,
+          "Relato",
+          "Agatha negociou o grimório com Tsernoth em Iriaebor há mais de um século. Paradeiro atual desconhecido.",
+          "Agatha"
+        ]
+      ],
+      "subjects": [
+        [
+          "player",
+          4
+        ],
+        [
+          "w1",
+          4
+        ],
+        [
+          "w3",
+          4
+        ]
+      ],
+      "links": [
+        "w17",
+        "w13"
+      ]
+    },
+    {
+      "id": "i6",
+      "title": "Nome do dragão",
+      "first": 5,
+      "events": [
+        [
+          5,
+          "Relato",
+          "Lio ouviu o nome Venomfang de um mascarado e o compartilhou depois.",
+          "Relato de Lio; não ouvido diretamente por Elara"
+        ]
+      ],
+      "subjects": [
+        [
+          "player",
+          5
+        ],
+        [
+          "w4",
+          5
+        ],
+        [
+          "w1",
+          5
+        ]
+      ],
+      "links": []
+    },
+    {
+      "id": "i7",
+      "title": "Identidade do Aranha Negra",
+      "first": 3,
+      "events": [
+        [
+          3,
+          "Relato",
+          "Iarno diz que é um drow.",
+          "Interrogatório de Iarno"
+        ],
+        [
+          6,
+          "Relato",
+          "Nome Nezznar apareceu nas informações reunidas no castelo.",
+          "Gundren e investigação"
+        ],
+        [
+          8,
+          "Confirmada",
+          "Nezznar se identificou no templo.",
+          "Observação direta"
+        ]
+      ],
+      "subjects": [
+        [
+          "player",
+          3
+        ],
+        [
+          "w1",
+          3
+        ],
+        [
+          "w2",
+          3
+        ],
+        [
+          "w3",
+          3
+        ],
+        [
+          "w4",
+          3
+        ]
+      ],
+      "links": [
+        "w9"
+      ]
+    },
+    {
+      "id": "i8",
+      "title": "Destino de Tharden",
+      "first": 2,
+      "events": [
+        [
+          2,
+          "Relato",
+          "Barthen não viu os irmãos há dez dias.",
+          "Barthen"
+        ],
+        [
+          7,
+          "Confirmada",
+          "Gundren reconheceu o corpo de Tharden.",
+          "Observação direta"
+        ]
+      ],
+      "subjects": [
+        [
+          "player",
+          2
+        ],
+        [
+          "w1",
+          2
+        ],
+        [
+          "w2",
+          2
+        ],
+        [
+          "w3",
+          2
+        ],
+        [
+          "w4",
+          2
+        ]
+      ],
+      "links": [
+        "w19"
+      ]
+    },
+    {
+      "id": "i9",
+      "title": "A forja perdeu parte de seu poder",
+      "first": 8,
+      "events": [
+        [
+          8,
+          "Confirmada",
+          "A chama ainda encanta temporariamente; não verificamos encantamentos permanentes.",
+          "Observação e estudo de Elara"
+        ]
+      ],
+      "subjects": [
+        [
+          "player",
+          8
+        ],
+        [
+          "w1",
+          8
+        ],
+        [
+          "w3",
+          8
+        ]
+      ],
+      "links": [
+        "w20"
+      ]
+    },
+    {
+      "id": "i10",
+      "title": "Acordo sobre a mina",
+      "first": 6,
+      "events": [
+        [
+          6,
+          "Relato",
+          "Gundren prometeu uma parte dos ganhos.",
+          "Gundren"
+        ],
+        [
+          8,
+          "Confirmada",
+          "Gundren e Nundro oferecem 10% dos lucros ao grupo.",
+          "Conversa após retorno"
+        ]
+      ],
+      "subjects": [
+        [
+          "player",
+          6
+        ],
+        [
+          "w1",
+          6
+        ],
+        [
+          "w2",
+          6
+        ],
+        [
+          "w3",
+          6
+        ],
+        [
+          "w4",
+          6
+        ]
+      ],
+      "links": [
+        "w5",
+        "w18"
+      ]
+    },
+    {
+      "id": "i11",
+      "title": "Metamorfo no castelo",
+      "first": 6,
+      "events": [
+        [
+          6,
+          "Confirmada",
+          "A figura drow mudou de forma durante o confronto. Não é seguro identificar alguém só pela aparência.",
+          "Observação direta"
+        ]
+      ],
+      "subjects": [
+        [
+          "player",
+          6
+        ],
+        [
+          "w1",
+          6
+        ],
+        [
+          "w2",
+          6
+        ],
+        [
+          "w3",
+          6
+        ],
+        [
+          "w4",
+          6
+        ]
+      ],
+      "links": [
+        "w8"
+      ]
+    },
+    {
+      "id": "i12",
+      "title": "Símbolo necromântico de Kost",
+      "first": 4,
+      "events": [
+        [
+          4,
+          "Confirmada",
+          "Reconheci o símbolo de sua escola, não uma relação com a trama da mina.",
+          "Conhecimento arcano de Elara"
+        ]
+      ],
+      "subjects": [
+        [
+          "player",
+          4
+        ],
+        [
+          "w1",
+          4
+        ]
+      ],
+      "links": [
+        "w16"
+      ]
+    }
+  ],
+  "attachments": [
+    {
+      "id": "a1",
+      "name": "Inventário da carroça e acordo de escolta.txt",
+      "first": 1,
+      "origin": "Anotação de Elara",
+      "body": "Gundren: entregar suprimentos a Barthen em Phandalin. 10 po por pessoa. Dois bois, comida e ferramentas de mineração."
+    },
+    {
+      "id": "a2",
+      "name": "Esboço de rota — Trilha Triboar e esconderijo Dentefino.txt",
+      "first": 1,
+      "origin": "Esboço do grupo",
+      "body": "Neverwinter → Estrada Alta → Trilha Triboar → local dos cavalos → trilha a noroeste → covil. Não é mapa oficial; contém somente os caminhos percorridos."
+    },
+    {
+      "id": "a3",
+      "name": "Correspondência apreendida na Mansão Tresendar — resumo.txt",
+      "first": 3,
+      "origin": "Registro de evidência por Elara",
+      "body": "A mensagem dirigida a Iarno manda impedir nossa chegada e entregar quaisquer mapas anões ao remetente. Assinada com símbolo de aranha. Paráfrase pessoal, não transcrição."
+    },
+    {
+      "id": "a4",
+      "name": "Relatório de viagem a Conyberry e Poço da Velha Coruja.txt",
+      "first": 4,
+      "origin": "Anotação de viagem",
+      "body": "Agatha: Tsernoth, Iriaebor, mais de cem anos. Kost: necromante com mortos-vivos. Orcs do Cume derrotados."
+    },
+    {
+      "id": "a5",
+      "name": "Mapa recuperado de Gundren — registro de posse.txt",
+      "first": 6,
+      "origin": "Registro do grupo",
+      "body": "Mapa recuperado no Castelo Dentefino. Gundren nos guiará à mina. Este arquivo é um registro de posse, não uma reprodução do mapa do Mestre."
+    },
+    {
+      "id": "a6",
+      "name": "Acordo de participação nos lucros da mina — anotação.txt",
+      "first": 8,
+      "origin": "Conversa com os Buscapedra",
+      "body": "Participação prometida: 10% dos lucros ao grupo. Periodicidade e prestação de contas ainda não combinadas."
+    }
+  ],
+  "notes": [
+    {
+      "id": "n1",
+      "first": 1,
+      "title": "Tubo vazio",
+      "body": "Acho que o ataque foi planejado para pegar Gundren, não apenas roubar a carroça. Ainda não sei se Aranha Negra é pessoa, grupo ou apelido. Não quero perder o tubo vazio como pista."
+    },
+    {
+      "id": "n2",
+      "first": 2,
+      "title": "Halia e as cartas",
+      "body": "Halia talvez esteja tentando tomar o lugar do Cajavidro. É impressão minha, não fato. Quero saber se a gangue e os goblins respondem à mesma pessoa. Borin prefere ir diretamente ao castelo; decidimos ajudar a família primeiro."
+    },
+    {
+      "id": "n3",
+      "first": 3,
+      "title": "Não apagar hipótese antiga",
+      "body": "Eu estava errado em pensar que Iarno era outra vítima. A carta confirma a ligação entre as duas gangues, mas não prova minha hipótese sobre Halia. Guardei uma cópia resumida da carta."
+    },
+    {
+      "id": "n4",
+      "first": 4,
+      "title": "Uma pergunta apenas",
+      "body": "O conhecimento de Agatha é poderoso, mas não é ilimitado: a pista do grimório tem um século. Não quero confundir a missão concluída com o paradeiro atual do livro. A tatuagem de Kost merece registro; não encontrei ligação dele com o Aranha Negra."
+    },
+    {
+      "id": "n5",
+      "first": 5,
+      "title": "Dragão não morreu",
+      "body": "A gente quase morreu pelo dragão. Lio ouviu o nome Venomfang quando conversou com um mascarado, mas eu não estava junto; ele me contou depois. Quero separar o que vi do que ouvi."
+    },
+    {
+      "id": "n6",
+      "first": 6,
+      "title": "Cuidado com disfarces",
+      "body": "O metamorfo torna qualquer identificação visual menos confiável. Vou tratar nomes e rostos como pistas separadas. Gundren está vivo; os irmãos ainda são uma incógnita."
+    },
+    {
+      "id": "n7",
+      "first": 7,
+      "title": "Nundro ainda pode estar vivo",
+      "body": "A morte de Tharden me fez abandonar a ideia de que os irmãos estavam apenas escondidos. Nundro ainda pode estar vivo. Meu objetivo agora é sair com ele, não enriquecer."
+    },
+    {
+      "id": "n8",
+      "first": 8,
+      "title": "O que ficou pendente",
+      "body": "O ouro não apaga o que aconteceu a Tharden. Quero voltar algum dia, mas antes precisamos registrar o que realmente sabemos. Não tenho prova sobre as intenções de Halia nem sobre a posição atual do dragão."
+    }
+  ],
+  "stress": [
+    {
+      "id": "t1",
+      "title": "Conferir relatos de caravanas",
+      "type": "Tarefa",
+      "first": 1,
+      "description": "Registro sintético exclusivo para validar volume e paginação; não pertence à narrativa.",
+      "history": [
+        [
+          1,
+          "Aberta",
+          "Cenário de carga"
+        ]
+      ],
+      "links": []
+    },
+    {
+      "id": "t2",
+      "title": "Identificar mercadores prejudicados",
+      "type": "Tarefa",
+      "first": 1,
+      "description": "Registro sintético exclusivo para validar volume e paginação; não pertence à narrativa.",
+      "history": [
+        [
+          1,
+          "Em andamento",
+          "Cenário de carga"
+        ]
+      ],
+      "links": []
+    },
+    {
+      "id": "t3",
+      "title": "Checar rotas alternativas",
+      "type": "Tarefa",
+      "first": 1,
+      "description": "Registro sintético exclusivo para validar volume e paginação; não pertence à narrativa.",
+      "history": [
+        [
+          1,
+          "Aberta",
+          "Cenário de carga"
+        ]
+      ],
+      "links": []
+    },
+    {
+      "id": "t4",
+      "title": "Anotar locais de repouso",
+      "type": "Tarefa",
+      "first": 1,
+      "description": "Registro sintético exclusivo para validar volume e paginação; não pertence à narrativa.",
+      "history": [
+        [
+          1,
+          "Em andamento",
+          "Cenário de carga"
+        ]
+      ],
+      "links": []
+    },
+    {
+      "id": "t5",
+      "title": "Conferir suprimentos restantes",
+      "type": "Tarefa",
+      "first": 1,
+      "description": "Registro sintético exclusivo para validar volume e paginação; não pertence à narrativa.",
+      "history": [
+        [
+          1,
+          "Aberta",
+          "Cenário de carga"
+        ]
+      ],
+      "links": []
+    },
+    {
+      "id": "t6",
+      "title": "Registrar testemunhas da vila",
+      "type": "Tarefa",
+      "first": 1,
+      "description": "Registro sintético exclusivo para validar volume e paginação; não pertence à narrativa.",
+      "history": [
+        [
+          1,
+          "Em andamento",
+          "Cenário de carga"
+        ]
+      ],
+      "links": []
+    },
+    {
+      "id": "t7",
+      "title": "Perguntar sobre patrulhas",
+      "type": "Tarefa",
+      "first": 1,
+      "description": "Registro sintético exclusivo para validar volume e paginação; não pertence à narrativa.",
+      "history": [
+        [
+          1,
+          "Aberta",
+          "Cenário de carga"
+        ]
+      ],
+      "links": []
+    },
+    {
+      "id": "t8",
+      "title": "Comparar descrições de bandidos",
+      "type": "Tarefa",
+      "first": 1,
+      "description": "Registro sintético exclusivo para validar volume e paginação; não pertence à narrativa.",
+      "history": [
+        [
+          1,
+          "Em andamento",
+          "Cenário de carga"
+        ]
+      ],
+      "links": []
+    },
+    {
+      "id": "t9",
+      "title": "Verificar segurança da estalagem",
+      "type": "Tarefa",
+      "first": 1,
+      "description": "Registro sintético exclusivo para validar volume e paginação; não pertence à narrativa.",
+      "history": [
+        [
+          1,
+          "Aberta",
+          "Cenário de carga"
+        ]
+      ],
+      "links": []
+    },
+    {
+      "id": "t10",
+      "title": "Rever promessas de pagamento",
+      "type": "Tarefa",
+      "first": 1,
+      "description": "Registro sintético exclusivo para validar volume e paginação; não pertence à narrativa.",
+      "history": [
+        [
+          1,
+          "Em andamento",
+          "Cenário de carga"
+        ]
+      ],
+      "links": []
+    },
+    {
+      "id": "t11",
+      "title": "Listar equipamentos perdidos",
+      "type": "Tarefa",
+      "first": 1,
+      "description": "Registro sintético exclusivo para validar volume e paginação; não pertence à narrativa.",
+      "history": [
+        [
+          1,
+          "Aberta",
+          "Cenário de carga"
+        ]
+      ],
+      "links": []
+    },
+    {
+      "id": "t12",
+      "title": "Organizar nomes de contatos",
+      "type": "Tarefa",
+      "first": 1,
+      "description": "Registro sintético exclusivo para validar volume e paginação; não pertence à narrativa.",
+      "history": [
+        [
+          1,
+          "Em andamento",
+          "Cenário de carga"
+        ]
+      ],
+      "links": []
+    },
+    {
+      "id": "t13",
+      "title": "Conferir origem de caixas",
+      "type": "Tarefa",
+      "first": 1,
+      "description": "Registro sintético exclusivo para validar volume e paginação; não pertence à narrativa.",
+      "history": [
+        [
+          1,
+          "Aberta",
+          "Cenário de carga"
+        ]
+      ],
+      "links": []
+    },
+    {
+      "id": "t14",
+      "title": "Revisar pistas contraditórias",
+      "type": "Tarefa",
+      "first": 1,
+      "description": "Registro sintético exclusivo para validar volume e paginação; não pertence à narrativa.",
+      "history": [
+        [
+          1,
+          "Em andamento",
+          "Cenário de carga"
+        ]
+      ],
+      "links": []
+    },
+    {
+      "id": "t15",
+      "title": "Consultar registro de mineração",
+      "type": "Tarefa",
+      "first": 1,
+      "description": "Registro sintético exclusivo para validar volume e paginação; não pertence à narrativa.",
+      "history": [
+        [
+          1,
+          "Aberta",
+          "Cenário de carga"
+        ]
+      ],
+      "links": []
+    },
+    {
+      "id": "t16",
+      "title": "Conferir acessos à floresta",
+      "type": "Tarefa",
+      "first": 1,
+      "description": "Registro sintético exclusivo para validar volume e paginação; não pertence à narrativa.",
+      "history": [
+        [
+          1,
+          "Em andamento",
+          "Cenário de carga"
+        ]
+      ],
+      "links": []
+    },
+    {
+      "id": "t17",
+      "title": "Separar rumores antigos",
+      "type": "Tarefa",
+      "first": 1,
+      "description": "Registro sintético exclusivo para validar volume e paginação; não pertence à narrativa.",
+      "history": [
+        [
+          1,
+          "Aberta",
+          "Cenário de carga"
+        ]
+      ],
+      "links": []
+    },
+    {
+      "id": "t18",
+      "title": "Rever acordos de ajuda",
+      "type": "Tarefa",
+      "first": 1,
+      "description": "Registro sintético exclusivo para validar volume e paginação; não pertence à narrativa.",
+      "history": [
+        [
+          1,
+          "Em andamento",
+          "Cenário de carga"
+        ]
+      ],
+      "links": []
+    },
+    {
+      "id": "t19",
+      "title": "Verificar avisos da estrada",
+      "type": "Tarefa",
+      "first": 1,
+      "description": "Registro sintético exclusivo para validar volume e paginação; não pertence à narrativa.",
+      "history": [
+        [
+          1,
+          "Aberta",
+          "Cenário de carga"
+        ]
+      ],
+      "links": []
+    },
+    {
+      "id": "t20",
+      "title": "Preparar perguntas para informantes",
+      "type": "Tarefa",
+      "first": 1,
+      "description": "Registro sintético exclusivo para validar volume e paginação; não pertence à narrativa.",
+      "history": [
+        [
+          1,
+          "Em andamento",
+          "Cenário de carga"
+        ]
+      ],
+      "links": []
+    }
+  ]
+}
