@@ -100,7 +100,7 @@ Usar escala compacta de **4, 8, 12, 16, 24 e 32 CSS px** traduzida em rem para t
 
 ## Divisão proposta da UXR-06
 
-Cada recorte depende da integração e do CI pós-merge do anterior. A autorização vigente cobre apenas o quarto recorte. A UXR-07 depende de autorização posterior. Cada mudança terá especificação, Red → Green → Refactor para comportamento testável, verificação focal, regressão e CI `validar`. Preferir testes e componentes existentes. Fixar dados, ambiente e escala nas poucas comparações visuais necessárias.
+Cada recorte depende da integração e do CI pós-merge do anterior. A [UXR-07](auditoria/uxr-07.md) consolida a avaliação após a integração dos quatro recortes. Cada mudança terá especificação, Red → Green → Refactor para comportamento testável, verificação focal, regressão e CI `validar`. Preferir testes e componentes existentes. Fixar dados, ambiente e escala nas poucas comparações visuais necessárias.
 
 | Recorte | Dependência | Critérios de aceitação propostos | Validação |
 | --- | --- | --- | --- |
