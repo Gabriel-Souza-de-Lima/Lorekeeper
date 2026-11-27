@@ -21,6 +21,8 @@ Esta área reúne os requisitos de experiência, interação e consistência vis
 
 10. [Design System Codex — referência selecionada e plano incremental](design-system-codex.md)
 
+11. [Rastreabilidade dos 45 requisitos na UXR-06 e roteiro da UXR-07](auditoria/rastreabilidade-uxr-06.md)
+
 ## Histórico e rastreabilidade
 
 A [UXR-01 original](historico/uxr-01-proposta-original/README.md) preserva as 19 superfícies, os oito contextos e os 42 requisitos levantados. Sua matriz é histórica. Para comparar uma mudança, procure o mesmo ID na [matriz original](historico/uxr-01-proposta-original/03-aceitacao-e-rastreabilidade.md), na revisão individual e na matriz vigente. O relatório AUD identifica evidência, severidade e correção proposta. A matriz vigente detalha funcionalidades afetadas, método e evidência necessária.
@@ -37,4 +39,4 @@ Os 42 IDs originais são classificados na revisão individual como **Manter**, *
 | Implementado | Entregue em código e rastreado ao critério correspondente. |
 | Validado | Evidência de aceitação registrada para o contexto e método aplicáveis. |
 
-A UXR-03 registrou as evidências da interface atual. O mantenedor aprovou o diagnóstico da UXR-03 e autorizou a prototipação. A UXR-04 foi entregue e o mantenedor aprovou sete padrões de experiência no plano conceitual. O mantenedor aprovou a UXR-05, o Design System Codex e as decisões de experiência, incluindo destinos, navegação móvel, perspectivas, ambientes, tipografia híbrida e tema único. A UXR-06.1 foi aprovada após o refinamento. A UXR-06.2 foi aprovada. A autorização vigente cobre apenas [UXR-06.3 — Busca, wiki e perspectivas](../specs/37-uxr-06-3-busca-wiki-perspectivas.md). As lacunas incluem usabilidade por tarefa, leitores de tela, acessibilidade, toque, teclado virtual, dispositivos reais e avaliação estética humana. Consulte o [ciclo no roadmap](../ROADMAP.md#ciclo-de-uxui) para acompanhar as etapas. O aceite documental e o CI têm escopos diferentes da aprovação estética ou da conformidade WCAG 2.2 AA.
+A UXR-03 registrou as evidências da interface atual. O mantenedor aprovou o diagnóstico da UXR-03 e autorizou a prototipação. A UXR-04 foi entregue e o mantenedor aprovou sete padrões de experiência no plano conceitual. O mantenedor aprovou a UXR-05, o Design System Codex e as decisões de experiência, incluindo destinos, navegação móvel, perspectivas, ambientes, tipografia híbrida e tema único. A UXR-06.1 foi aprovada após o refinamento. A UXR-06.2 e a UXR-06.3 foram aprovadas. A autorização vigente cobre apenas [UXR-06.4 — Superfícies secundárias e regressão](../specs/38-uxr-06-4-superficies-e-regressao.md). As lacunas incluem usabilidade por tarefa, leitores de tela, acessibilidade, toque, teclado virtual, dispositivos reais e avaliação estética humana. Consulte o [ciclo no roadmap](../ROADMAP.md#ciclo-de-uxui) para acompanhar as etapas. O aceite documental e o CI têm escopos diferentes da aprovação estética ou da conformidade WCAG 2.2 AA.

@@ -391,6 +391,7 @@ function App() {
           onClick={() => void action(() => openCampaign(view.campaign.id))}>Voltar à campanha</button>
         <header className="page-header"><div>
           <p className="context">{view.campaign.name}</p><h1>Lixeira de sessões</h1>
+          <p className="context">As sessões na lixeira podem ser restauradas à campanha.</p>
         </div></header>
         {view.rows.length === 0 && <p className="panel empty">Nenhuma sessão na lixeira.</p>}
         {view.rows.length > 0 && <ul className="session-list">{view.rows.map((row) => <li key={row.id} className="panel">
@@ -419,7 +420,7 @@ function App() {
           setView({ page: 'session', campaign: view.campaign, session })
         })}
         onWiki={(id) => openWikiPage(view.campaign, id)} />
-      case 'campaign-notes': return <CampaignNotes campaign={view.campaign} noteId={view.noteId}
+      case 'campaign-notes': return <CampaignNotes key={view.campaign.id} campaign={view.campaign} noteId={view.noteId}
         onBack={() => setView({ page: 'campaign', campaign: view.campaign })} />
       case 'session': return <SessionEditor key={view.session.id} navigationRef={sessionNavigation} onSearchBack={onSearchBack} campaignName={view.campaign.name}
         campaignUrl={`${campaignPath}/${view.campaign.id}`}
@@ -437,8 +438,9 @@ function App() {
                 onClick={() => navigate(() => setView({ page: 'quick-notes' }))}>Anotações rápidas</button>
               <button className="dashboard-shortcut" disabled={working}
                 onClick={() => navigate(startSearch)}>Busca</button>
-              <button disabled={working} onClick={() => { setError(''); setView({ page: 'text-import' }) }}>Importar texto</button>
-              <a className="quiet" href="/api/export" download>Exportar acervo</a>
+              <button disabled={working} onClick={() => navigate(() => setView({ page: 'text-import' }))}>Importar texto</button>
+              <a className="surface-action" href="/api/export" download aria-describedby="export-purpose">Exportar acervo</a>
+              <span className="visually-hidden" id="export-purpose">Exportação portátil em ZIP.</span>
               <button className="primary" disabled={working} onClick={() => { setError(''); setView({ page: 'new' }) }}>
                 Nova campanha
               </button>

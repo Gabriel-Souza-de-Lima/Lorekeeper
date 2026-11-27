@@ -163,19 +163,19 @@ export function PendingItems({ campaign, itemId, onBack, onSession, onWiki }: {
     <button className="quiet" disabled={busy || Boolean(editing)} onClick={onBack}>Voltar à campanha</button>
     <header className="page-header"><div><p className="context">{campaign.name}</p><h1>Pendências</h1></div></header>
     {error && <p className="error" role="alert">{error}</p>}
-    {!rows ? <button disabled={!error} onClick={() => { setError(''); setAttempt((value) => value + 1) }}>
-      {error ? 'Recarregar pendências' : 'Carregando pendências…'}
-    </button> : <>
-      {rows.length === 0 ? <p>Nenhuma pendência registrada.</p> :
+    {!rows ? (error
+      ? <button onClick={() => { setError(''); setAttempt((value) => value + 1) }}>Recarregar pendências</button>
+      : <p className="context" role="status">Carregando pendências…</p>) : <div className="surface-flow">
+      {rows.length === 0 ? <p className="panel empty">Nenhuma pendência registrada.</p> :
         <ul className="session-list">{rows.map((row) => <li className="panel" key={row.id}>
           <button className="quiet" disabled={busy || Boolean(editing)} onClick={() => void action(async () => {
             select(await api<PendingItem>(`${path}/${row.id}`))
           })}>{row.title}</button>
           <span>{types[row.type]} · {states[row.state]}</span>
         </li>)}</ul>}
-      {item && <section className="panel">
+      {item && <section className="panel surface-flow" aria-label="Detalhe da pendência">
         <h2>{item.title}</h2>
-        <p>{types[item.type]} · {states[item.state]}</p>
+        <p className="context">{types[item.type]} · {states[item.state]}</p>
         {item.description && <p>{item.description}</p>}
         {item.origin && <p>Origem: {item.origin}</p>}
         {item.notes && <p>Observações: {item.notes}</p>}
@@ -200,7 +200,7 @@ export function PendingItems({ campaign, itemId, onBack, onSession, onWiki }: {
           <button disabled={busy || next === item.state} onClick={() => changeState(item)}>Salvar estado</button>
         </div>}
       </section>}
-      {editing && <form className="panel form" aria-label="Editar pendência" onSubmit={edit}>
+      {editing && <form className="panel surface-flow" aria-label="Editar pendência" onSubmit={edit}>
         <h2>Editar pendência</h2>
         {conflict && <p>Compare seu rascunho com os dados confirmados acima antes de salvar novamente.</p>}
         <PendingInputs initial={editing} sessions={sessions} entities={entities} busy={busy} />
@@ -213,11 +213,11 @@ export function PendingItems({ campaign, itemId, onBack, onSession, onWiki }: {
           <button type="button" disabled={busy} onClick={() => { setEditing(null); setError('') }}>Cancelar edição</button>
         </div>
       </form>}
-      {!locked && !editing && <form className="panel form" onSubmit={create}>
+      {!locked && !editing && <form className="panel surface-flow" onSubmit={create}>
         <h2>Nova pendência</h2>
         <PendingInputs sessions={sessions} entities={entities} busy={busy} />
-        <button className="primary" disabled={busy}>Criar pendência</button>
+        <div className="actions"><button className="primary" disabled={busy}>Criar pendência</button></div>
       </form>}
-    </>}
+    </div>}
   </>
 }

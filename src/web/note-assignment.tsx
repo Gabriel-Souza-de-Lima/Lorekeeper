@@ -11,10 +11,10 @@ export interface Note {
 }
 
 export function NoteList({ items, actions }: { items: Note[]; actions?: (note: Note) => ReactNode }) {
-  return <ul className="session-list">{items.map((note) => <li className="panel" key={note.id}>
-    <div className="preview">
+  return <ul className="session-list">{items.map((note) => <li className="panel note-entry" key={note.id}>
+    <div className="note-reading">
       <h3>{note.title}</h3>
-      {note.body.trim() !== note.title && <p style={{ whiteSpace: 'pre-wrap' }}>{note.body}</p>}
+      {note.body.trim() !== note.title && <p>{note.body}</p>}
     </div>
     {actions?.(note)}
   </li>)}</ul>
@@ -49,16 +49,18 @@ export function AssignNote({ noteId, campaigns, onAssigned }: {
     }
   }
 
-  return <div>
-    <label htmlFor={selectId}>Campanha de destino</label>
-    <select id={selectId} value={destination} disabled={saving || uncertain}
-      onChange={(event) => { setDestination(event.target.value); setError('') }}>
-      <option value="">Escolha uma campanha</option>
-      {campaigns.map((campaign) => <option key={campaign.id} value={campaign.id}>{campaign.name}</option>)}
-    </select>
-    <button type="button" disabled={!destination || saving} onClick={() => void assign()}>
+  return <div className="surface-flow note-destination">
+    <div>
+      <label htmlFor={selectId}>Campanha de destino</label>
+      <select id={selectId} value={destination} disabled={saving || uncertain}
+        onChange={(event) => { setDestination(event.target.value); setError('') }}>
+        <option value="">Escolha uma campanha</option>
+        {campaigns.map((campaign) => <option key={campaign.id} value={campaign.id}>{campaign.name}</option>)}
+      </select>
+    </div>
+    <div className="actions"><button type="button" disabled={!destination || saving} onClick={() => void assign()}>
       {saving ? 'Encaminhando…' : uncertain ? 'Repetir encaminhamento' : 'Encaminhar'}
-    </button>
+    </button></div>
     {error && <p className="error" role="alert">{error}</p>}
   </div>
 }
@@ -86,7 +88,7 @@ export function CampaignNotes({ campaign, noteId, onBack }: { campaign: Campaign
     {error ? <div className="panel">
       <p className="error" role="alert">Não foi possível consultar as anotações da campanha.</p>
       <button onClick={() => { setError(false); setAttempt((value) => value + 1) }}>Recarregar anotações</button>
-    </div> : notes === null ? <p>Carregando anotações…</p> : notes.length === 0
+    </div> : notes === null ? <p className="context" role="status">Carregando anotações…</p> : notes.length === 0
       ? <p className="panel empty">Nenhuma anotação encaminhada para esta campanha.</p>
       : <NoteList items={notes} actions={(note) => <DocumentTags campaignUrl={`/api/campaigns/${campaign.id}`}
           documentId={note.id} archived={Boolean(campaign.archivedAt)} />} />}
