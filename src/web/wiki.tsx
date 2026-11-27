@@ -1,3 +1,4 @@
+import { NavigationIcon } from './navigation-icon.tsx'
 import { Pagination } from './campaign-overview.tsx'
 import { FavoriteButton } from './favorites.tsx'
 import { useLeave, usePendingNavigation } from './navigation-guard.tsx'
@@ -266,9 +267,12 @@ export function Wiki({ campaign, initialPage, charactersOnly, questsOnly, onOpen
     {pages === null ? error ? <button onClick={() => { setError(''); setRefresh((value) => value + 1) }}>Recarregar wiki</button>
       : <p>Carregando páginas…</p>
       : !visiblePages?.length ? <p className="panel empty">{questsOnly ? 'Nenhuma missão nesta guia.' : charactersOnly ? 'Nenhum personagem cadastrado.' : 'Nenhuma página cadastrada.'}</p>
-        : <ul ref={list} className="session-list">{displayedPages?.map((item) => <li key={item.id} className="panel">
-          <button className="quiet" data-wiki-page={item.id} disabled={busy} onClick={() => void open(item.id)}>{item.title}</button>
-          <span>{labels[item.type]}</span>
+        : <ul ref={list} className="panel session-list overview-records">{displayedPages?.map((item) => <li key={item.id}>
+          <button className="overview-record" aria-label={item.title} data-wiki-page={item.id} disabled={busy} onClick={() => void open(item.id)}>
+            <span className="record-copy"><strong className="campaign-card-title">{item.title}</strong>
+              <small>{labels[item.type]}</small></span>
+            <span className="record-arrow"><NavigationIcon name="arrow" /></span>
+          </button>
         </li>)}</ul>}
     {questsOnly && <Pagination page={currentMissionPage} pages={missionPages} onChange={setMissionPage} />}
   </>

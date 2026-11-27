@@ -1,3 +1,4 @@
+import { NavigationIcon } from './navigation-icon.tsx'
 import { usePendingNavigation } from './navigation-guard.tsx'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { maxAttachmentBytes, type Attachment } from '../contracts.ts'
@@ -18,8 +19,8 @@ function encodeFile(file: File) {
   })
 }
 
-export function Attachments({ campaignUrl, documentId, archived, navigationPending = false }: {
-  campaignUrl: string; documentId?: string; archived: boolean; navigationPending?: boolean
+export function Attachments({ campaignUrl, documentId, archived, navigationPending = false, compact = false }: {
+  campaignUrl: string; documentId?: string; archived: boolean; navigationPending?: boolean; compact?: boolean
 }) {
   const path = `${campaignUrl}/attachments`
   const query = documentId ? `?documentId=${encodeURIComponent(documentId)}` : ''
@@ -110,6 +111,7 @@ export function Attachments({ campaignUrl, documentId, archived, navigationPendi
       setSelectedFile(null)
       setSourceEdited(false)
       setShowUpload(false)
+      setExpanded(true)
     })
   }
 
@@ -117,30 +119,20 @@ export function Attachments({ campaignUrl, documentId, archived, navigationPendi
     return api<void>(`${path}/${id}/association${query}`, linked ? 'PUT' : 'DELETE')
   }
 
-  return <section className="panel attachments surface-flow" aria-label="Anexos">
-    <header className="actions overview-heading">
-      <h2>Anexos{rows && <span className="context"> · {rows.length}</span>}</h2>
-      {!archived && rows !== null && !showUpload && <button disabled={blocked}
-        onClick={() => setShowUpload(true)}>Adicionar anexo</button>}
-    </header>
-    {loadFailed && <div className="actions">
-      <p className="error" aria-live="polite">Não foi possível carregar os anexos.</p>
-      <button type="button" onClick={() => setRefresh((count) => count + 1)}>Recarregar anexos</button>
-    </div>}
-    {error && <p className="error" role="alert">{error}</p>}
-    {retry && <button type="button" disabled={busy || navigationPending}
-      onClick={() => void action(retry)}>Confirmar operação pendente do anexo</button>}
-    {rows === null ? !loadFailed && <p className="context" aria-live="polite">Carregando anexos…</p> : rows.length === 0 ? <p>Nenhum anexo vinculado.</p> :
+  const [expanded, setExpanded] = useState(false)
+  const list = rows === null ? !loadFailed && <p className="context" aria-live="polite">Carregando anexos…</p> : rows.length === 0 ? <p>Nenhum anexo vinculado.</p> :
       <ul className="session-list attachment-list">{rows.map((file) => {
         const url = `${path}/${file.id}/content`
         return <li key={file.id} className="attachment">
-          {file.mime === 'image/png' && <img src={url} alt={file.name} loading="lazy" />}
+          <span className="file-icon">{file.mime === 'image/png'
+            ? <img src={url} alt={file.name} loading="lazy" /> : <NavigationIcon name="file" />}</span>
           <div className="attachment-details">
             <a href={url}>{file.name}</a>
             <p className="context">{file.mime === 'image/png' ? 'PNG' : 'PDF'} · {new Intl.NumberFormat('pt-BR', {
               style: 'unit', unit: 'kilobyte', maximumFractionDigits: 1,
             }).format(file.size / 1000)}{file.source && ` · ${file.source}`}</p>
-            {!archived && (editing === file.id ? <form className="actions field-actions" onSubmit={(event) => {
+          </div>
+          {!archived && (editing === file.id ? <form className="actions field-actions" onSubmit={(event) => {
               event.preventDefault()
               const name = new FormData(event.currentTarget).get('name')
               void action(async () => { await api(`${path}/${file.id}`, 'PATCH', { name }); setEditing(null) })
@@ -155,9 +147,28 @@ export function Attachments({ campaignUrl, documentId, archived, navigationPendi
                 if (window.confirm(`Remover o vínculo com “${file.name}”?`)) void action(() => changeAssociation(file.id, false))
               }}>Remover vínculo</button>
             </div>)}
-          </div>
         </li>
-      })}</ul>}
+      })}</ul>
+
+  return <section className="panel attachments surface-flow" aria-label="Anexos">
+    <header className="overview-heading">
+      <h2><NavigationIcon name="clip" />{compact ? 'Anexos da campanha' : 'Anexos'}</h2>
+      {!archived && rows !== null && !showUpload && <button disabled={blocked}
+        onClick={() => setShowUpload(true)}><NavigationIcon name="plus" />Adicionar anexo</button>}
+    </header>
+    {loadFailed && <div className="actions">
+      <p className="error" aria-live="polite">Não foi possível carregar os anexos.</p>
+      <button type="button" onClick={() => setRefresh((count) => count + 1)}>Recarregar anexos</button>
+    </div>}
+    {error && <p className="error" role="alert">{error}</p>}
+    {retry && <button type="button" disabled={busy || navigationPending}
+      onClick={() => void action(retry)}>Confirmar operação pendente do anexo</button>}
+    {compact && rows && <p className="context">{rows.length} {rows.length === 1 ? 'arquivo vinculado' : 'arquivos vinculados'}
+      {rows[0] && ` · Último: ${rows[0].name}`}</p>}
+    {compact && rows?.length ? <details open={expanded} onToggle={(event) => setExpanded(event.currentTarget.open)}>
+      <summary>Ver arquivos vinculados</summary>
+      {list}
+    </details> : list}
     {!archived && rows !== null && <>
       {showUpload && <form ref={uploadForm} className="surface-flow attachment-controls" onSubmit={submit}>
         <label>Arquivo<input type="file" name="file" accept=".png,.pdf" required disabled={blocked}

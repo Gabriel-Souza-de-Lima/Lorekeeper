@@ -94,6 +94,7 @@ A [documentação de UX/UI](ux-ui/README.md) reúne a proposta revisada e o hist
 | UXR-06 | [Implementação incremental com SDD/TDD](ux-ui/design-system-codex.md#divisão-proposta-da-uxr-06) | [UXR-06.1](specs/35-uxr-06-1-fundamentos-codex.md) implementada e refinada com auditoria no Windows. Refinamento aprovado pelo mantenedor. [UXR-06.2](specs/36-uxr-06-2-escrita-e-recuperacao.md) e [UXR-06.3](specs/37-uxr-06-3-busca-wiki-perspectivas.md) aprovadas pelo mantenedor. [UXR-06.4](specs/38-uxr-06-4-superficies-e-regressao.md) aprovada tecnicamente pelo mantenedor |
 | UXR-07 | [Validação e aceite final](ux-ui/auditoria/uxr-07.md) | [Refinamento após avaliação humana](specs/39-uxr-07-refinamento.md). Aceite final e validação em dispositivos reais aguardam o mantenedor |
 | Phandelver V2 | [A–D](specs/40-phandelver-v2.md) | Evidências técnicas de A–D registradas. A validação humana permanece aberta |
+| Fidelidade visual V2 | [FV-01 a FV-06](specs/41-fidelidade-phandelver-v2.md) | Evidência de comparação disponível para aceite humano |
 
 ### Propostas funcionais após o ciclo de UX/UI
 

@@ -20,7 +20,7 @@ import { NavigationIcon } from './navigation-icon.tsx'
 import './style.css'
 
 const campaignPath = '/api/campaigns'
-const narrowNavigation = '(width < 760px)'
+const narrowNavigation = '(width <= 700px)'
 const statusLabels: Record<CampaignStatus, string> = { active: 'Ativa', paused: 'Pausada', finished: 'Encerrada' }
 
 type View = (
@@ -262,7 +262,7 @@ function App() {
       <header className="page-header">
         <div><p className="context">{campaign.name}</p><h1>Sessões</h1></div>
         <div className="actions">
-          {!locked && <button className="primary" disabled={working} onClick={() => openSession()}>Nova sessão</button>}
+          {!locked && <button className="primary" disabled={working} onClick={() => openSession()}><NavigationIcon name="plus" />Nova sessão</button>}
           <button disabled={working} onClick={() => navigate(() => void action(() => openTrash(campaign)))}>Lixeira de sessões</button>
         </div>
       </header>
@@ -273,17 +273,17 @@ function App() {
     return (
       <>
         <button className="quiet dashboard-shortcut" disabled={working} onClick={() => leave(dashboard)}>Voltar ao painel</button>
+        <p className="workspace-context">{campaign.name} / Visão geral</p>
         <header className="page-header campaign-overview-header">
-          <div><p className="context">{locked ? 'Campanha arquivada' : statusLabels[campaign.status]}</p>
-            <h1>{campaign.name}</h1>
-            <div className="campaign-summary">
-              <span>{campaign.system || 'Sistema a definir'}{campaign.rulesVersion && ` · ${campaign.rulesVersion}`}</span>
-              <span>{campaign.sessionCount} {campaign.sessionCount === 1 ? 'sessão' : 'sessões'}</span>
-              {campaign.lastSessionDate && <span>Última sessão em {displayDate(campaign.lastSessionDate)}</span>}
-            </div>
-            {campaign.description && <p className="context campaign-description">{campaign.description}</p>}
+          <div><h1>{campaign.name}</h1>
+            <p className="campaign-summary">{[
+              campaign.system || 'Sistema a definir', campaign.rulesVersion,
+              `${campaign.sessionCount} ${campaign.sessionCount === 1 ? 'sessão' : 'sessões'}`,
+              locked ? 'Campanha arquivada' : statusLabels[campaign.status],
+              campaign.lastSessionDate && `Última sessão em ${displayDate(campaign.lastSessionDate)}`,
+            ].filter(Boolean).join(' · ')}</p>
           </div>
-          {!locked && <button className="primary" disabled={working} onClick={() => openSession()}>Nova sessão</button>}
+          {!locked && <button className="primary" disabled={working} onClick={() => openSession()}><NavigationIcon name="plus" />Nova sessão</button>}
         </header>
         {!navigationOpen && campaignDestinations(campaign, false)}
         <CampaignOverview key={campaign.id} campaign={campaign} sessions={sessions} busy={working} onSession={openSession}
@@ -297,10 +297,10 @@ function App() {
           onWiki={(id, collection) => navigate(() => openWikiPage(campaign, id, collection))}
           onPending={(itemId) => navigate(() => setView({ page: 'pending-items', campaign, itemId }))} />
         <section className="campaign-extra" aria-label="Complementos da campanha">
-          <details className="panel">
-            <summary>Anexos da campanha</summary>
-            <Attachments key={url} campaignUrl={url} archived={locked} navigationPending={working} />
-          </details>
+          <Attachments key={url} campaignUrl={url} archived={locked} navigationPending={working} compact />
+          {campaign.description && <section className="panel surface-flow" aria-label="Descrição da campanha">
+            <h2>Descrição da campanha</h2><p>{campaign.description}</p>
+          </section>}
           <div className="actions" role="group" aria-label="Gerenciar campanha">
             <button disabled={working} onClick={() => navigate(() => void action(() => openTrash(campaign)))}>Lixeira de sessões</button>
             {!locked && <button disabled={working} onClick={() => navigate(() => setView({ page: 'edit', campaign }))}>
@@ -389,8 +389,8 @@ function App() {
           <p className="context">As sessões na lixeira podem ser restauradas à campanha.</p>
         </div></header>
         {view.rows.length === 0 && <p className="panel empty">Nenhuma sessão na lixeira.</p>}
-        {view.rows.length > 0 && <ul className="session-list">{view.rows.map((row) => <li key={row.id} className="panel">
-          <strong>{row.title}</strong><span>{displayDate(row.date)}</span>
+        {view.rows.length > 0 && <ul className="panel session-list overview-records">{view.rows.map((row) => <li key={row.id}>
+          <span className="record-copy"><strong className="campaign-card-title">{row.title}</strong><small>{displayDate(row.date)}</small></span>
           {!view.campaign.archivedAt && <button disabled={working} aria-label={`Restaurar sessão ${row.title}`}
             onClick={() => void action(async () => {
               await api(`${campaignPath}/${view.campaign.id}/sessions/${row.id}/trash`, 'PATCH', { trashed: false })
@@ -486,7 +486,7 @@ function App() {
         <button className="navigation-toggle" type="button" aria-label="Navegação" aria-expanded={navigationOpen} aria-controls="sidebar-destinations"
           title={navigationOpen ? 'Recolher navegação' : 'Expandir navegação'}
           onClick={() => setNavigationOpen((open) => !open)}>
-          <span className="navigation-icon" aria-hidden="true" /><span className="navigation-label">Navegação</span>
+          <span className="rail-toggle-icon"><NavigationIcon name="rail" /></span><span className="mobile-toggle-icon"><NavigationIcon name="menu" /></span>
         </button>
       </div>
       <div id="sidebar-destinations">
@@ -508,12 +508,14 @@ function App() {
         </nav>
       </div>
     </aside>
-    <main ref={pageHeading} className={view.page === 'dashboard' || view.page === 'campaign' ? 'main-overview' : undefined}>
+    <main ref={pageHeading}>
+      <div className={view.page === 'session' || view.page === 'search-note' ? 'workspace reading' : 'workspace'}>
       {error && <p role="alert" className="error panel">{error}</p>}
       {currentPage()}
       {(view.page === 'search' || view.searchResult) && <div hidden={view.page !== 'search'}>
         <Search working={working} onBack={dashboard} onOpen={(result) => openSearchResult(result, true)} returned={searchReturn} />
       </div>}
+      </div>
     </main>
   </div>
 }

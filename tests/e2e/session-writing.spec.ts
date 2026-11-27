@@ -43,7 +43,7 @@ test('UX62-01/02/03: escreve em uma coluna e alterna detalhes sem salvar implici
       await page.setViewportSize({ width, height: 640 })
       expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(width)
       await expect(page.getByRole('button', { name: 'Navegação', exact: true }))
-        .toHaveAttribute('aria-expanded', String(width >= 760))
+        .toHaveAttribute('aria-expanded', String(width > 700))
       // Measure both elements in one browser frame after the sidebar reacts to matchMedia.
       const geometry = await notes.evaluate((field) => {
         const writing = field.getBoundingClientRect()
