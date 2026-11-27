@@ -39,6 +39,15 @@ test('PHV2-01/02/03/07: compara indicadores integrais e navega pelo catálogo in
     await page.getByRole('button', { name: 'Campanha de controle vazia', exact: true }).click()
     await expect(metrics.getByRole('button', { name: 'Sessões ativas 0' })).toBeVisible()
     await expect(metrics.getByRole('button', { name: 'Personagens e NPCs 0' })).toBeVisible()
+    expect((await request.post(origin + root + '/sessions', { data: { date: '2026-11-27' } })).ok()).toBe(true)
+    await page.getByRole('button', { name: 'Lorekeeper', exact: true }).click()
+    await campaign.click()
+    await metrics.getByRole('button', { name: 'Sessões ativas 9' }).click()
+    const catalog = page.getByRole('region', { name: 'Sessões', exact: true })
+    await expect(catalog.getByRole('listitem')).toHaveCount(8)
+    await catalog.getByRole('button', { name: 'Próxima' }).click()
+    await expect(catalog.getByRole('listitem')).toHaveCount(1)
+    await expect(catalog.getByRole('button', { name: rows[7].title, exact: true })).toBeVisible()
   } finally { await finishE2EServer(app, [page.context()], request) }
 })
 
@@ -98,5 +107,72 @@ test('PHV2-04/05/06/08/09: pagina 28 pendências e mantém os contextos de detal
     expect(nameBox!.width).toBeGreaterThan(160)
     await attachments.getByRole('button', { name: 'Adicionar anexo' }).click()
     await expect(attachments.getByLabel('Arquivo', { exact: true })).toBeVisible()
+  } finally { await finishE2EServer(app, [page.context()], request) }
+})
+
+test('PHV2-08/11: estados legíveis, cartão acionável e anexos com largura útil', async ({ page, request }) => {
+  const app = createE2EServer(':memory:', resolve('dist'))
+  try {
+    await seedPhandelver(app, 'complete')
+    const origin = await app.listen({ host: '127.0.0.1', port: 0 })
+    await page.goto(origin)
+    await page.getByRole('button', { name: 'A Mina Perdida de Phandelver', exact: true }).click()
+    const pending = page.getByRole('region', { name: 'Pendências abertas' })
+    await expect(pending.locator('.pending-status').first()).toBeVisible()
+    const recent = page.getByRole('region', { name: 'Sessões recentes' })
+    const files = page.getByRole('region', { name: 'Anexos' })
+    await page.getByText('Anexos da campanha', { exact: true }).click()
+    await expect(files.getByRole('link')).toHaveCount(6)
+    for (const width of [320, 390, 768, 1280, 1920]) {
+      await page.setViewportSize({ width, height: 800 })
+      const card = await recent.getByRole('listitem').first().evaluate((item) => {
+        const control = item.querySelector('button')!.getBoundingClientRect()
+        return { available: item.getBoundingClientRect().width, width: control.width, height: control.height }
+      })
+      expect(card.width).toBeGreaterThanOrEqual(card.available - 2)
+      expect(card.height).toBeGreaterThanOrEqual(44)
+      const attachment = await files.getByRole('listitem').first().evaluate((row) => {
+        const name = row.querySelector('a')!.getBoundingClientRect()
+        const actions = row.querySelector('.actions')!.getBoundingClientRect()
+        const parent = row.getBoundingClientRect()
+        return { nameWidth: name.width, available: parent.width, nameBottom: name.bottom, actionsTop: actions.top }
+      })
+      expect(attachment.nameWidth).toBeGreaterThanOrEqual(Math.min(165, attachment.available * 0.7))
+      expect(attachment.actionsTop).toBeGreaterThanOrEqual(attachment.nameBottom)
+    }
+    await pending.getByRole('button', { name: 'Ver pendências' }).press('Enter')
+    const list = page.getByRole('region', { name: 'Lista de pendências' })
+    const samples = new Map<string, number>()
+    for (const tab of ['Abertas 8', 'Fechadas 16']) {
+      await list.getByRole('button', { name: tab, exact: true }).click()
+      const hasNext = await list.getByRole('button', { name: 'Próxima' }).count()
+      for (let index = 0; index <= hasNext; index++) {
+        const entries = await list.locator('.pending-status').evaluateAll((nodes) => {
+          const canvas = document.createElement('canvas')
+          canvas.width = canvas.height = 1
+          const context = canvas.getContext('2d')!
+          const luminance = (color: string) => {
+            context.clearRect(0, 0, 1, 1)
+            context.fillStyle = color
+            context.fillRect(0, 0, 1, 1)
+            const [red, green, blue] = context.getImageData(0, 0, 1, 1).data
+            const linear = (byte: number) => {
+              const channel = byte / 255
+              return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4
+            }
+            return 0.2126 * linear(red) + 0.7152 * linear(green) + 0.0722 * linear(blue)
+          }
+          return nodes.map((node) => {
+            const text = luminance(getComputedStyle(node).color)
+            const background = luminance(getComputedStyle(node.closest('.panel')!).backgroundColor)
+            return [node.textContent!.trim(), (Math.max(text, background) + 0.05) / (Math.min(text, background) + 0.05)] as const
+          })
+        })
+        for (const [state, ratio] of entries) samples.set(state, Math.min(ratio, samples.get(state) ?? Infinity))
+        if (index < hasNext) await list.getByRole('button', { name: 'Próxima' }).click()
+      }
+    }
+    expect([...samples.keys()].sort()).toEqual(['Aberta', 'Cancelada', 'Concluída', 'Em andamento'].sort())
+    for (const ratio of samples.values()) expect(ratio).toBeGreaterThanOrEqual(4.5)
   } finally { await finishE2EServer(app, [page.context()], request) }
 })

@@ -63,3 +63,38 @@ B foi integrada em `994d0f9` após o teste geométrico passar no candidato corri
 PHV2-04 usa páginas wiki `quest` e a projeção de missões abertas para distinguir Ativas e Encerradas. Sem novas transições ou histórico operacional. PHV2-05/06 mantém guia e página quando se abre uma pendência. O detalhe oferece retorno com foco no item quando ainda está na lista e no título da coleção nos demais casos. Os formulários mantêm a proteção existente e só abrem por ação explícita. PHV2-08 usa tokens semânticos para os quatro estados com identificação textual. PHV2-09 mantém anexos expansíveis, com metadados e nomes separados da linha das ações e envio sob demanda.
 
 Red verificou que a tela anterior não oferecia a coleção paginada. Green confirmou 28 abertas em quatro páginas, 16 fechadas, retorno com foco, guias de missões, formulário sob demanda, anexos em 320 px e envio idempotente. Refactor reutiliza o paginador e mantém as mutações no backend existente. Reenvios de pendência usam o mesmo payload, inclusive quando o servidor grava mas a resposta se perde. Lint, tipos, build, 5 unitários, 84 de integração e 60 E2E passaram. [Aceitação C](../../tests/e2e/phandelver-v2.spec.ts) · [Reenvio e conflito](../../tests/e2e/pending-items.spec.ts)
+
+## D — Coesão e validação consolidada
+
+A etapa C foi integrada em `9c91c42`. [PR #87](https://github.com/Gabriel-Souza-de-Lima/Lorekeeper/pull/87) · [CI do PR](https://github.com/Gabriel-Souza-de-Lima/Lorekeeper/actions/runs/46059784064) · [CI pós-merge C](https://github.com/Gabriel-Souza-de-Lima/Lorekeeper/actions/runs/46060008354)
+
+A comparação lado a lado mostrou que a descrição longa separava a ação principal dos metadados no desktop. O cabeçalho reunirá os metadados com a identificação, com quebra em telas estreitas. O estado textual e semântico da pendência será reutilizado no painel compacto e na coleção. As medidas de aceitação verificam a geometria interna de cartões e anexos e o contraste da amostra de estados, além dos testes de fluxo existentes.
+
+| Critério | Evidência de validação técnica |
+| --- | --- |
+| PHV2-01 | A visão geral usa o estado atual e não oferece seletor temporal. As fontes e datas de sessão continuam nos registros. |
+| PHV2-02 | A API e a interface conferem 8/2/8/22. A variante de carga mostra 28 abertas, a base vazia mostra zero e a nona sessão muda o total após nova consulta. |
+| PHV2-03 | Ordem 8–7–6 na visão geral, catálogo com oito por página, resumo confirmado e teste de lixeira e restauração. |
+| PHV2-04 | Ativas 2, Encerradas 10, leitura da página quest e retorno à guia. Mudança de estado usa o contrato da wiki. |
+| PHV2-05 | 28 abertas em quatro páginas, 16 fechadas em duas. O painel mantém até três. |
+| PHV2-06 | A lista sai do detalhe, retorno restaura página e foco, criação e edição sob demanda e histórico disponível. Testes cobrem conflito de edição e resposta de criação perdida. |
+| PHV2-07 | Marca com proteção de rascunho, ausência do antigo atalho, homônimos pela Busca e marcação via sessão ou wiki. |
+| PHV2-08 | Quatro estados nomeados com as cores semânticas. Contraste da amostra nas listas pelo menos 4,5:1. Indicadores do editor exercitados pela regressão. |
+| PHV2-09 | Largura do nome e posição das ações medidas em cinco larguras. Fluxos de envio, validação, consulta, vínculo, renomeação e perda de resposta cobertos na regressão. |
+| PHV2-10 | 35 pessoas e localidades além de 12 missões. Origens, evidência contraditória, narrativas e perspectivas verificadas com SQLite e dados cruzados. |
+| PHV2-11 | Chromium a 320, 390, 768, 1280 e 1920 CSS px, com inspeção de cartões e anexos, largura útil, alvos e foco. Capturas da referência e da UI em testes isolados. |
+| PHV2-12 | Lint, tipos, build, regressão de API, migrações e navegador. Os testes existentes continuam exercitando gravação, concorrência, histórico, restauração, busca e exportação. |
+| PHV2-13 | CLI reproduzível, variante separada e verificação de integridade SQLite e chaves estrangeiras. |
+
+Red falhou pela ausência da indicação de estado no painel compacto. Green confirmou a indicação, a geometria de cartões e anexos e os quatro contrastes textuais. Refactor compartilha o rótulo e o token semântico entre painel e coleção. [E2E Phandelver V2](../../tests/e2e/phandelver-v2.spec.ts)
+
+### Aceite local
+
+1. Rode `npm run build` e `node tests/fixtures/phandelver/serve.ts complete`. Use a URL exibida e confira 8/2/8/22, três sessões recentes, acesso pelo indicador e pelo botão Ver todas.
+2. Abra uma sessão pelo catálogo, edite sem salvar e acione a marca. Cancele a saída, confirme que o texto ficou, depois mantenha o rascunho e reabra a sessão. Marque um favorito e encontre-o em Favoritos.
+3. Alterne as guias de Missões e Pendências. Em `load`, percorra as quatro páginas abertas, abra um item da segunda e confirme o retorno à mesma página. Confira o formulário sob demanda e o histórico.
+4. No celular, expanda a navegação e abra Anexos da campanha. Confira nomes longos, ações em linha própria e envio sob demanda. Em uma operação fictícia, tente sair com um arquivo selecionado e confira a confirmação contextual.
+
+A implementação mantém editor, telas de histórico, Busca, exportação e backups operacionais, que excedem a simulação. Favoritos abre em destino próprio e é alterado no documento. A fonte visual usada foi o HTML aprovado, com os tokens existentes na aplicação operacional. A avaliação técnica local foi Chromium/Linux. Windows, Android físico, tecnologia assistiva e aceite de experiência continuam pendentes. UXR-07 permanece aberta e P11 aguarda autorização.
+
+Regressão final local aprovada com lint, análise de tipos, build, 5 unitários, 84 testes de integração e 61 E2E em dois workers. Bundle JavaScript de 515,70 kB minificado e 153,51 kB gzip, com o aviso preexistente preservado.

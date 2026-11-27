@@ -1,3 +1,4 @@
+import { PendingStatus } from './pending-status.tsx'
 import { useEffect, useState } from 'react'
 import type { Campaign, CampaignSessionSummary, PendingItemSummary, WikiSummary } from '../contracts.ts'
 import { api, displayDate } from './api.ts'
@@ -110,6 +111,7 @@ export function CampaignOverview({ campaign, sessions, busy, onNavigate, onSessi
             <button className="quiet" disabled={busy} onClick={() => onNavigate('pending')}>Ver pendências</button></header>
           {pending.length ? <ul className="session-list">{pending.slice(0, 3).map((row) => <li key={row.id}>
             <button className="quiet" disabled={busy} onClick={() => onPending(row.id)}>{row.title}</button>
+            <PendingStatus state={row.state} />
           </li>)}</ul> : <p>Nenhuma pendência aberta.</p>}
         </section>
         <section aria-label="Personagens em destaque" className="panel surface-flow">

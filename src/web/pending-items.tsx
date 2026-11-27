@@ -1,3 +1,4 @@
+import { PendingStatus, pendingStateLabels } from './pending-status.tsx'
 import { Pagination } from './campaign-overview.tsx'
 import { useLeave, usePendingNavigation } from './navigation-guard.tsx'
 import { useEffect, useLayoutEffect, useRef, useState, type FormEvent } from 'react'
@@ -8,14 +9,6 @@ import { api, ApiError } from './api.ts'
 const types: Record<PendingType, string> = {
   clue: 'Pista', question: 'Pergunta', promise: 'Promessa', task: 'Tarefa', other: 'Outro',
 }
-const states: Record<PendingState, string> = {
-  open: 'Aberta', investigating: 'Em andamento', resolved: 'Concluída', discarded: 'Cancelada',
-}
-
-function PendingStatus({ state }: { state: PendingState }) {
-  return <span className="pending-status" data-state={state}>{states[state]}</span>
-}
-
 function campaignUrl(campaign: Campaign) {
   return `/api/campaigns/${campaign.id}`
 }
@@ -246,14 +239,14 @@ export function PendingItems({ campaign, itemId, onBack, onSession, onWiki }: {
         {!locked && !editing && <div className="actions field-actions pending-state-actions" role="group" aria-label="Atualizar estado">
           <label>Alterar estado<select value={next} disabled={busy || Boolean(retry)}
             onChange={(event) => setNext(event.currentTarget.value as PendingState)}>
-            {pendingStates.map((state) => <option key={state} value={state}>{states[state]}</option>)}
+            {pendingStates.map((state) => <option key={state} value={state}>{pendingStateLabels[state]}</option>)}
           </select></label>
           <button disabled={busy || Boolean(retry) || next === item.state} onClick={() => changeState(item)}>Salvar estado</button>
         </div>}
         <details className="pending-history">
           <summary>Histórico de estados</summary>
           <ol aria-label="Histórico de estados">{item.history.map((entry, index) =>
-            <li key={index}>{states[entry.state]} · <time dateTime={entry.createdAt}>
+            <li key={index}>{pendingStateLabels[entry.state]} · <time dateTime={entry.createdAt}>
               {new Date(entry.createdAt).toLocaleString('pt-BR')}</time></li>)}</ol>
         </details>
       </section>}

@@ -273,17 +273,19 @@ function App() {
     return (
       <>
         <button className="quiet dashboard-shortcut" disabled={working} onClick={() => leave(dashboard)}>Voltar ao painel</button>
-        <header className="page-header">
+        <header className="page-header campaign-overview-header">
           <div><p className="context">{locked ? 'Campanha arquivada' : statusLabels[campaign.status]}</p>
-            <h1>{campaign.name}</h1>{campaign.description && <p>{campaign.description}</p>}</div>
+            <h1>{campaign.name}</h1>
+            <div className="campaign-summary">
+              <span>{campaign.system || 'Sistema a definir'}{campaign.rulesVersion && ` · ${campaign.rulesVersion}`}</span>
+              <span>{campaign.sessionCount} {campaign.sessionCount === 1 ? 'sessão' : 'sessões'}</span>
+              {campaign.lastSessionDate && <span>Última sessão em {displayDate(campaign.lastSessionDate)}</span>}
+            </div>
+            {campaign.description && <p className="context campaign-description">{campaign.description}</p>}
+          </div>
           {!locked && <button className="primary" disabled={working} onClick={() => openSession()}>Nova sessão</button>}
         </header>
         {!navigationOpen && campaignDestinations(campaign, false)}
-        <div className="campaign-summary">
-          <span>{campaign.system || 'Sistema a definir'}{campaign.rulesVersion && ` · ${campaign.rulesVersion}`}</span>
-          <span>{campaign.sessionCount} {campaign.sessionCount === 1 ? 'sessão' : 'sessões'}</span>
-          {campaign.lastSessionDate && <span>Última sessão em {displayDate(campaign.lastSessionDate)}</span>}
-        </div>
         <CampaignOverview key={campaign.id} campaign={campaign} sessions={sessions} busy={working} onSession={openSession}
           onNavigate={(collection) => {
             if (collection === 'people' || collection === 'quests') return navigateWiki(campaign, collection === 'people', collection === 'quests')
