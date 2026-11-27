@@ -7,6 +7,7 @@ type Pending = {
   keep?: boolean
   discard?: true | Resolve
   save?: Resolve
+  saveLabel?: string
 }
 
 const Navigation = createContext<{
@@ -101,7 +102,7 @@ export function NavigationProtection({ children }: { children: ReactNode }) {
       <div className="actions">
         <button type="button" autoFocus disabled={running} onClick={() => close(true)}>Cancelar</button>
         {!blocked && entries.length === 1 && entries[0].save && <button className="primary" disabled={running || error}
-          onClick={() => void finish('save')}>Salvar e continuar</button>}
+          onClick={() => void finish('save')}>{entries[0].saveLabel ?? 'Salvar e continuar'}</button>}
         {!blocked && entries.length > 0 && entries.every((entry) => entry.discard) &&
           <button disabled={running || error} onClick={() => void finish('discard')}>Descartar e continuar</button>}
         {!blocked && entries.length > 0 && entries.every((entry) => entry.keep) &&

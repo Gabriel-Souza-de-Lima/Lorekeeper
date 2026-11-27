@@ -91,7 +91,7 @@ test('UX70-03/04: lateral protege sessão e wiki sem cancelar destino', async ({
     const sessions = sidebar.getByRole('button', { name: 'Sessões', exact: true })
     await sessions.press('Enter')
     await expect(dialog).toContainText('Nova página da wiki')
-    await expect(dialog.getByRole('button', { name: 'Salvar e continuar' })).toHaveCount(0)
+    await expect(dialog.getByRole('button', { name: 'Criar página e continuar' })).toHaveCount(0)
     await dialog.getByRole('button', { name: 'Descartar e continuar' }).press('Enter')
     await expect(page.getByRole('heading', { name: 'Sessões', exact: true })).toBeFocused()
     expect(await (await request.get(url + '/wiki')).json()).toEqual([])
@@ -144,6 +144,90 @@ test('UX70-03: anexos sem envio e gravação incerta impedem saída silenciosa',
     expect(await (await request.get(url + '/sessions')).json()).toEqual([])
   } finally {
     gate.resolve()
+    await finishE2EServer(app, [page.context()], request)
+  }
+})
+
+test('UX70-03a/b/c: confirma anexo e página da wiki sem abandonar operações incertas', async ({ page, request }) => {
+  const app = createE2EServer(':memory:', resolve('dist'))
+  const delivered = Promise.withResolvers<void>()
+  const release = Promise.withResolvers<void>()
+  try {
+    const origin = await app.listen({ host: '127.0.0.1', port: 0 })
+    const { id } = await (await request.post(origin + '/api/campaigns', { data: { name: 'Costa fictícia' } })).json()
+    const root = origin + '/api/campaigns/' + id
+    const pdf = Buffer.from('%PDF-1.4\nxref\nstartxref\n9\n%%EOF\n')
+    const uploads: string[] = []
+    await page.route(root + '/attachments', async (route) => {
+      if (route.request().method() !== 'POST') return route.continue()
+      uploads.push(route.request().postDataJSON().id)
+      if (uploads.length > 1) return route.continue()
+      expect((await route.fetch()).status()).toBe(201)
+      delivered.resolve()
+      await release.promise
+      await route.abort()
+    })
+    await page.goto(origin)
+    await page.getByRole('button', { name: 'Costa fictícia', exact: true }).click()
+    await page.getByText('Anexos da campanha', { exact: true }).click()
+    await page.getByLabel('Arquivo', { exact: true }).setInputFiles({
+      name: 'registro.pdf', mimeType: 'application/pdf', buffer: pdf,
+    })
+    const sidebar = page.locator('.sidebar')
+    const goWiki = sidebar.getByRole('button', { name: 'Wiki da campanha' })
+    const dialog = page.getByRole('dialog', { name: 'Alterações pendentes' })
+    await goWiki.click()
+    const send = dialog.getByRole('button', { name: 'Enviar anexo e continuar' })
+    await expect(send).toBeVisible()
+    expect(uploads).toEqual([])
+    await send.click()
+    await delivered.promise
+    await expect(dialog.getByRole('button', { name: 'Cancelar' })).toBeDisabled()
+    release.resolve()
+    await expect(dialog.getByRole('alert')).toBeVisible()
+    await dialog.getByRole('button', { name: 'Cancelar' }).click()
+    await expect(page.getByLabel('Arquivo', { exact: true })).toHaveValue(/registro.pdf$/)
+    await page.getByRole('button', { name: 'Confirmar operação pendente do anexo' }).click()
+    await expect(page.getByRole('link', { name: 'registro.pdf' })).toBeVisible()
+    expect(uploads).toEqual([uploads[0], uploads[0]])
+    expect(await (await request.get(root + '/attachments')).json()).toHaveLength(1)
+    await page.getByLabel('Arquivo', { exact: true }).setInputFiles({
+      name: 'mapa.pdf', mimeType: 'application/pdf', buffer: pdf,
+    })
+    await page.getByRole('button', { name: 'Renomear registro.pdf' }).click()
+    await goWiki.click()
+    await expect(send).toHaveCount(0)
+    await dialog.getByRole('button', { name: 'Cancelar' }).click()
+    await page.getByRole('region', { name: 'Anexos' }).getByRole('button', { name: 'Cancelar' }).click()
+    await goWiki.click()
+    await send.click()
+    await expect(page.getByRole('heading', { name: 'Wiki da campanha' })).toBeFocused()
+    expect(await (await request.get(root + '/attachments')).json()).toHaveLength(2)
+    await page.getByRole('button', { name: 'Nova página' }).click()
+    await page.getByLabel('Título', { exact: true }).fill('Vigia fictícia')
+    await page.getByLabel('Descrição').fill('Ela conhece a maré.')
+    const attempts: string[] = []
+    await page.route(root + '/wiki', async (route) => {
+      if (route.request().method() !== 'POST') return route.continue()
+      attempts.push(route.request().postDataJSON().id)
+      if (attempts.length === 1) return route.fulfill({ status: 409, json: { message: 'Conflito fictício' } })
+      return route.continue()
+    })
+    const sessions = sidebar.getByRole('button', { name: 'Sessões', exact: true })
+    await sessions.click()
+    const create = dialog.getByRole('button', { name: 'Criar página e continuar' })
+    await create.click()
+    await expect(dialog.getByRole('alert')).toBeVisible()
+    await dialog.getByRole('button', { name: 'Cancelar' }).click()
+    await expect(page.getByLabel('Título', { exact: true })).toHaveValue('Vigia fictícia')
+    await expect(page.getByLabel('Descrição')).toHaveValue('Ela conhece a maré.')
+    await sessions.click()
+    await create.click()
+    await expect(page.getByRole('heading', { name: 'Sessões', exact: true })).toBeFocused()
+    expect(attempts).toEqual([attempts[0], attempts[0]])
+    expect(await (await request.get(root + '/wiki')).json()).toHaveLength(1)
+  } finally {
+    release.resolve()
     await finishE2EServer(app, [page.context()], request)
   }
 })

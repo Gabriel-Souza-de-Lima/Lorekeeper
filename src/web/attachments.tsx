@@ -3,6 +3,12 @@ import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { maxAttachmentBytes, type Attachment } from '../contracts.ts'
 import { api, ApiError } from './api.ts'
 
+function validateFile(file: File | null) {
+  if (!file?.size || !/\.(png|pdf)$/i.test(file.name)) return 'Escolha um arquivo PNG ou PDF.'
+  if (file.size > maxAttachmentBytes) return 'O arquivo excede 10 MiB.'
+  return null
+}
+
 function encodeFile(file: File) {
   return new Promise<string>((resolve, reject) => {
     const reader = new FileReader()
@@ -30,19 +36,22 @@ export function Attachments({ campaignUrl, documentId, archived, navigationPendi
   const blocked = busy || navigationPending || Boolean(retry)
   const upload = useRef<{ id: string; file: File; source: string } | null>(null)
 
-  const [selectedFile, setSelectedFile] = useState(false)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [sourceEdited, setSourceEdited] = useState(false)
   usePendingNavigation(busy || retry ? { label: 'Envio ou alteração de anexo em andamento ou sem confirmação', blocked: true }
     : selectedFile || sourceEdited || editing || selected
-      ? { label: 'Arquivo, vínculo ou renomeação de anexo ainda não confirmados', discard: async () => {
-        uploadForm.current?.reset()
-        setSelectedFile(false)
-        setSourceEdited(false)
-        setEditing(null)
-        setSelected('')
-        upload.current = null
-        return true
-      } } : null)
+      ? { label: 'Arquivo, vínculo ou renomeação de anexo ainda não confirmados',
+        saveLabel: 'Enviar anexo e continuar',
+        save: !blocked && !archived && !editing && !selected && !validateFile(selectedFile) ? submitUpload : undefined,
+        discard: async () => {
+          uploadForm.current?.reset()
+          setSelectedFile(null)
+          setSourceEdited(false)
+          setEditing(null)
+          setSelected('')
+          upload.current = null
+          return true
+        } } : null)
 
   useEffect(() => {
     let active = true
@@ -65,37 +74,39 @@ export function Attachments({ campaignUrl, documentId, archived, navigationPendi
       await work()
       setRetry(null)
       setRefresh((count) => count + 1)
+      return true
     } catch (failure) {
       if (failure instanceof ApiError && (failure.status === 0 || failure.status >= 500)) setRetry(() => work)
       setError(failure instanceof Error ? failure.message : 'A operação não pôde ser concluída.')
+      return false
     } finally { setBusy(false) }
   }
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    if (blocked) return
-    const form = event.currentTarget
-    const input = new FormData(form)
-    const file = input.get('file')
-    const source = String(input.get('source') ?? '').trim()
-    if (!(file instanceof File) || !file.size) {
-      setError('Escolha um arquivo PNG ou PDF.')
-      return
-    }
-    if (file.size > maxAttachmentBytes) {
-      setError('O arquivo excede 10 MiB.')
-      return
+    void submitUpload()
+  }
+
+  async function submitUpload() {
+    const form = uploadForm.current
+    if (!form || blocked || archived || !form.checkValidity()) return false
+    const source = String(new FormData(form).get('source') ?? '').trim()
+    const file = selectedFile
+    const validation = validateFile(file)
+    if (validation || !file) {
+      setError(validation ?? 'Escolha um arquivo PNG ou PDF.')
+      return false
     }
     if (upload.current?.file.name !== file.name || upload.current.file.size !== file.size ||
         upload.current.file.lastModified !== file.lastModified || upload.current.source !== source) {
       upload.current = { id: crypto.randomUUID(), file, source }
     }
     const id = upload.current.id
-    void action(async () => {
+    return action(async () => {
       await api<Attachment>(path + query, 'POST', { id, filename: file.name, source, data: await encodeFile(file) })
       upload.current = null
       form.reset()
-      setSelectedFile(false)
+      setSelectedFile(null)
       setSourceEdited(false)
     })
   }
@@ -144,7 +155,7 @@ export function Attachments({ campaignUrl, documentId, archived, navigationPendi
     {!archived && rows !== null && <>
       <form ref={uploadForm} className="surface-flow attachment-controls" onSubmit={submit}>
         <label>Arquivo<input type="file" name="file" accept=".png,.pdf" required disabled={blocked}
-          onChange={(event) => { upload.current = null; setSelectedFile(Boolean(event.currentTarget.files?.length)) }} /></label>
+          onChange={(event) => { upload.current = null; setSelectedFile(event.currentTarget.files?.[0] ?? null) }} /></label>
         <label>Origem do anexo<input name="source" maxLength={500} disabled={blocked} onChange={(event) => setSourceEdited(Boolean(event.currentTarget.value))} /></label>
         <div className="actions"><button className="primary" disabled={blocked}>{busy ? 'Aguarde…' : 'Enviar anexo'}</button></div>
       </form>
