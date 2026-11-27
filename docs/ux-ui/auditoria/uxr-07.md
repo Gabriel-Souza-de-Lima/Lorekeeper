@@ -157,3 +157,5 @@ As medidas automatizadas em 320, 390, 768, 1280 e 1920 CSS px apoiam G05–G09, 
 ### Validação Phandelver V2
 
 Os [critérios PHV2-01 a PHV2-13](../../specs/40-phandelver-v2.md) rastreiam a revisão aprovada. As evidências anteriores se referem à apresentação avaliada à época. O aceite humano continua aberto.
+
+A etapa D consolidou a [evidência por critério PHV2](../../specs/40-phandelver-v2.md#d--coesão-e-validação-consolidada). A medição do contraste dos estados é uma amostra em Chromium e não determina conformidade integral. O roteiro mantém avaliação no equipamento do mantenedor e aceite humano.

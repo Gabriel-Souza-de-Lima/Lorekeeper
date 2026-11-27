@@ -128,3 +128,5 @@ A ordem do Acervo é Busca, Campanhas, Anotações rápidas, Favoritos e Navega�
 ### Phandelver V2
 
 A [especificação Phandelver V2](../specs/40-phandelver-v2.md) registra a prioridade aprovada dos painéis atuais, catálogo de sessões independente e grupos compactos de pendências, missões e anexos. As alterações serão incorporadas por etapa. A identidade Codex e o editor operacional permanecem como base.
+
+No V2, a identificação e os metadados da campanha compartilham o cabeçalho da ação principal. Sessões recentes ocupam a largura do painel e usam separadores, enquanto as coleções completas conservam seus controles próprios. Os estados de pendência usam `success`, `warning`, `info` e `muted` com rótulos textuais. Os anexos mantêm nome e metadados em uma coluna útil antes da linha de ações. [Validação consolidada](../specs/40-phandelver-v2.md#d--coesão-e-validação-consolidada)
