@@ -52,7 +52,7 @@ Os 45 IDs mantêm os textos e prioridades da [matriz revisada](../revisada/03-ac
 
 ## Roteiro proposto para UXR-07
 
-A execução aguarda autorização. Registrar commit, navegador e versão, aparelho, configuração assistiva, viewport e zoom, dados fictícios, passos, resultado e evidência de cada tarefa. Reutilizar a [estratégia aprovada](../revisada/04-validacao-e-decisoes.md) e a suíte atual.
+Este roteiro originou o [relatório de validação UXR-07](uxr-07.md), com a matriz atualizada e as tarefas humanas ainda pendentes. Registrar commit, navegador e versão, aparelho, configuração assistiva, viewport e zoom, dados fictícios, passos, resultado e evidência de cada tarefa. Reutilizar a [estratégia aprovada](../revisada/04-validacao-e-decisoes.md) e a suíte atual.
 
 1. **Windows/Chromium e teclado.** Abrir campanha, escrever e confirmar, recuperar rascunho e reencontrar texto por busca. Percorrer campanha, wiki, perspectivas, pendências, captura e portabilidade. Verificar ordem, foco visível e retorno, texto a 200%, reflow a 400%, espaçamento de texto e rolagem de tabelas. Registrar anúncio efetivamente ouvido com leitor de tela.
 2. **Android/Chrome em aparelho físico.** Repetir escrita, consulta e captura em retrato e paisagem. Conferir alcance de Salvar com teclado virtual, toque em ações secundárias, leitor nativo, deslocamento e fechamento do menu.
