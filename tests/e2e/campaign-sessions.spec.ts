@@ -19,6 +19,7 @@ test('UX70-01/02/05: lista resumos confirmados na visão geral e omite leitura v
     })).ok()).toBe(true)
     await page.goto(origin)
     await page.getByRole('button', { name: 'Costa fictícia', exact: true }).click()
+    await page.locator('.sidebar').getByRole('button', { name: 'Sessões', exact: true }).click()
     const list = page.getByRole('region', { name: 'Sessões', exact: true })
     await expect(list.getByRole('listitem')).toHaveCount(4)
     const card = list.getByRole('listitem').filter({ has: page.getByRole('button', { name: 'Travessia 1', exact: true }) })
@@ -50,7 +51,7 @@ test('UX70-01/02/05: lista resumos confirmados na visão geral e omite leitura v
       await requested.promise
       await expect(destination).toBeDisabled()
     } finally { release.resolve() }
-    await expect(list).toBeVisible()
+    await expect(page.getByRole('region', { name: 'Sessões recentes' })).toBeVisible()
     await expect(destination).toBeEnabled()
     await expect(page.getByRole('heading', { name: 'Costa fictícia', level: 1 })).toBeFocused()
     await expect(destination).toHaveAttribute('aria-current', 'page')
@@ -97,7 +98,7 @@ test('UX70-03/04: lateral protege sessão e wiki sem cancelar destino', async ({
     await sidebar.getByRole('button', { name: 'Navegação', exact: true }).press('Enter')
     await expect(overview).toBeVisible()
     await sidebar.getByRole('button', { name: 'Favoritos' }).press('Enter')
-    await expect(page.getByRole('dialog', { name: 'Favoritos' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Favoritos' })).toBeVisible()
   } finally { await finishE2EServer(app, [page.context()], request) }
 })
 

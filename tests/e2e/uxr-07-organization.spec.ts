@@ -13,7 +13,7 @@ test('UX70-02/06/09: ordena os destinos e protege o acesso à página Sobre', as
     const acervo = sidebar.getByRole('navigation', { name: 'Acervo' })
     const toggle = sidebar.getByRole('button', { name: 'Navegação', exact: true })
     const about = sidebar.getByRole('button', { name: 'Sobre', exact: true })
-    const expected = ['Busca', 'Campanhas', 'Anotações rápidas', 'Favoritos', 'Navegação rápida']
+    const expected = ['Busca', 'Campanhas', 'Anotações rápidas', 'Favoritos']
     for (const width of [320, 390, 768, 1280, 1920]) {
       await page.setViewportSize({ width, height: 800 })
       const expanded = width >= 760
@@ -34,7 +34,7 @@ test('UX70-02/06/09: ordena os destinos e protege o acesso à página Sobre', as
       } else await toggle.click()
     }
     await page.getByRole('button', { name: 'Costa fictícia', exact: true }).click()
-    await expect(sidebar.getByRole('button', { name: 'Sessões', exact: true })).toHaveCount(0)
+    await expect(sidebar.getByRole('button', { name: 'Sessões', exact: true })).toHaveCount(1)
     await expect(sidebar.getByRole('button', { name: 'Visão geral' })).toHaveAttribute('aria-current', 'page')
     await page.getByRole('button', { name: 'Nova sessão', exact: true }).click()
     await page.getByLabel('Anotações', { exact: true }).fill('Memória fictícia')

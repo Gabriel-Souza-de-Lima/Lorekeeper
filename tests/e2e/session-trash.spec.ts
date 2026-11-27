@@ -14,6 +14,7 @@ test('SC-04a/b: confirma pelo título, remove da campanha e recupera da lixeira'
     })).ok()).toBe(true)
     await page.goto(origin)
     await page.getByRole('button', { name: 'Bruma', exact: true }).click()
+    await page.locator('.sidebar').getByRole('button', { name: 'Sessões', exact: true }).click()
     const row = page.getByRole('listitem').filter({ hasText: 'Travessia' })
     const remove = row.getByRole('button', { name: 'Excluir sessão' })
     page.once('dialog', (dialog) => void dialog.dismiss())
