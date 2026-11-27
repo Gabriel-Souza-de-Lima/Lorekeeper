@@ -25,3 +25,7 @@ Salvar pelo diálogo é oferecido apenas quando há uma edição individual de s
 As capturas da aplicação real compararam a visão geral anterior e a nova em 1280 CSS px com o mesmo acervo fictício em SQLite isolado. Também foram registrados a lateral recolhida, o personagem sem descrição e o diálogo de saída. Avaliação de leitor de tela, Android físico e aceite final permanecem com o mantenedor. [Roteiro de validação](../ux-ui/auditoria/uxr-07.md#refinamento-após-a-avaliação-humana)
 
 A regressão local em Linux passou com lint, análise de tipos, build, 5 testes unitários, 83 de integração e 53 E2E em Chromium com dois workers. O E2E focal também verifica cinco larguras entre 320 e 1920 CSS px. O aviso de bundle permanece, com cerca de 508 kB de JavaScript minificado e 152 kB gzip.
+
+### Recuperação do primeiro CI do PR #81
+
+O job `validar` reprovou o candidato `ce57064` na asserção de foco de Sessões. O teste enviava Enter sem esperar o fim do carregamento acionado por Voltar à campanha. Interceptar a consulta da lista e liberá-la após o Enter reproduziu a mesma falha local. O teste corrigido confirma que o botão fica desabilitado durante a consulta e o aciona após a lista ficar visível e o botão ficar habilitado. As asserções de foco e destino ativo foram preservadas. A suíte focal passou nas 12 execuções com dois workers. [Job do primeiro candidato](https://github.com/Gabriel-Souza-de-Lima/Lorekeeper/actions/runs/46013854194/job/140555877384)

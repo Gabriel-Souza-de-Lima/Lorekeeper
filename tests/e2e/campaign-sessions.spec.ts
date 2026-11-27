@@ -37,10 +37,24 @@ test('UX70-01/02/05: lista resumos confirmados, recebe foco e omite leitura vazi
     await page.getByRole('button', { name: 'Vigia fictícia' }).click()
     await page.getByRole('button', { name: 'Wiki da campanha', exact: true }).click()
     await expect(page.getByRole('heading', { name: 'Wiki da campanha', exact: true })).toBeFocused()
-    await page.getByRole('button', { name: 'Voltar à campanha' }).click()
-    await page.getByRole('button', { name: 'Sessões', exact: true }).press('Enter')
+    const requested = Promise.withResolvers<void>()
+    const release = Promise.withResolvers<void>()
+    await page.route(root + '/sessions', async (route) => {
+      requested.resolve()
+      await release.promise
+      await route.continue()
+    }, { times: 1 })
+    const destination = page.getByRole('button', { name: 'Sessões', exact: true })
+    try {
+      await page.getByRole('button', { name: 'Voltar à campanha' }).click()
+      await requested.promise
+      await expect(destination).toBeDisabled()
+    } finally { release.resolve() }
+    await expect(list).toBeVisible()
+    await expect(destination).toBeEnabled()
+    await destination.press('Enter')
     await expect(list.getByRole('heading', { name: 'Sessões' })).toBeFocused()
-    await expect(page.getByRole('button', { name: 'Sessões', exact: true })).toHaveAttribute('aria-current', 'location')
+    await expect(destination).toHaveAttribute('aria-current', 'location')
     for (const width of [320, 390, 768, 1280, 1920]) {
       await page.setViewportSize({ width, height: 800 })
       expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(width)
