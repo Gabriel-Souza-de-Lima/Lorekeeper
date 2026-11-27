@@ -1,6 +1,7 @@
+import { usePendingNavigation } from './navigation-guard.tsx'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { maxAttachmentBytes, type Attachment } from '../contracts.ts'
-import { api } from './api.ts'
+import { api, ApiError } from './api.ts'
 
 function encodeFile(file: File) {
   return new Promise<string>((resolve, reject) => {
@@ -24,8 +25,24 @@ export function Attachments({ campaignUrl, documentId, archived, navigationPendi
   const [loadFailed, setLoadFailed] = useState(false)
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
-  const blocked = busy || navigationPending
+  const [retry, setRetry] = useState<(() => Promise<void>) | null>(null)
+  const uploadForm = useRef<HTMLFormElement>(null)
+  const blocked = busy || navigationPending || Boolean(retry)
   const upload = useRef<{ id: string; file: File; source: string } | null>(null)
+
+  const [selectedFile, setSelectedFile] = useState(false)
+  const [sourceEdited, setSourceEdited] = useState(false)
+  usePendingNavigation(busy || retry ? { label: 'Envio ou alteração de anexo em andamento ou sem confirmação', blocked: true }
+    : selectedFile || sourceEdited || editing || selected
+      ? { label: 'Arquivo, vínculo ou renomeação de anexo ainda não confirmados', discard: async () => {
+        uploadForm.current?.reset()
+        setSelectedFile(false)
+        setSourceEdited(false)
+        setEditing(null)
+        setSelected('')
+        upload.current = null
+        return true
+      } } : null)
 
   useEffect(() => {
     let active = true
@@ -46,8 +63,10 @@ export function Attachments({ campaignUrl, documentId, archived, navigationPendi
     setError('')
     try {
       await work()
+      setRetry(null)
       setRefresh((count) => count + 1)
     } catch (failure) {
+      if (failure instanceof ApiError && (failure.status === 0 || failure.status >= 500)) setRetry(() => work)
       setError(failure instanceof Error ? failure.message : 'A operação não pôde ser concluída.')
     } finally { setBusy(false) }
   }
@@ -76,6 +95,8 @@ export function Attachments({ campaignUrl, documentId, archived, navigationPendi
       await api<Attachment>(path + query, 'POST', { id, filename: file.name, source, data: await encodeFile(file) })
       upload.current = null
       form.reset()
+      setSelectedFile(false)
+      setSourceEdited(false)
     })
   }
 
@@ -90,6 +111,8 @@ export function Attachments({ campaignUrl, documentId, archived, navigationPendi
       <button type="button" onClick={() => setRefresh((count) => count + 1)}>Recarregar anexos</button>
     </div>}
     {error && <p className="error" role="alert">{error}</p>}
+    {retry && <button type="button" disabled={busy || navigationPending}
+      onClick={() => void action(retry)}>Confirmar operação pendente do anexo</button>}
     {rows === null ? !loadFailed && <p className="context" aria-live="polite">Carregando anexos…</p> : rows.length === 0 ? <p>Nenhum anexo vinculado.</p> :
       <ul className="session-list">{rows.map((file) => {
         const url = `${path}/${file.id}/content`
@@ -119,10 +142,10 @@ export function Attachments({ campaignUrl, documentId, archived, navigationPendi
         </li>
       })}</ul>}
     {!archived && rows !== null && <>
-      <form className="surface-flow attachment-controls" onSubmit={submit}>
+      <form ref={uploadForm} className="surface-flow attachment-controls" onSubmit={submit}>
         <label>Arquivo<input type="file" name="file" accept=".png,.pdf" required disabled={blocked}
-          onChange={() => { upload.current = null }} /></label>
-        <label>Origem do anexo<input name="source" maxLength={500} disabled={blocked} /></label>
+          onChange={(event) => { upload.current = null; setSelectedFile(Boolean(event.currentTarget.files?.length)) }} /></label>
+        <label>Origem do anexo<input name="source" maxLength={500} disabled={blocked} onChange={(event) => setSourceEdited(Boolean(event.currentTarget.value))} /></label>
         <div className="actions"><button className="primary" disabled={blocked}>{busy ? 'Aguarde…' : 'Enviar anexo'}</button></div>
       </form>
       {available.length > 0 && <div className="surface-flow attachment-controls">

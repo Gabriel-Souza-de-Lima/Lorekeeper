@@ -6,9 +6,9 @@
 
 ## Comportamento e regras
 
-O controle **Navegação rápida** e Ctrl/Cmd+K abrem o mesmo diálogo. A interface oferece um campo de busca, resultados de campanhas e documentos, e favoritos. Sem termo, mostra favoritos e campanhas. Ao digitar, consulta o FTS5 após uma pausa curta e filtra nomes de campanha localmente. Cada resultado identifica categoria e campanha. O controle visível atende a navegadores que reservam Ctrl/Cmd+K.
+Na seção Acervo da lateral, o controle **Navegação rápida** e Ctrl/Cmd+K abrem o mesmo diálogo. **Favoritos** reutiliza o diálogo com apenas os documentos marcados. A interface oferece um campo de busca, resultados de campanhas e documentos, e favoritos. Sem termo, mostra favoritos e campanhas. Ao digitar, consulta o FTS5 após uma pausa curta e filtra nomes de campanha localmente. Cada resultado identifica categoria e campanha. O controle visível atende a navegadores que reservam Ctrl/Cmd+K.
 
-Setas selecionam, Enter abre e Escape devolve o foco. Por toque ou clique, selecione um resultado e use **Abrir selecionado**. A abertura de um resultado chama a confirmação existente de rascunho do editor. Cancelar o aviso mantém o diálogo e a sessão. Telas de cadastro, importação, anotações rápidas, wiki e pendências conservam sua própria navegação para proteger formulários transitórios.
+Setas selecionam, Enter abre e Escape devolve o foco. Por toque ou clique, selecione um resultado e use **Abrir selecionado**. A abertura de um resultado passa pela proteção compartilhada de navegação. Cancelar mantém a tela e devolve o foco ao acionador ou ao elemento que estava em foco quando o atalho foi usado. [Refinamento UXR-07](39-uxr-07-refinamento.md)
 
 A V15 cria `document_favorites` com documento e marcação ativa/inativa. Um favorito não altera a versão de edição do documento. Sessões na lixeira somem das consultas de favoritos e reaparecem ao restaurar. Favoritos usam a campanha do documento e podem ser desmarcados. O ZIP inclui as marcações ativas dos documentos consultáveis. A cópia SQLite mantém todas as marcações.
 
@@ -28,7 +28,7 @@ A V15 cria `document_favorites` com documento e marcação ativa/inativa. Um fav
 
 ## Dependências e limitações
 
-Reutiliza a busca, a abertura de resultados e a confirmação do editor. Favoritos iniciais cobrem sessões e páginas da wiki.
+Reutiliza a busca, a abertura de resultados e a proteção compartilhada de navegação. Favoritos iniciais cobrem sessões e páginas da wiki.
 
 
 ## Evidências de TDD

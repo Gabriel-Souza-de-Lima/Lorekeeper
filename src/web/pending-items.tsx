@@ -1,3 +1,4 @@
+import { useLeave, usePendingNavigation } from './navigation-guard.tsx'
 import { useEffect, useState, type FormEvent } from 'react'
 import { pendingStates, pendingTypes, type Campaign, type PendingItem, type PendingItemSummary,
   type PendingFields, type PendingState, type PendingType, type SessionSummary, type WikiSummary } from '../contracts.ts'
@@ -91,6 +92,14 @@ export function PendingItems({ campaign, itemId, onBack, onSession, onWiki }: {
   const conflict = Boolean(editing && item && item.editVersion !== editVersion)
   const locked = Boolean(campaign.archivedAt)
 
+  const [createDirty, setCreateDirty] = useState(false)
+  const [uncertain, setUncertain] = useState(false)
+  const [editDirty, setEditDirty] = useState(false)
+  const leave = useLeave()
+  usePendingNavigation(busy || uncertain ? { label: 'Operação de pendência em andamento ou sem confirmação', blocked: true }
+    : editDirty || createDirty || item && next !== item.state
+      ? { label: 'Campos ou estado da pendência ainda não confirmados', discard: true } : null)
+
   function select(current: PendingItem) {
     setItem(current)
     setNext(current.state)
@@ -116,8 +125,11 @@ export function PendingItems({ campaign, itemId, onBack, onSession, onWiki }: {
   async function action(work: () => Promise<void>) {
     setError('')
     setBusy(true)
-    try { await work() }
-    catch (failure) { setError(failure instanceof Error ? failure.message : 'A operação não pôde ser concluída.') }
+    try { await work(); setUncertain(false) }
+    catch (failure) {
+      setUncertain(failure instanceof ApiError && (failure.status === 0 || failure.status >= 500))
+      setError(failure instanceof Error ? failure.message : 'A operação não pôde ser concluída.')
+    }
     finally { setBusy(false) }
   }
 
@@ -130,6 +142,7 @@ export function PendingItems({ campaign, itemId, onBack, onSession, onWiki }: {
       select(saved)
       setId(crypto.randomUUID())
       form.reset()
+      setCreateDirty(false)
       setRows(await api<PendingItemSummary[]>(path))
     })
   }
@@ -147,6 +160,7 @@ export function PendingItems({ campaign, itemId, onBack, onSession, onWiki }: {
         throw error
       }
       setEditing(null)
+      setEditDirty(false)
       setRows(await api<PendingItemSummary[]>(path))
     })
   }
@@ -160,7 +174,7 @@ export function PendingItems({ campaign, itemId, onBack, onSession, onWiki }: {
 
   const session = sessions.find((row) => row.id === item?.sessionId)
   return <>
-    <button className="quiet" disabled={busy || Boolean(editing)} onClick={onBack}>Voltar à campanha</button>
+    <button className="quiet" disabled={busy} onClick={() => leave(onBack)}>Voltar à campanha</button>
     <header className="page-header"><div><p className="context">{campaign.name}</p><h1>Pendências</h1></div></header>
     {error && <p className="error" role="alert">{error}</p>}
     {!rows ? (error
@@ -179,10 +193,10 @@ export function PendingItems({ campaign, itemId, onBack, onSession, onWiki }: {
         {item.description && <p>{item.description}</p>}
         {item.origin && <p>Origem: {item.origin}</p>}
         {item.notes && <p>Observações: {item.notes}</p>}
-        {session ? <button disabled={busy || Boolean(editing)} onClick={() => onSession(session.id)}>{session.title}</button> :
+        {session ? <button disabled={busy || Boolean(editing)} onClick={() => leave(() => onSession(session.id))}>{session.title}</button> :
           item.sessionId && <p>Sessão de origem indisponível.</p>}
         {entities.filter((row) => item.entityIds.includes(row.id)).map((row) =>
-          <button key={row.id} disabled={busy || Boolean(editing)} onClick={() => onWiki(row.id)}>{row.title}</button>)}
+          <button key={row.id} disabled={busy || Boolean(editing)} onClick={() => leave(() => onWiki(row.id))}>{row.title}</button>)}
         <h3>Histórico de estados</h3>
         <ol aria-label="Histórico de estados">{item.history.map((entry, index) =>
           <li key={index}>{states[entry.state]} · <time dateTime={entry.createdAt}>
@@ -190,6 +204,7 @@ export function PendingItems({ campaign, itemId, onBack, onSession, onWiki }: {
         {!locked && !editing && <div className="actions">
           <button disabled={busy} onClick={() => {
             setError('')
+            setEditDirty(false)
             setEditing(item)
             setEditVersion(item.editVersion)
           }}>Editar pendência</button>
@@ -200,7 +215,7 @@ export function PendingItems({ campaign, itemId, onBack, onSession, onWiki }: {
           <button disabled={busy || next === item.state} onClick={() => changeState(item)}>Salvar estado</button>
         </div>}
       </section>}
-      {editing && <form className="panel surface-flow" aria-label="Editar pendência" onSubmit={edit}>
+      {editing && <form className="panel surface-flow" aria-label="Editar pendência" onSubmit={edit} onChange={() => setEditDirty(true)}>
         <h2>Editar pendência</h2>
         {conflict && <p>Compare seu rascunho com os dados confirmados acima antes de salvar novamente.</p>}
         <PendingInputs initial={editing} sessions={sessions} entities={entities} busy={busy} />
@@ -210,10 +225,10 @@ export function PendingItems({ campaign, itemId, onBack, onSession, onWiki }: {
             setError('')
           }}>Usar versão atual como base</button>}
           <button className="primary" disabled={busy || conflict}>Salvar alterações</button>
-          <button type="button" disabled={busy} onClick={() => { setEditing(null); setError('') }}>Cancelar edição</button>
+          <button type="button" disabled={busy} onClick={() => { setEditing(null); setEditDirty(false); setError('') }}>Cancelar edição</button>
         </div>
       </form>}
-      {!locked && !editing && <form className="panel surface-flow" onSubmit={create}>
+      {!locked && !editing && <form className="panel surface-flow" onSubmit={create} onChange={() => setCreateDirty(true)}>
         <h2>Nova pendência</h2>
         <PendingInputs sessions={sessions} entities={entities} busy={busy} />
         <div className="actions"><button className="primary" disabled={busy}>Criar pendência</button></div>

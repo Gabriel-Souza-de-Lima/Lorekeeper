@@ -139,7 +139,7 @@ export function useSessionDraft(path: string, session: Session, archived: boolea
       setSaved(fields)
       const latest = working.current
       if (!latest || latest.generation === operation.generation || !hasChanges(latest.fields)) {
-        await persist(null)
+        return await persist(null)
       } else {
         await persist({ ...latest, path: `${path}/${savedId}`, version, operation: null })
       }
@@ -227,6 +227,7 @@ export function useSessionDraft(path: string, session: Session, archived: boolea
         setSaved(fields)
       }
       setFailure(null)
+      return true
     } catch (error) {
       setFailure({ status: error instanceof ApiError ? error.status : 0,
         message: error instanceof Error ? error.message : 'Não foi possível descartar as alterações.' })
@@ -288,6 +289,7 @@ export function useSessionDraft(path: string, session: Session, archived: boolea
     draft, documentId, created, ready: ready && !recovering && !discarding, dirty: record !== null, locallySaved, storageFailed, saving,
     canSave: ready && !archived && !saving && !recovering && !discarding && !storageFailed &&
       (!created || failure?.status !== 409) && record !== null && (record.operation !== null || hasChanges(record.fields)),
+    uncertain: Boolean(record?.operation) && (!failure || failure.status === 0 || failure.status >= 500),
     failure, recoverable, recover, update, save, discard, retry, resolveConflict, discardConflict, restoreRevision,
     baseVersion: record?.version ?? confirmed.current.version,
   }

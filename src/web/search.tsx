@@ -104,7 +104,7 @@ export function Search({ working, onBack, onOpen, returned }: {
   }
 
   return <>
-    <button className="quiet" disabled={working} onClick={onBack}>Voltar ao painel</button>
+    <button className="quiet dashboard-shortcut" disabled={working} onClick={onBack}>Voltar ao painel</button>
     <h1>Busca global</h1>
     <form className="panel campaign-form" onSubmit={submit}>
       <fieldset className="form-grid" disabled={working || pending}>

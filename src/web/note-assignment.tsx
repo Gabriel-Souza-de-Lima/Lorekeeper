@@ -1,3 +1,4 @@
+import { usePendingNavigation } from './navigation-guard.tsx'
 import { useEffect, useId, useState } from 'react'
 import type { ReactNode } from 'react'
 import type { Campaign } from '../contracts.ts'
@@ -30,6 +31,9 @@ export function AssignNote({ noteId, campaigns, onAssigned }: {
   const [saving, setSaving] = useState(false)
   const [uncertain, setUncertain] = useState(false)
   const [error, setError] = useState('')
+
+  usePendingNavigation(saving || uncertain ? { label: 'Encaminhamento em andamento ou sem confirmação', blocked: true }
+    : destination ? { label: 'Destino de anotação ainda não confirmado', discard: true } : null)
 
   async function assign() {
     if (saving || !destination) return

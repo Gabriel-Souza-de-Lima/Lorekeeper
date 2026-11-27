@@ -93,7 +93,7 @@ test('I3-04: encaminha para campanha e reconcilia a perda de resposta', async ({
     await expect(destination).toBeDisabled()
     await card.getByRole('button', { name: 'Repetir encaminhamento' }).click()
     await expect(card).toHaveCount(0)
-    await page.getByRole('button', { name: 'Voltar ao painel' }).click()
+    await page.getByRole('navigation', { name: 'Acervo' }).getByRole('button', { name: 'Campanhas', exact: true }).click()
     await page.getByRole('button', { name: 'Observatório', exact: true }).click()
     await page.getByRole('button', { name: 'Anotações da campanha' }).click()
     await expect(page.getByRole('listitem')).toHaveCount(1)

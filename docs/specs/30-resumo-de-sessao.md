@@ -10,15 +10,15 @@ A sessão aceita resumo opcional de até 600 caracteres e destaques opcionais em
 
 O editor protege os campos no IndexedDB e inclui seus valores na confirmação manual da sessão. A versão de concorrência avança ao confirmar mudanças. Uma edição só dos metadados preserva a lista de revisões textuais. Restaurar uma revisão carrega título e anotações e mantém o resumo e os destaques já confirmados. A comparação de conflitos mostra os novos campos. A API aceita clientes e comprovantes anteriores. Em atualização, campo ausente mantém o valor confirmado. Enviar vazio remove o valor. Rascunhos antigos continuam podendo confirmar texto e deixam no servidor os metadados que desconhecem.
 
-O painel usa o resumo confirmado quando disponível. Sem resumo, identifica o trecho literal. Como os destaques são independentes, podem aparecer junto de qualquer das duas opções. A lixeira oculta a sessão e suas informações da retomada e do ZIP. A restauração as torna consultáveis novamente. O backup SQLite preserva todos os dados.
+A lista principal da campanha mostra o resumo confirmado de cada sessão ativa e indica «Sem resumo» na ausência dele. O trecho literal permanece na API legada de retomada e os destaques ficam disponíveis na sessão de origem. [Refinamento UXR-07](39-uxr-07-refinamento.md) A lixeira oculta a sessão e suas informações da retomada e do ZIP. A restauração as torna consultáveis novamente. O backup SQLite preserva todos os dados.
 
 ## Cenários
 
 | Cenário | Quando | Então |
 | --- | --- | --- |
-| Principal | Escreve e confirma resumo e destaques | A retomada mostra as informações escritas |
-| Rascunho | O editor mantém alterações locais | A retomada mostra a última versão confirmada |
-| Alternativo | Uma sessão não tem resumo | Mostra o trecho literal atual |
+| Principal | Escreve e confirma resumo e destaques | A lista mostra o resumo confirmado e a sessão apresenta os destaques |
+| Rascunho | O editor mantém alterações locais | A lista mostra o último resumo confirmado |
+| Alternativo | Uma sessão não tem resumo | A lista indica «Sem resumo» |
 | Erro | Outro dispositivo altera a versão | A tentativa recebe conflito e preserva os campos locais |
 | Lixeira | Uma sessão entra na lixeira e é restaurada | Retomada e exportação acompanham a disponibilidade |
 
@@ -26,8 +26,8 @@ O painel usa o resumo confirmado quando disponível. Sem resumo, identifica o tr
 
 | ID | Critério | Teste |
 | --- | --- | --- |
-| P7-01 a P7-04 | Resumo opcional, edição explícita, prioridade na retomada e trecho alternativo. | E2E e SQLite |
-| P7-05 e P7-06 | Destaques escritos e ausência de rascunhos na retomada. | E2E |
+| P7-01 a P7-04 | Resumo opcional, edição explícita, projeção do resumo confirmado na lista e indicação de ausência. | E2E e SQLite |
+| P7-05 e P7-06 | Destaques na sessão de origem e ausência de rascunhos na lista. | E2E |
 | P7-07 | Preservar versão, conflito, revisões e compatibilidade dos clientes. | SQLite e E2E |
 | P7-08 e P7-09 | Portabilidade, lixeira e restauração refletem os dados confirmados. | SQLite |
 
@@ -36,7 +36,7 @@ O painel usa o resumo confirmado quando disponível. Sem resumo, identifica o tr
 Reutiliza concorrência e rascunhos de sessão. Destaques são texto escrito pelo usuário, apresentados com a sessão de origem.
 
 
-## Evidências de TDD
+## Evidências históricas de TDD
 
 - **Red** — o servidor rejeitou os campos, a migração ainda não existia e o navegador não encontrou o resumo.
 - **Green** — a confirmação mudou a retomada, preservou o histórico textual, rejeitou versão concorrente e manteve as informações ao restaurar a sessão e o banco.

@@ -1,3 +1,4 @@
+import { useLeave, usePendingNavigation } from './navigation-guard.tsx'
 import { KnowledgeView, PerspectivePanel } from './perspectives.tsx'
 import { useEffect, useRef, useState } from 'react'
 import type { Campaign, PendingItemSummary, SessionSummary, WikiSummary } from '../contracts.ts'
@@ -65,6 +66,13 @@ export function Narrative({ campaign, onBack, onDocument, onPending }: Props) {
   const newInformationButton = useRef<HTMLButtonElement>(null)
   const knowledgeButton = useRef<HTMLButtonElement>(null)
   const restoreNewInformationFocus = useRef(false)
+  const leave = useLeave()
+  usePendingNavigation(busy ? { label: 'Operação de informações em andamento', blocked: true }
+    : draft ? { label: 'Alteração do registro global ainda não confirmada',
+      blocked: Boolean(draft.operation) && !conflict,
+      keep: status === 'Rascunho protegido neste navegador',
+      discard: status === 'Falha no armazenamento local' && !draft.operation ? true : undefined } : null)
+
   const canStartInformation = !archived && !consulting && !busy && !draft && !perspectiveEditing
 
   useEffect(() => {
@@ -258,11 +266,7 @@ export function Narrative({ campaign, onBack, onDocument, onPending }: Props) {
   const fields = draft?.fields
   const entry = fields?.evidence?.[0]
   return <div className="narrative-area">
-    <button className="quiet" disabled={busy || perspectiveEditing} onClick={() => {
-      if (!draft || window.confirm(status === 'Falha no armazenamento local'
-        ? 'O rascunho está apenas nesta aba e pode ser perdido. Voltar à campanha?'
-        : 'Voltar à campanha mantendo o rascunho neste navegador?')) onBack()
-    }}>Voltar à campanha</button>
+    <button className="quiet" disabled={busy} onClick={() => leave(onBack)}>Voltar à campanha</button>
     <header className="page-header"><div><p className="context">{campaign.name}</p><h1>Informações</h1></div>
       <div className="actions">
         <button ref={knowledgeButton} aria-expanded={consulting} aria-controls={consulting ? 'knowledge-view' : undefined} disabled={busy || !!draft || perspectiveEditing}
@@ -271,7 +275,7 @@ export function Narrative({ campaign, onBack, onDocument, onPending }: Props) {
           onClick={() => void begin('edit')}>Nova informação</button>}
       </div></header>
     {consulting && <div id="knowledge-view"><KnowledgeView key={root} root={root} characters={targets.filter(({ type }) => type === 'character')}
-      onOpen={(id) => { setConsulting(false); open(id) }} onSession={(id) => onDocument(id, 'session')}
+      onOpen={(id) => { setConsulting(false); open(id) }} onSession={(id) => leave(() => onDocument(id, 'session'))}
       onClose={() => {
         setConsulting(false)
         knowledgeButton.current?.focus()

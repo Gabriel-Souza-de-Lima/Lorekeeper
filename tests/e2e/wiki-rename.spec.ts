@@ -46,7 +46,7 @@ test('I3-09c: renomeia a página e reencontra o destino pela menção, backlink 
     await expect(page.getByRole('heading', { name: 'Cartógrafa da névoa' })).toBeVisible()
     await page.getByRole('button', { name: 'Voltar à wiki' }).click()
     await page.getByRole('button', { name: 'Voltar à campanha' }).click()
-    await page.getByRole('button', { name: 'Voltar ao painel' }).click()
+    await page.getByRole('navigation', { name: 'Acervo' }).getByRole('button', { name: 'Campanhas', exact: true }).click()
     await page.getByRole('button', { name: 'Busca', exact: true }).click()
     await page.getByLabel('Termos de busca').fill('cartografa')
     await page.getByRole('button', { name: 'Buscar', exact: true }).click()

@@ -2,7 +2,7 @@ import { resolve } from 'node:path'
 import { expect, test } from '@playwright/test'
 import { createE2EServer, finishE2EServer } from '../support/e2e-server.ts'
 
-test('P7-01 a P7-06: só a confirmação substitui o trecho literal pelo resumo e os destaques', async ({ page, request }) => {
+test('P7-01 a P7-06: só a confirmação atualiza o resumo e os destaques da sessão', async ({ page, request }) => {
   const app = createE2EServer(':memory:', resolve('dist'))
   try {
     const origin = await app.listen({ host: '127.0.0.1', port: 0 })
@@ -12,9 +12,9 @@ test('P7-01 a P7-06: só a confirmação substitui o trecho literal pelo resumo 
     expect((await request.put(path + '/sessions/' + session.id, { data: { ...session, id: undefined, body: 'Trecho literal' } })).status()).toBe(200)
     await page.goto(origin)
     await page.getByRole('button', { name: 'Ilhas', exact: true }).click()
-    const panel = page.getByRole('region', { name: 'Retomar campanha' })
-    await expect(panel.getByText('Trecho literal')).toBeVisible()
-    await panel.getByRole('button', { name: 'Abrir última sessão' }).click()
+    const panel = page.getByRole('region', { name: 'Sessões', exact: true })
+    await expect(panel.getByText('Sem resumo')).toBeVisible()
+    await panel.getByRole('button', { name: 'Nova sessão', exact: true }).click()
     await page.getByText('Dados da sessão', { exact: true }).click()
     const summary = page.getByLabel('Resumo da sessão')
     await expect(summary).toBeVisible({ timeout: 4000 })
@@ -26,7 +26,9 @@ test('P7-01 a P7-06: só a confirmação substitui o trecho literal pelo resumo 
     await expect(page.getByRole('status')).toHaveText('Salvo no servidor')
     await page.getByRole('button', { name: 'Voltar à campanha' }).click()
     await expect(panel.getByText('O mapa foi recuperado.')).toBeVisible()
-    await expect(panel.getByText('Encontraram o mapa')).toBeVisible()
+    await panel.getByRole('button', { name: 'Nova sessão', exact: true }).click()
+    await page.getByText('Dados da sessão', { exact: true }).click()
+    await expect(page.getByLabel('Destaques da sessão')).toHaveValue('Encontraram o mapa\nAvistaram o farol')
     await expect(panel.getByText('Trecho literal')).toHaveCount(0)
   } finally { await finishE2EServer(app, [page.context()], request) }
 })

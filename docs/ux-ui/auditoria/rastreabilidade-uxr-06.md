@@ -50,6 +50,10 @@ Os 45 IDs mantêm os textos e prioridades da [matriz revisada](../revisada/03-ac
 | UX-D12 | Parcial. Mensagens de estado e cores semânticas compartilhadas. | codex-secondary, drafts, session-writing, perspectives. | Comparar anúncios e estados em três vistas reais. |
 | UX-D13 | Aplicado. Metadados e prévia alternáveis com recuperação próxima. | session-writing, drafts e revisions. | Verificar descoberta de ações e mensagens em fluxo assistivo. |
 
+## Evidência complementar da UXR-07
+
+Os requisitos afetados pela rodada de avaliação humana recebem evidências adicionais na [matriz de refinamento da UXR-07](uxr-07.md#refinamento-após-a-avaliação-humana). As verificações dependentes de dispositivos físicos, tecnologia assistiva e aceite do mantenedor continuam abertas.
+
 ## Roteiro proposto para UXR-07
 
 Este roteiro originou o [relatório de validação UXR-07](uxr-07.md), com a matriz atualizada e as tarefas humanas ainda pendentes. Registrar commit, navegador e versão, aparelho, configuração assistiva, viewport e zoom, dados fictícios, passos, resultado e evidência de cada tarefa. Reutilizar a [estratégia aprovada](../revisada/04-validacao-e-decisoes.md) e a suíte atual.

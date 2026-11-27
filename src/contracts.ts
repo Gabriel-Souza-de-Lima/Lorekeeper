@@ -39,6 +39,7 @@ export interface Session extends SessionFields {
 export type SessionImportSource = { filename: string; source: string }
 
 export type SessionSummary = Pick<Session, 'id' | 'title' | 'date' | 'number'>
+export type CampaignSessionSummary = SessionSummary & { summary: string }
 
 export const wikiTypes = ['character', 'npc', 'location', 'quest'] as const
 export type WikiType = typeof wikiTypes[number]

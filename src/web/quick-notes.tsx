@@ -1,3 +1,4 @@
+import { useLeave, usePendingNavigation } from './navigation-guard.tsx'
 import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import type { Campaign } from '../contracts.ts'
@@ -35,6 +36,10 @@ export function QuickNotes({ onBack }: { onBack: () => void }) {
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
   const listVersion = useRef(0)
+
+  const leave = useLeave()
+  usePendingNavigation(saving || capture?.submitted ? { label: 'Captura rápida em andamento ou aguardando confirmação', blocked: true }
+    : capture?.body ? { label: 'Texto da anotação rápida ainda não guardado', keep: !storageFailed } : null)
 
   useEffect(() => {
     let active = true
@@ -155,10 +160,7 @@ export function QuickNotes({ onBack }: { onBack: () => void }) {
   }
 
   return <>
-    <button className="quiet" disabled={saving} onClick={() => {
-      if (storageFailed && capture?.body && !window.confirm('O rascunho ainda está apenas nesta aba. Sair?')) return
-      onBack()
-    }}>Voltar ao painel</button>
+    <button className="quiet dashboard-shortcut" disabled={saving} onClick={() => leave(onBack)}>Voltar ao painel</button>
     <header className="page-header"><h1>Anotações rápidas</h1></header>
     {editor === 'locked' && <div className="panel">
       <p>Outra aba está com o editor aberto. Você pode consultar a caixa de entrada aqui.</p>

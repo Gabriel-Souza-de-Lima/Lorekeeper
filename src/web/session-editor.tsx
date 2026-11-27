@@ -1,5 +1,5 @@
 import { Attachments } from './attachments.tsx'
-import { useImperativeHandle, useLayoutEffect, useRef, useState, type Ref } from 'react'
+import { useLayoutEffect, useRef, useState } from 'react'
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { markdownLayout } from './markdown-layout.tsx'
@@ -14,10 +14,9 @@ import { SessionNoteLinks } from './session-note-links.tsx'
 import { InlineWiki, inlineReference, type InlineReference } from './inline-wiki.tsx'
 import { DocumentTags } from './document-tags.tsx'
 
-export type SessionNavigation = { canLeave: () => boolean }
+import { useLeave, usePendingNavigation } from './navigation-guard.tsx'
 
 interface Props {
-  navigationRef?: Ref<SessionNavigation>
   campaignName: string
   campaignUrl: string
   session: Session
@@ -29,7 +28,7 @@ interface Props {
   onSearchBack?: () => void
 }
 
-export function SessionEditor({ navigationRef, campaignName, campaignUrl, session, path, archived, onOpenWiki, onTrash, onBack, onSearchBack }: Props) {
+export function SessionEditor({ campaignName, campaignUrl, session, path, archived, onOpenWiki, onTrash, onBack, onSearchBack }: Props) {
   const editor = useSessionDraft(path, session, archived)
   const { draft, documentId, created, ready, dirty, locallySaved, storageFailed, saving, failure, recoverable, recover, update, retry } = editor
 
@@ -49,18 +48,14 @@ export function SessionEditor({ navigationRef, campaignName, campaignUrl, sessio
     if (ready && !archived && document.activeElement === document.body) notes.current?.focus()
   }, [archived, ready])
 
-  function canLeave() {
-    if (saving) return false
-    return !dirty || window.confirm(locallySaved
-      ? 'As alterações estão neste navegador e ainda não estão disponíveis em outros dispositivos. Sair do editor?'
-      : 'O rascunho ainda está apenas nesta aba e pode ser perdido. Sair do editor?')
-  }
-
-  useImperativeHandle(navigationRef, () => ({ canLeave }))
-
-  function leave(navigate: () => void) {
-    if (canLeave()) navigate()
-  }
+  const leave = useLeave()
+  usePendingNavigation(saving || editor.uncertain || !ready && dirty ? { label: 'Operação da sessão em andamento ou sem confirmação', blocked: true }
+    : dirty ? {
+      label: 'Anotações ou metadados da sessão ainda não confirmados',
+      keep: locallySaved,
+      save: editor.canSave && draft.title.trim() && draft.date ? async () => Boolean(await editor.save()) : undefined,
+      discard: async () => Boolean(await editor.discard()),
+    } : null)
 
   const back = () => leave(onBack)
 
