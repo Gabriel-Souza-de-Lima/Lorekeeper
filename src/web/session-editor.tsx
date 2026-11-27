@@ -1,3 +1,4 @@
+import { FavoriteButton } from './favorites.tsx'
 import { Attachments } from './attachments.tsx'
 import { useLayoutEffect, useRef, useState } from 'react'
 import Markdown from 'react-markdown'
@@ -215,6 +216,7 @@ export function SessionEditor({ campaignName, campaignUrl, session, path, archiv
         </section>
       </div>
       {created && <Attachments campaignUrl={campaignUrl} documentId={documentId} archived={archived} />}
+      {created && <FavoriteButton key={documentId} campaignUrl={campaignUrl} id={documentId} />}
       {created && <DocumentTags campaignUrl={campaignUrl} documentId={documentId} archived={archived} />}
       <SessionWikiLinks draftOnly={!created} sessionUrl={`${path}/${documentId}`} campaignUrl={campaignUrl} archived={archived}
         navigationBlocked={saving} version={editor.baseVersion} canInsert={ready && !archived}

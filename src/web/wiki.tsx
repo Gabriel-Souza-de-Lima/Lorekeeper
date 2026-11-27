@@ -1,3 +1,4 @@
+import { FavoriteButton } from './favorites.tsx'
 import { useLeave, usePendingNavigation } from './navigation-guard.tsx'
 import { Attachments } from './attachments.tsx'
 import { Fragment, useEffect, useLayoutEffect, useRef, useState, type FormEvent } from 'react'
@@ -13,10 +14,11 @@ const labels: Record<WikiType, string> = {
   character: 'Personagem', npc: 'NPC', location: 'Localidade', quest: 'Missão',
 }
 
-export function Wiki({ campaign, initialPage, charactersOnly, onOpenSession, onBack, onSearchBack }: {
+export function Wiki({ campaign, initialPage, charactersOnly, questsOnly, onOpenSession, onBack, onSearchBack }: {
   campaign: Campaign
   initialPage?: WikiDetails
   charactersOnly?: boolean
+  questsOnly?: boolean
   onOpenSession: (id: string) => void
   onBack: () => void
   onSearchBack?: () => void
@@ -190,6 +192,7 @@ export function Wiki({ campaign, initialPage, charactersOnly, onOpenSession, onB
     {page.body.trim() && <article className="panel preview wiki-reading" aria-label="Conteúdo da página"><Markdown skipHtml remarkPlugins={[remarkGfm]}
       components={{ ...markdownLayout, img: ({ alt }) => <span>{alt}</span> }}>{page.body}</Markdown></article>}
     <Fragment key={page.id}>
+      <FavoriteButton campaignUrl={`/api/campaigns/${campaign.id}`} id={page.id} />
       <Attachments campaignUrl={`/api/campaigns/${campaign.id}`} documentId={page.id} archived={Boolean(campaign.archivedAt)} />
       <DocumentTags campaignUrl={`/api/campaigns/${campaign.id}`} documentId={page.id} archived={Boolean(campaign.archivedAt)} />
       <WikiBacklinks url={`${url}/${page.id}/backlinks`} busy={busy || title !== null} onOpen={(id) => leave(() => onOpenSession(id))} />
@@ -220,15 +223,16 @@ export function Wiki({ campaign, initialPage, charactersOnly, onOpenSession, onB
     </form>
   </>
 
-  const visiblePages = charactersOnly ? pages?.filter(({ type }) => type === 'character') : pages
+  const visiblePages = questsOnly ? pages?.filter(({ type }) => type === 'quest')
+    : charactersOnly ? pages?.filter(({ type }) => type === 'character' || type === 'npc') : pages
 
   return <>
     <button className="quiet" disabled={busy} onClick={() => leave(onBack)}>Voltar à campanha</button>
     {onSearchBack && <button className="quiet" disabled={busy} onClick={() => leave(onSearchBack)}>Voltar à busca</button>}
-    <header className="page-header"><div><p className="context">{campaign.name}</p><h1 ref={listHeading} tabIndex={-1}>{charactersOnly ? 'Personagens' : 'Wiki da campanha'}</h1></div>
+    <header className="page-header"><div><p className="context">{campaign.name}</p><h1 ref={listHeading} tabIndex={-1}>{questsOnly ? 'Missões' : charactersOnly ? 'Personagens' : 'Wiki da campanha'}</h1></div>
       {!campaign.archivedAt && <button className="primary" disabled={busy} onClick={() => {
         setError('')
-        setDraft({ id: crypto.randomUUID(), type: 'character', title: '', body: '' })
+        setDraft({ id: crypto.randomUUID(), type: questsOnly ? 'quest' : 'character', title: '', body: '' })
       }}>Nova página</button>}
     </header>
     {feedback}

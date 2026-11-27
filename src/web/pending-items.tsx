@@ -47,31 +47,6 @@ function PendingInputs({ initial, sessions, entities, busy }: {
   </fieldset>
 }
 
-export function PendingOverview({ campaign, busy, onOpen }: {
-  campaign: Campaign; busy: boolean; onOpen: (id?: string) => void
-}) {
-  const [rows, setRows] = useState<PendingItemSummary[] | null>(null)
-  const [failed, setFailed] = useState(false)
-  useEffect(() => {
-    let active = true
-    void api<PendingItemSummary[]>(`${campaignUrl(campaign)}/pending-items?open=true`).then(
-      (items) => { if (active) setRows(items) },
-      () => { if (active) setFailed(true) },
-    )
-    return () => { active = false }
-  }, [campaign])
-  return <section aria-label="Pendências abertas">
-    <h3>Pendências abertas</h3>
-    {failed ? <p>Não foi possível carregar as pendências abertas.</p> :
-      !rows ? <p>Carregando pendências…</p> : rows.length === 0 ? <p>Nenhuma pendência aberta.</p> :
-        <ul className="session-list">{rows.map((row) => <li key={row.id}>
-          <button className="quiet" disabled={busy} onClick={() => onOpen(row.id)}>{row.title}</button>
-          <span>{states[row.state]}</span>
-        </li>)}</ul>}
-    <button className="quiet" disabled={busy} onClick={() => onOpen()}>Ver pendências</button>
-  </section>
-}
-
 export function PendingItems({ campaign, itemId, onBack, onSession, onWiki }: {
   campaign: Campaign; itemId?: string; onBack: () => void
   onSession: (id: string) => void; onWiki: (id: string) => void

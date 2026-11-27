@@ -13,7 +13,7 @@ test('UX62-01/02/03: escreve em uma coluna e alterna detalhes sem salvar implici
     await page.setViewportSize({ width: 320, height: 640 })
     await page.goto(origin)
     await page.getByRole('button', { name: 'Costa fictícia', exact: true }).click()
-    await page.getByRole('region', { name: 'Sessões', exact: true }).getByRole('button', { name: 'Nova sessão', exact: true }).click()
+    await page.getByRole('region', { name: 'Sessões recentes', exact: true }).getByRole('button', { name: 'Nova sessão', exact: true }).click()
     const notes = page.getByLabel('Anotações', { exact: true })
     const save = page.getByRole('button', { name: 'Salvar', exact: true })
     const preview = page.getByRole('region', { name: 'Prévia Markdown' })

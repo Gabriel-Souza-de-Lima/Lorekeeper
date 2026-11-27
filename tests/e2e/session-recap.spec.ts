@@ -12,7 +12,7 @@ test('P7-01 a P7-06: só a confirmação atualiza o resumo e os destaques da ses
     expect((await request.put(path + '/sessions/' + session.id, { data: { ...session, id: undefined, body: 'Trecho literal' } })).status()).toBe(200)
     await page.goto(origin)
     await page.getByRole('button', { name: 'Ilhas', exact: true }).click()
-    const panel = page.getByRole('region', { name: 'Sessões', exact: true })
+    const panel = page.getByRole('region', { name: 'Sessões recentes', exact: true })
     await expect(panel.getByText('Sem resumo')).toBeVisible()
     await panel.getByRole('button', { name: 'Nova sessão', exact: true }).click()
     await page.getByText('Dados da sessão', { exact: true }).click()

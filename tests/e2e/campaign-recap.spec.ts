@@ -16,7 +16,7 @@ test('P1-01/02/03/06/07: abre referências no contexto e mantém rascunhos fora 
     await page.setViewportSize({ width: 320, height: 700 })
     await page.goto(origin)
     await page.getByRole('button', { name: 'Bruma', exact: true }).click()
-    const panel = page.getByRole('region', { name: 'Sessões', exact: true })
+    const panel = page.getByRole('region', { name: 'Sessões recentes', exact: true })
     await expect(panel.getByText('Nenhuma sessão registrada')).toBeVisible()
     const { id: session, ...fields } = await (await request.post(`${url}/sessions`, { data: { date: '2026-11-23' } })).json()
     expect((await request.put(`${url}/sessions/${session}`, { data: {

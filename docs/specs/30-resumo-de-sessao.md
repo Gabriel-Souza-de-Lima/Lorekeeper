@@ -10,7 +10,7 @@ A sessão aceita resumo opcional de até 600 caracteres e destaques opcionais em
 
 O editor protege os campos no IndexedDB e inclui seus valores na confirmação manual da sessão. A versão de concorrência avança ao confirmar mudanças. Uma edição só dos metadados preserva a lista de revisões textuais. Restaurar uma revisão carrega título e anotações e mantém o resumo e os destaques já confirmados. A comparação de conflitos mostra os novos campos. A API aceita clientes e comprovantes anteriores. Em atualização, campo ausente mantém o valor confirmado. Enviar vazio remove o valor. Rascunhos antigos continuam podendo confirmar texto e deixam no servidor os metadados que desconhecem.
 
-A lista principal da campanha mostra o resumo confirmado de cada sessão ativa e indica «Sem resumo» na ausência dele. O trecho literal permanece na API legada de retomada e os destaques ficam disponíveis na sessão de origem. [Refinamento UXR-07](39-uxr-07-refinamento.md) A lixeira oculta a sessão e suas informações da retomada e do ZIP. A restauração as torna consultáveis novamente. O backup SQLite preserva todos os dados.
+O catálogo de sessões e as três sessões recentes na visão geral mostram o resumo confirmado de cada sessão exibida e indica «Sem resumo» na ausência dele. O trecho literal permanece na API legada de retomada e os destaques ficam disponíveis na sessão de origem. [Refinamento UXR-07](39-uxr-07-refinamento.md) A lixeira oculta a sessão e suas informações da retomada e do ZIP. A restauração as torna consultáveis novamente. O backup SQLite preserva todos os dados.
 
 ## Cenários
 

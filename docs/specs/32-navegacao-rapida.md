@@ -4,7 +4,9 @@
 - **Objetivo** — abrir campanhas e documentos com teclado, preservando o trabalho do editor.
 - **Rastreabilidade** — MVP-01, MVP-06, MVP-09 e MVP-11.
 
-## Comportamento e regras
+A localização rápida foi substituída em [Phandelver V2](40-phandelver-v2.md). Busca e Favoritos têm destinos independentes. Sessões e páginas da wiki permitem marcar ou remover favoritos. O fluxo abaixo descreve o comportamento histórico.
+
+## Histórico e regras de persistência
 
 Na seção Acervo da lateral, o controle **Navegação rápida** e Ctrl/Cmd+K abrem o mesmo diálogo. **Favoritos** reutiliza o diálogo com apenas os documentos marcados. A interface oferece um campo de busca, resultados de campanhas e documentos, e favoritos. Sem termo, mostra favoritos e campanhas. Ao digitar, consulta o FTS5 após uma pausa curta e filtra nomes de campanha localmente. Cada resultado identifica categoria e campanha. O controle visível atende a navegadores que reservam Ctrl/Cmd+K.
 

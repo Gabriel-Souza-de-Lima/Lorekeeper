@@ -8,7 +8,8 @@ const paths = {
   people: 'M9 12a3 3 0 1 0 0-6 3 3 0 0 0 0 6z M3 19v-2c0-2 2-3 6-3s6 1 6 3v2z M16 6a3 3 0 0 1 0 6 M17 14c3 0 4 1 4 3v2',
   pending: 'M5 4h14v16H5z M8 8l1 1 2-2 M13 8h3 M8 13l1 1 2-2 M13 13h3',
   info: 'M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z M12 11v6 M12 7v1',
-  quick: 'M4 5h16v14H4z M8 9l3 3-3 3 M13 15h3',
+  sessions: 'M5 4h14v16H5z M5 8h14 M9 12h6 M9 16h6',
+  quest: 'M5 21V4m0 1h14l-3 5 3 5H5',
 } as const
 
 export function NavigationIcon({ name }: { name: keyof typeof paths }) {
