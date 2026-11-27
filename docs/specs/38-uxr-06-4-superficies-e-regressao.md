@@ -31,3 +31,5 @@ A [rastreabilidade dos 45 requisitos e o roteiro UXR-07](../ux-ui/auditoria/rast
 **Validação local.** Lint, análise de tipos e build aprovados. Passaram 22 execuções focais em duas repetições e a regressão completa de 5 testes unitários, 83 de integração e 50 E2E com dois workers.
 
 **Diagnóstico do candidato inicial do PR #79.** A [execução 45915961144](https://github.com/Gabriel-Souza-de-Lima/Lorekeeper/actions/runs/45915961144) encontrou uma corrida no teste preexistente do editor. As duas medições separadas observaram a lateral em estados diferentes durante a mudança de viewport. Uma reprodução controlada gerou os mesmos valores do CI, 119,71875 e 254,71875 CSS px. O teste agora aguarda a atualização da lateral e compara os dois elementos na mesma avaliação do navegador. A revisão não altera a composição operacional.
+
+**Revalidação da correção `9550fd2`.** Passaram 20 repetições do cenário de geometria com dois workers e os 50 E2E da suíte completa. Lint, análise de tipos e build passaram novamente. A alteração se restringe ao teste de geometria e a este registro.
