@@ -104,9 +104,13 @@ test('UX70-07/08: mede os campos e as ações de estado nas larguras suportadas'
     const save = detail.getByRole('button', { name: 'Salvar estado' })
     for (const width of [320, 390, 768, 1280, 1920]) {
       await page.setViewportSize({ width, height: 800 })
-      const [select, button] = await Promise.all([state.boundingBox(), save.boundingBox()])
-      expect(Math.abs(select!.height - button!.height)).toBeLessThan(1)
-      expect(Math.abs(select!.y + select!.height - button!.y - button!.height)).toBeLessThan(1)
+      const { heightDifference, bottomDifference } = await detail.getByRole('group', { name: 'Atualizar estado' }).evaluate((group) => {
+        const select = group.querySelector('select')!.getBoundingClientRect()
+        const button = group.querySelector('button')!.getBoundingClientRect()
+        return { heightDifference: Math.abs(select.height - button.height), bottomDifference: Math.abs(select.bottom - button.bottom) }
+      })
+      expect(heightDifference).toBeLessThan(1)
+      expect(bottomDifference).toBeLessThan(1)
     }
     await state.selectOption('resolved')
     await save.click()

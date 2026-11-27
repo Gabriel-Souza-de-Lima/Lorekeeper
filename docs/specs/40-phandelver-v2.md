@@ -53,3 +53,5 @@ A marca volta ao acervo com a proteção compartilhada. Favoritos têm destino p
 A etapa A foi integrada em `5db7c0e`. [PR #85](https://github.com/Gabriel-Souza-de-Lima/Lorekeeper/pull/85) · [CI pós-merge A](https://github.com/Gabriel-Souza-de-Lima/Lorekeeper/actions/runs/46056927828)
 
 Red falhou pela ausência dos indicadores. Green conferiu 8/2/8/22, a ordem 8–7–6, lista independente e a campanha vazia. Refactor reutiliza cartões entre visão geral e catálogo e remove o código do localizador rápido. A regressão manteve homônimos na busca, Favoritos, rascunhos e lixeira. Lint, tipos, build, 5 unitários, 84 de integração e 58 E2E passaram. [Aceitação B](../../tests/e2e/phandelver-v2.spec.ts)
+
+O primeiro CI de B reprovou a comparação da base do seletor e do botão de estado em Pendências. A medição anterior lia coordenadas da janela em chamadas separadas após redimensionar. A correção obtém as duas alturas e bases no mesmo contexto de layout, com a mesma tolerância de 1 CSS px. O cenário passou oito vezes localmente com dois workers. [Job inicial do PR #86](https://github.com/Gabriel-Souza-de-Lima/Lorekeeper/actions/runs/46057952259/job/140704928016)
