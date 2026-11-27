@@ -40,7 +40,9 @@ export function Wiki({ campaign, initialPage, charactersOnly, onOpenSession, onB
 
   const leave = useLeave()
   usePendingNavigation(busy || uncertain ? { label: 'Operação da wiki em andamento ou sem confirmação', blocked: true }
-    : draft && (draft.title || draft.body || draft.type !== 'character') ? { label: 'Nova página da wiki ainda não confirmada', discard: true }
+    : draft && (draft.title || draft.body || draft.type !== 'character') ? { label: 'Nova página da wiki ainda não confirmada', discard: true,
+      save: draft.title.trim() && !campaign.archivedAt ? createPage : undefined,
+      saveLabel: 'Criar página e continuar' }
     : title !== null && title !== page?.title ? { label: 'Renomeação da página ainda não confirmada', discard: true } : null)
 
   useLayoutEffect(() => {
@@ -75,9 +77,12 @@ export function Wiki({ campaign, initialPage, charactersOnly, onOpenSession, onB
     }
   }
 
-  async function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    if (!draft || busy) return
+  async function createPage() {
+    if (!draft || busy || campaign.archivedAt) return false
+    if (!draft.title.trim()) {
+      setError('Informe o título da página.')
+      return false
+    }
     setBusy(true)
     setError('')
     try {
@@ -87,11 +92,13 @@ export function Wiki({ campaign, initialPage, charactersOnly, onOpenSession, onB
       setPage(created)
       setDraft(null)
       setUncertain(false)
+      return true
     } catch (failure) {
       const retry = failure instanceof ApiError && (failure.status === 0 || failure.status >= 500)
       setUncertain(retry)
       setError(retry ? 'Não foi possível confirmar a criação. Repita o envio da mesma página.'
         : failure instanceof Error ? failure.message : 'Não foi possível criar a página.')
+      return false
     } finally {
       setBusy(false)
     }
@@ -190,7 +197,7 @@ export function Wiki({ campaign, initialPage, charactersOnly, onOpenSession, onB
   </>
   if (draft) return <>
     <h1>Nova página da wiki</h1>
-    <form className="panel campaign-form" onSubmit={(event) => void submit(event)}>
+    <form className="panel campaign-form" onSubmit={(event) => { event.preventDefault(); void createPage() }}>
       <fieldset className="form-grid" disabled={busy || uncertain}>
         <label>Tipo<select value={draft.type} onChange={(event) => setDraft({ ...draft, type: event.target.value as WikiType })}>
           {wikiTypes.map((type) => <option key={type} value={type}>{labels[type]}</option>)}
@@ -203,6 +210,7 @@ export function Wiki({ campaign, initialPage, charactersOnly, onOpenSession, onB
         <button className="primary" disabled={busy}>{uncertain ? 'Repetir envio' : 'Criar página'}</button>
         <button type="button" disabled={busy} onClick={() => leave(() => {
           setDraft(null)
+          setPage(null)
           setError('')
           setUncertain(false)
           setRefresh((value) => value + 1)
