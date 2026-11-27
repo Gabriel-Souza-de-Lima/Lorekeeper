@@ -164,13 +164,15 @@ export function QuickNotes({ onBack }: { onBack: () => void }) {
       <p>Outra aba está com o editor aberto. Você pode consultar a caixa de entrada aqui.</p>
       <button onClick={() => { setEditor('loading'); setAttempt((value) => value + 1) }}>Tentar abrir editor</button>
     </div>}
-    {editor === 'loading' && <p>Consultando rascunho local…</p>}
+    {editor === 'loading' && <p className="context" aria-live="polite">Consultando rascunho local…</p>}
     {editor === 'unavailable' && <p className="error" role="alert">Armazenamento local indisponível para editar.</p>}
-    {editor === 'available' && <form className="panel" onSubmit={(event) => void submit(event)}>
-      <label htmlFor="quick-note-body">Anotação</label>
-      <textarea id="quick-note-body" autoFocus value={capture?.body ?? ''} disabled={saving || capture?.submitted}
-        onChange={(event) => change(event.target.value)} />
-      {capture?.submitted && !message && <p>Anotação pendente de confirmação.</p>}
+    {editor === 'available' && <form className="panel surface-flow capture-form" aria-label="Capturar anotação" onSubmit={(event) => void submit(event)}>
+      <div>
+        <label htmlFor="quick-note-body">Anotação</label>
+        <textarea id="quick-note-body" autoFocus value={capture?.body ?? ''} disabled={saving || capture?.submitted}
+          onChange={(event) => change(event.target.value)} />
+      </div>
+      {capture?.submitted && !message && <p className="state-warning" aria-live="polite">Anotação pendente de confirmação.</p>}
       {storageFailed && <p role="alert" className="error">Falha no armazenamento local. Baixe o rascunho ou tente novamente.</p>}
       {!storageFailed && error && <p role="alert" className="error">{message ? error : `Anotação pendente. ${error}`}</p>}
       {message && <p role="status">{message}</p>}
@@ -184,10 +186,10 @@ export function QuickNotes({ onBack }: { onBack: () => void }) {
     </form>}
     <section aria-label="Caixa de entrada">
       <header className="page-header"><h2>Caixa de entrada</h2></header>
-      {listingFailed && <p className="error">Não foi possível consultar a caixa de entrada.{' '}
+      {listingFailed && <p className="error" aria-live="polite">Não foi possível consultar a caixa de entrada.{' '}
         <button onClick={refreshList}>Recarregar caixa</button>
       </p>}
-      {items === null && !listingFailed && <p>Carregando anotações…</p>}
+      {items === null && !listingFailed && <p className="context" aria-live="polite">Carregando anotações…</p>}
       {items?.length === 0 && <p className="panel empty">Nenhuma anotação na caixa de entrada.</p>}
       {items && items.length > 0 && <>
         {campaignsFailed && <p className="error">Não foi possível carregar as campanhas de destino.{' '}

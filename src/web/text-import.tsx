@@ -107,14 +107,18 @@ export function TextImport({ onBack, onOpen }: { onBack: () => void; onOpen: (ca
       setError('')
       setAttempt((value) => value + 1)
     }}>Recarregar campanhas</button>}
-    <form className="panel form" onSubmit={(event) => void submit(event)}>
+    <form className="panel surface-flow" aria-label="Preparar importação" onSubmit={(event) => void submit(event)}>
       <fieldset className="form-grid" disabled={busy || uncertain}>
         <label>Campanha de destino<select required value={campaignId} onChange={(event) => setCampaignId(event.currentTarget.value)}>
           <option value="">Selecione a campanha</option>
           {campaigns.map(({ id, name }) => <option key={id} value={id}>{name}</option>)}
         </select></label>
-        <p>Tipo de destino: sessão</p>
-        <label>Arquivo de texto<input type="file" accept=".txt,.md" onChange={(event) => void preview(event.currentTarget.files?.[0])} /></label>
+        <p className="context">Tipo de destino: sessão</p>
+        <div className="wide surface-flow">
+          <label>Arquivo de texto<input type="file" accept=".txt,.md" aria-describedby="text-import-limit"
+            onChange={(event) => void preview(event.currentTarget.files?.[0])} /></label>
+          <p className="context" id="text-import-limit">TXT ou Markdown em UTF-8, até 512 KiB.</p>
+        </div>
         {file && <>
           <label>Título<input value={title} required maxLength={150} onChange={(event) => setTitle(event.currentTarget.value)} /></label>
           <label>Origem informada<input value={source} maxLength={500} onChange={(event) => setSource(event.currentTarget.value)} /></label>
@@ -122,7 +126,11 @@ export function TextImport({ onBack, onOpen }: { onBack: () => void; onOpen: (ca
             onChange={(event) => setText(event.currentTarget.value)} /></label>
         </>}
       </fieldset>
-      <button className="primary" disabled={!campaign || !file || busy}>{uncertain ? 'Reenviar importação' : 'Confirmar importação'}</button>
+      <div className="actions">
+        <button className="primary" disabled={!campaign || !file || busy}>
+          {uncertain ? 'Reenviar importação' : 'Confirmar importação'}
+        </button>
+      </div>
     </form>
   </>
 }

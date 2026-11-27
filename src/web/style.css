@@ -180,3 +180,31 @@ textarea { resize: vertical; min-height: 5rem; }
 .narrative-area { overflow-wrap: anywhere; }
 
 .wiki-reading { max-width: 68ch; margin-block: var(--space-3); min-height: 0; }
+
+.surface-flow { display: grid; gap: var(--space-3); }
+.surface-flow > * { min-width: 0; }
+.surface-flow > p { margin-block: 0; }
+.surface-action {
+  display: inline-flex; align-items: center; min-height: 44px;
+  padding: var(--space-2) var(--space-3); border: 1px solid var(--border);
+  border-radius: var(--radius-control); background: var(--surface);
+}
+.surface-action:hover { border-color: var(--accent); }
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.capture-form textarea { margin-block-start: var(--space-1); }
+.capture-form textarea, .note-reading { font: 1rem/1.6 var(--font-narrative); }
+.session-list .note-entry { display: grid; gap: var(--space-3); }
+.note-reading { min-width: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.note-reading h3 { margin: 0; font-family: var(--font-narrative); }
+.note-reading p { margin-block-end: 0; }
+.note-destination { border-top: 1px solid var(--border); padding-top: var(--space-3); }
+.note-destination select { margin-block-start: var(--space-1); }
+.state-warning { color: var(--warning); }
+.attachment-controls { border-top: 1px solid var(--border); padding-top: var(--space-3); }
+.attachment-details { min-width: 0; max-width: 100%; }
+.attachment-details > a { display: inline-flex; align-items: center; min-height: 44px; overflow-wrap: anywhere; }
+input[type="file"] { max-width: 100%; padding: var(--space-1); }
+input[type="file"]::file-selector-button {
+  font: inherit; min-height: 44px; color: var(--ink); background: var(--surface-raised);
+  border: 1px solid var(--border); border-radius: var(--radius-control); margin-inline-end: var(--space-2);
+}
