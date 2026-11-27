@@ -2,7 +2,7 @@ import { resolve } from 'node:path'
 import { expect, test } from '@playwright/test'
 import { createE2EServer, finishE2EServer } from '../support/e2e-server.ts'
 
-test('UX70-01/02/05: lista resumos confirmados, recebe foco e omite leitura vazia', async ({ page, request }) => {
+test('UX70-01/02/05: lista resumos confirmados na visão geral e omite leitura vazia', async ({ page, request }) => {
   const app = createE2EServer(':memory:', resolve('dist'))
   try {
     const origin = await app.listen({ host: '127.0.0.1', port: 0 })
@@ -44,17 +44,16 @@ test('UX70-01/02/05: lista resumos confirmados, recebe foco e omite leitura vazi
       await release.promise
       await route.continue()
     }, { times: 1 })
-    const destination = page.getByRole('button', { name: 'Sessões', exact: true })
+    const destination = page.getByRole('button', { name: 'Visão geral', exact: true })
     try {
-      await page.getByRole('button', { name: 'Voltar à campanha' }).click()
+      await destination.click()
       await requested.promise
       await expect(destination).toBeDisabled()
     } finally { release.resolve() }
     await expect(list).toBeVisible()
     await expect(destination).toBeEnabled()
-    await destination.press('Enter')
-    await expect(list.getByRole('heading', { name: 'Sessões' })).toBeFocused()
-    await expect(destination).toHaveAttribute('aria-current', 'location')
+    await expect(page.getByRole('heading', { name: 'Costa fictícia', level: 1 })).toBeFocused()
+    await expect(destination).toHaveAttribute('aria-current', 'page')
     for (const width of [320, 390, 768, 1280, 1920]) {
       await page.setViewportSize({ width, height: 800 })
       expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(width)
@@ -88,15 +87,15 @@ test('UX70-03/04: lateral protege sessão e wiki sem cancelar destino', async ({
     expect(await (await request.get(url + '/sessions')).json()).toHaveLength(1)
     await page.getByRole('button', { name: 'Nova página' }).click()
     await page.getByLabel('Descrição').fill('Texto ainda local')
-    const sessions = sidebar.getByRole('button', { name: 'Sessões', exact: true })
-    await sessions.press('Enter')
+    const overview = sidebar.getByRole('button', { name: 'Visão geral', exact: true })
+    await overview.press('Enter')
     await expect(dialog).toContainText('Nova página da wiki')
     await expect(dialog.getByRole('button', { name: 'Criar página e continuar' })).toHaveCount(0)
     await dialog.getByRole('button', { name: 'Descartar e continuar' }).press('Enter')
-    await expect(page.getByRole('heading', { name: 'Sessões', exact: true })).toBeFocused()
+    await expect(page.getByRole('heading', { name: 'Costa', exact: true, level: 1 })).toBeFocused()
     expect(await (await request.get(url + '/wiki')).json()).toEqual([])
     await sidebar.getByRole('button', { name: 'Navegação', exact: true }).press('Enter')
-    await expect(sessions).toBeVisible()
+    await expect(overview).toBeVisible()
     await sidebar.getByRole('button', { name: 'Favoritos' }).press('Enter')
     await expect(page.getByRole('dialog', { name: 'Favoritos' })).toBeVisible()
   } finally { await finishE2EServer(app, [page.context()], request) }
@@ -213,17 +212,17 @@ test('UX70-03a/b/c: confirma anexo e página da wiki sem abandonar operações i
       if (attempts.length === 1) return route.fulfill({ status: 409, json: { message: 'Conflito fictício' } })
       return route.continue()
     })
-    const sessions = sidebar.getByRole('button', { name: 'Sessões', exact: true })
-    await sessions.click()
+    const overview = sidebar.getByRole('button', { name: 'Visão geral', exact: true })
+    await overview.click()
     const create = dialog.getByRole('button', { name: 'Criar página e continuar' })
     await create.click()
     await expect(dialog.getByRole('alert')).toBeVisible()
     await dialog.getByRole('button', { name: 'Cancelar' }).click()
     await expect(page.getByLabel('Título', { exact: true })).toHaveValue('Vigia fictícia')
     await expect(page.getByLabel('Descrição')).toHaveValue('Ela conhece a maré.')
-    await sessions.click()
+    await overview.click()
     await create.click()
-    await expect(page.getByRole('heading', { name: 'Sessões', exact: true })).toBeFocused()
+    await expect(page.getByRole('heading', { name: 'Costa fictícia', exact: true, level: 1 })).toBeFocused()
     expect(attempts).toEqual([attempts[0], attempts[0]])
     expect(await (await request.get(root + '/wiki')).json()).toHaveLength(1)
   } finally {

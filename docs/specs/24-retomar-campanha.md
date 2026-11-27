@@ -6,7 +6,7 @@
 
 ## Comportamento e regras
 
-Na interface vigente, a visão geral da campanha tem uma única lista de sessões ativas. Cada sessão mostra título, data, número quando cadastrado e resumo confirmado. Sessões sem resumo exibem «Sem resumo». A lista usa uma consulta a `GET /api/campaigns/:campaignId/sessions`, com a projeção aditiva do resumo, e mantém a ordenação e o isolamento existentes. A navegação Sessões rola e foca o título da lista. Destaques ficam na sessão de origem, referências na sessão e na wiki, e pendências e missões em seus contextos. [Refinamento UXR-07](39-uxr-07-refinamento.md)
+Na interface vigente, a visão geral da campanha tem uma única lista de sessões ativas. Cada sessão mostra título, data, número quando cadastrado e resumo confirmado. Sessões sem resumo exibem «Sem resumo». A lista usa uma consulta a `GET /api/campaigns/:campaignId/sessions`, com a projeção aditiva do resumo, e mantém a ordenação e o isolamento existentes. O destino Visão geral abre a campanha e dá acesso direto à lista principal. Destaques ficam na sessão de origem, referências na sessão e na wiki, e pendências e missões em seus contextos. [Refinamento UXR-07](39-uxr-07-refinamento.md)
 
 ### Compatibilidade da API de retomada
 

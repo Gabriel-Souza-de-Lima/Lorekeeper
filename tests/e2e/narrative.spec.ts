@@ -193,6 +193,7 @@ test('P10-02/04/05/11: associa fontes, mantém evidências divergentes e consult
     await page.getByRole('button', { name: 'Uma luz sinaliza o barco', exact: true }).click()
     await page.getByRole('region', { name: 'Dados confirmados' }).getByRole('button', { name: 'Investigar a luz' }).click()
     await expect(page.getByRole('heading', { name: 'Investigar a luz' })).toBeVisible()
+    await page.getByText('Histórico de estados', { exact: true }).click()
     await expect(page.getByRole('list', { name: 'Histórico de estados' }).getByText(/Aberta/)).toBeVisible()
   } finally { await finishE2EServer(app, [page.context()], request) }
 })

@@ -21,6 +21,7 @@ test('P2-01/05/06: abre a pendência pela retomada e preserva o histórico ao re
     await expect(page.getByText('A luz apareceu de madrugada.')).toBeVisible()
     await page.getByLabel('Alterar estado').selectOption('resolved')
     await page.getByRole('button', { name: 'Salvar estado' }).click()
+    await page.getByText('Histórico de estados', { exact: true }).click()
     await expect(page.getByRole('list', { name: 'Histórico de estados' }).getByText(/Resolvida/)).toBeVisible()
     await page.getByRole('button', { name: 'Voltar à campanha' }).click()
     await expect(page.getByText('Nenhuma pendência aberta.')).toBeVisible()
