@@ -42,11 +42,18 @@ test('UX62-01/02/03: escreve em uma coluna e alterna detalhes sem salvar implici
     for (const width of [320, 390, 768, 1280]) {
       await page.setViewportSize({ width, height: 640 })
       expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(width)
-      const field = (await notes.boundingBox())!
-      const panel = (await preview.boundingBox())!
-      expect(panel.y).toBeGreaterThan(field.y + field.height)
-      expect(panel.x).toBeLessThanOrEqual(field.x)
-      expect(panel.x + panel.width).toBeGreaterThanOrEqual(field.x + field.width)
+      await expect(page.getByRole('button', { name: 'Navegação', exact: true }))
+        .toHaveAttribute('aria-expanded', String(width >= 760))
+      // Measure both elements in one browser frame after the sidebar reacts to matchMedia.
+      const geometry = await notes.evaluate((field) => {
+        const writing = field.getBoundingClientRect()
+        const preview = document.getElementById('session-preview')!.getBoundingClientRect()
+        return {
+          below: preview.top > writing.bottom,
+          coversWidth: preview.left <= writing.left && preview.right >= writing.right,
+        }
+      })
+      expect(geometry).toEqual({ below: true, coversWidth: true })
     }
 
     await save.press('Enter')

@@ -29,3 +29,5 @@ Exclusão de notas rápidas e exclusão definitiva de sessões permanecem na P11
 A [rastreabilidade dos 45 requisitos e o roteiro UXR-07](../ux-ui/auditoria/rastreabilidade-uxr-06.md) distinguem implementação, automação, aplicabilidade condicional e validação humana. A UXR-07 aguarda autorização.
 
 **Validação local.** Lint, análise de tipos e build aprovados. Passaram 22 execuções focais em duas repetições e a regressão completa de 5 testes unitários, 83 de integração e 50 E2E com dois workers.
+
+**Diagnóstico do candidato inicial do PR #79.** A [execução 45915961144](https://github.com/Gabriel-Souza-de-Lima/Lorekeeper/actions/runs/45915961144) encontrou uma corrida no teste preexistente do editor. As duas medições separadas observaram a lateral em estados diferentes durante a mudança de viewport. Uma reprodução controlada gerou os mesmos valores do CI, 119,71875 e 254,71875 CSS px. O teste agora aguarda a atualização da lateral e compara os dois elementos na mesma avaliação do navegador. A revisão não altera a composição operacional.
