@@ -132,7 +132,7 @@ A validação anterior é histórica. O [SDD do refinamento](../../specs/39-uxr-
 | Requisitos | Evidência do refinamento | Avaliação restante |
 | --- | --- | --- |
 | G02/G04/G07, F01/F02/F03/F06 | Lista única, resumo confirmado e clique principal independente da lixeira. Quatro sessões, incluindo uma sem resumo, cobertas em E2E. | Clareza da lista para consultar campanhas muito extensas. |
-| G01/G05–G08, F11, D05/D11 | Sessões ganha foco e indicador ativo. Lateral recolhida funciona por teclado e Favoritos tem acesso próprio. Reflow exercitado em 320, 390, 768, 1280 e 1920 CSS px. | Leitor de tela, toque e teclado virtual em dispositivo real. |
+| G01/G05–G08, F11, D05/D11 | Na entrega inicial, Sessões ganhou foco e indicador ativo. Consulte a revisão abaixo. Lateral recolhida funciona por teclado e Favoritos tem acesso próprio. Reflow exercitado em 320, 390, 768, 1280 e 1920 CSS px. | Leitor de tela, toque e teclado virtual em dispositivo real. |
 | G04/G05/G09/G13, F03–F05/F07/F08/F11–F16 | Diálogo comum exercitado com edição, cancelamento, foco, confirmação, descarte, requisição em andamento e falha de confirmação. Regressão exercita recuperação, concorrência e retorno contextual à busca. | Navegação por histórico, recarga e fechamento dependem dos avisos que o navegador permite apresentar. |
 | G03/G12, F08, D13 | Personagem sem descrição mantém os controles e vínculos sem região de leitura vazia. | Revisão visual com as configurações de contraste e tecnologia assistiva do mantenedor. |
 
@@ -141,3 +141,15 @@ Para o novo aceite, use dados fictícios e execute também estes passos:
 1. Abra uma campanha com pelo menos quatro sessões, resuma uma delas e deixe outra sem resumo. Confira a ordenação, o resumo completo, o foco ao escolher Sessões a partir da wiki e o acesso à lixeira e aos anexos.
 2. Edite uma sessão sem salvar. Tente sair pela lateral e pela localização rápida. Confira Cancelar e o retorno de foco. Em tentativas separadas, confirme a gravação e mantenha um rascunho protegido, depois abra a sessão novamente.
 3. Repita com uma página da wiki em criação e com um arquivo selecionado. Compare os comandos apresentados. No desktop, recolha a lateral e use os ícones e Favoritos. No mobile, abra o menu em fluxo e confira a leitura de um personagem sem descrição.
+
+### Organização e alinhamento revisados
+
+| Superfície | Verificação e decisão |
+| --- | --- |
+| Pendências | A grade esticava as trilhas internas dos rótulos. A Descrição media 80 CSS px, Origem cerca de 62 CSS px e a diferença entre bases do seletor e do botão de estado era 15 CSS px em desktop. A grade recebeu ordenação, dimensões explícitas e alinhamento de base. Histórico permanece acessível em disclosure nativo. |
+| Tags e renomeação de anexos | A medição da página da wiki confirmou que a tag forçava o botão para outra linha e que o botão de renomear ficava 15 CSS px acima da base do input. Foi aplicado o grupo compartilhado de campo e ação. |
+| Campanha, metadados, resumo e destaques, wiki, informações narrativas, perspectivas, filtros e importação | Revisados os usos de grade, campos que já ocupam a largura e mensagens separadas. A regra compartilhada protege o topo de campos em linhas mistas. A revisão estrutural e a regressão não indicaram necessidade de mudar a composição dessas telas. |
+| Captura rápida, anexos fora da renomeação, diálogos e grupos de ações | Revisadas as mensagens, a associação entre campo e ação e as quebras existentes. Abas, botões isolados e estados de salvamento mantêm seu alinhamento contextual. |
+| Acervo, campanha e Sobre | Ordem única nas três apresentações da lateral. Sobre está separado dos destinos do acervo e da campanha. A eliminação de Sessões como destino atualiza UX70-02 e os critérios G01/G05/F01/F11. |
+
+As medidas automatizadas em 320, 390, 768, 1280 e 1920 CSS px apoiam G05–G09, F12 e D05/D11/D13 nas superfícies revisadas. O aceite visual, a avaliação assistiva e o zoom em ambiente real ainda dependem do mantenedor. Nome e contato de Sobre aguardam fornecimento explícito.

@@ -5,7 +5,7 @@ O mantenedor registrou as lacunas abaixo e manteve o aceite final em aberto. Bas
 | ID | Causa verificada no código | Aceitação e rastreabilidade |
 | --- | --- | --- |
 | UX70-01 | A retomada monta uma lista parcial além da lista principal. A projeção da API de sessões omite o resumo. | Uma lista de todas as sessões ativas, com título, data, número quando houver e resumo confirmado, sem trecho automático. Área principal acionável, ação de lixeira separada. Anexos e administração após a lista. P1/P7, G02/G04/G07, F01/F02/F03/F06. |
-| UX70-02 | Sessões tenta focar um título sem indicar que a lista é o destino atual. | Sessões chega à lista, rola e foca o título, com indicação ativa coerente. G01/G05, F01/F11. |
+| UX70-02 | Sessões tenta focar um título sem indicar que a lista é o destino atual. | Histórico da primeira entrega. Sessões chegava à lista com rolagem, foco e indicação ativa. O critério vigente está na seção Organização final. G01/G05, F01/F11. |
 | UX70-03 | Disponibilidade dos destinos depende do atalho rápido e os módulos protegem saída por mecanismos diferentes. | Destinos pertinentes disponíveis com proteção contextual das mudanças e operações. Ações de salvar, descartar ou manter rascunho apenas quando seguras. G04/G05/G09/G13, F03–F05/F07/F08/F11–F16. |
 | UX70-04 | Localização rápida ocupa a área principal. Lateral recolhida esconde o grupo. | Localização e Favoritos no acervo, com Ctrl+K preservado. Desktop recolhido mantém os destinos com nomes acessíveis e ícones. Mobile mantém expansão em fluxo. G01/G05–G08/F11/D05/D11. |
 | UX70-05 | A Wiki monta o artigo Markdown mesmo com corpo vazio. | Página sem descrição mantém ações e vínculos, sem artigo vazio. G03/G12/F08/D13. |
@@ -56,3 +56,20 @@ A confirmação de sessão mantém os critérios MVP-03, MVP-04, MVP-06 e MVP-07
 **Refactor** — o formulário e o diálogo chamam a mesma operação e usam o mesmo resultado explícito de confirmação. O diálogo mantém o tratamento compartilhado de foco, erro, descarte e cancelamento.
 
 A validação local passou com lint, análise de tipos, build, 5 testes unitários, 83 de integração e 54 E2E com dois workers. A rodada focal cobriu 7 testes.
+
+### Organização final solicitada pelo mantenedor
+
+UX70-02 passa a exigir apenas Visão geral como entrada da campanha, com a lista de sessões como conteúdo principal. A decisão substitui a exigência de destino Sessões, rolagem e indicador próprios. O ensaio anterior e sua evidência de foco permanecem históricos. Uma visão sintética independente poderá ser avaliada se o volume justificar. Retornos contextuais, lixeira e proteção de alterações continuam aplicáveis.
+
+| ID | Aceitação | Evidência prevista |
+| --- | --- | --- |
+| UX70-06 | Acervo em ordem Busca, Campanhas, Anotações rápidas, Favoritos e Navegação rápida. Sobre é o último destino independente e respeita UX70-03. | E2E nos três estados de navegação e com edição pendente. |
+| UX70-07 | Criação e edição de pendências seguem a ordem solicitada. Campos pares têm a mesma largura, topo e altura inicial. Observações ocupa a linha. A coluna móvel preserva a sequência. | Geometria em cinco larguras, dados longos, erro e seletor condicional. |
+| UX70-08 | Editar fica junto à identificação. Alterar estado e Salvar estado alinham pela base. Expansão do histórico preserva todos os registros. | E2E de geometria e regressão de transições. |
+| UX70-09 | Sobre apresenta a versão do manifesto, orientação de uso e a distinção entre ZIP e cópia SQLite. Identificação e contato dependem de dados fornecidos pelo mantenedor. | E2E de navegação e versão, sem persistência adicional. |
+
+Rastreabilidade complementar de UX-G01/G05/G06/G07/G08/G09, UX-F01/F02/F11/F12 e UX-D05/D11/D13. A apresentação preserva os contratos de UX-F12 e MVP-03/MVP-06.
+
+**Red → Green → Refactor.** Os testes reproduziram a ordem antiga do Acervo e o desalinhamento entre o campo de tag e seu botão. A medição da aplicação anterior isolou também o esticamento da grade de Pendências e a centralização vertical dos botões de estado e de renomeação. A rodada focal final passou com 14 testes em dois workers. Em 1280 CSS px, Título e Tipo passaram a medir 44 px, Descrição e Origem mediram 80 px e Observações passou de aproximadamente 456 a 926 px de largura. As duas ações de estado passaram a ter base comum e 44 px de altura. Foram capturados o formulário e o detalhe, antes e depois, com a mesma campanha fictícia. [Testes focais](../../tests/e2e/uxr-07-organization.spec.ts) · [Auditoria e limites](../ux-ui/auditoria/uxr-07.md#organização-e-alinhamento-revisados)
+
+A regressão local passou com lint, análise de tipos, build, 5 unitários, 83 de integração e 57 E2E em Chromium com dois workers. O aviso preexistente de tamanho do bundle continua visível.

@@ -9,7 +9,6 @@ export function DocumentTags({ campaignUrl, documentId, archived }: {
   archived: boolean
 }) {
   const label = useId()
-  const input = useId()
   const url = `${campaignUrl}/documents/${documentId}/tags`
   const [tags, setTags] = useState<DocumentTag[] | null>(null)
   const [name, setName] = useState('')
@@ -66,9 +65,8 @@ export function DocumentTags({ campaignUrl, documentId, archived }: {
             {!archived && <button type="button" disabled={busy} aria-label={`Remover tag ${tag.name}`}
               onClick={() => void change(tag)}>Remover</button>}
           </li>)}</ul>}
-    {!archived && tags !== null && <form className="actions" onSubmit={submit}>
-      <label htmlFor={input}>Nome da tag</label>
-      <input id={input} maxLength={60} value={name} disabled={busy} onChange={(event) => setName(event.target.value)} />
+    {!archived && tags !== null && <form className="actions field-actions" onSubmit={submit}>
+      <label>Nome da tag<input maxLength={60} value={name} disabled={busy} onChange={(event) => setName(event.target.value)} /></label>
       <button type="submit" disabled={busy || !name.trim()}>Adicionar tag</button>
     </form>}
     {error && <p className="error" role="alert">{error}</p>}

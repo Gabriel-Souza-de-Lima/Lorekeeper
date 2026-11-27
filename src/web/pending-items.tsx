@@ -27,13 +27,14 @@ function readFields(data: FormData): PendingFields {
 function PendingInputs({ initial, sessions, entities, busy }: {
   initial?: PendingFields; sessions: SessionSummary[]; entities: WikiSummary[]; busy: boolean
 }) {
-  return <fieldset disabled={busy} className="form-grid">
+  return <fieldset disabled={busy} className="form-grid pending-fields">
     <label>Título<input name="title" defaultValue={initial?.title} required /></label>
     <label>Tipo<select name="type" defaultValue={initial?.type ?? 'other'}>
       {pendingTypes.map((type) => <option key={type} value={type}>{types[type]}</option>)}
     </select></label>
     <label>Descrição<textarea name="description" defaultValue={initial?.description} /></label>
-    <label>Origem<input name="origin" defaultValue={initial?.origin} /></label>
+    <label>Origem<input className="paired-text-entry" name="origin" defaultValue={initial?.origin} /></label>
+    <label className="wide">Observações<textarea name="notes" defaultValue={initial?.notes} /></label>
     <label>Sessão de origem<select name="sessionId" defaultValue={initial?.sessionId ?? ''}>
       <option value="">Nenhuma</option>
       {initial?.sessionId && !sessions.some((row) => row.id === initial.sessionId) &&
@@ -43,7 +44,6 @@ function PendingInputs({ initial, sessions, entities, busy }: {
     {entities.length > 0 && <label>NPCs e localidades<select name="entityIds" multiple defaultValue={initial?.entityIds}>
       {entities.map((row) => <option key={row.id} value={row.id}>{row.title}</option>)}
     </select></label>}
-    <label>Observações<textarea name="notes" defaultValue={initial?.notes} /></label>
   </fieldset>
 }
 
@@ -188,8 +188,16 @@ export function PendingItems({ campaign, itemId, onBack, onSession, onWiki }: {
           <span>{types[row.type]} · {states[row.state]}</span>
         </li>)}</ul>}
       {item && <section className="panel surface-flow" aria-label="Detalhe da pendência">
-        <h2>{item.title}</h2>
-        <p className="context">{types[item.type]} · {states[item.state]}</p>
+        <header className="actions pending-identification">
+          <div><h2>{item.title}</h2>
+            <p className="context">{types[item.type]} · {states[item.state]}</p></div>
+          {!locked && !editing && <button disabled={busy} onClick={() => {
+            setError('')
+            setEditDirty(false)
+            setEditing(item)
+            setEditVersion(item.editVersion)
+          }}>Editar pendência</button>}
+        </header>
         {item.description && <p>{item.description}</p>}
         {item.origin && <p>Origem: {item.origin}</p>}
         {item.notes && <p>Observações: {item.notes}</p>}
@@ -197,23 +205,19 @@ export function PendingItems({ campaign, itemId, onBack, onSession, onWiki }: {
           item.sessionId && <p>Sessão de origem indisponível.</p>}
         {entities.filter((row) => item.entityIds.includes(row.id)).map((row) =>
           <button key={row.id} disabled={busy || Boolean(editing)} onClick={() => leave(() => onWiki(row.id))}>{row.title}</button>)}
-        <h3>Histórico de estados</h3>
-        <ol aria-label="Histórico de estados">{item.history.map((entry, index) =>
-          <li key={index}>{states[entry.state]} · <time dateTime={entry.createdAt}>
-            {new Date(entry.createdAt).toLocaleString('pt-BR')}</time></li>)}</ol>
-        {!locked && !editing && <div className="actions">
-          <button disabled={busy} onClick={() => {
-            setError('')
-            setEditDirty(false)
-            setEditing(item)
-            setEditVersion(item.editVersion)
-          }}>Editar pendência</button>
+        {!locked && !editing && <div className="actions field-actions pending-state-actions" role="group" aria-label="Atualizar estado">
           <label>Alterar estado<select value={next} disabled={busy}
             onChange={(event) => setNext(event.currentTarget.value as PendingState)}>
             {pendingStates.map((state) => <option key={state} value={state}>{states[state]}</option>)}
           </select></label>
           <button disabled={busy || next === item.state} onClick={() => changeState(item)}>Salvar estado</button>
         </div>}
+        <details className="pending-history">
+          <summary>Histórico de estados</summary>
+          <ol aria-label="Histórico de estados">{item.history.map((entry, index) =>
+            <li key={index}>{states[entry.state]} · <time dateTime={entry.createdAt}>
+              {new Date(entry.createdAt).toLocaleString('pt-BR')}</time></li>)}</ol>
+        </details>
       </section>}
       {editing && <form className="panel surface-flow" aria-label="Editar pendência" onSubmit={edit} onChange={() => setEditDirty(true)}>
         <h2>Editar pendência</h2>
@@ -228,7 +232,7 @@ export function PendingItems({ campaign, itemId, onBack, onSession, onWiki }: {
           <button type="button" disabled={busy} onClick={() => { setEditing(null); setEditDirty(false); setError('') }}>Cancelar edição</button>
         </div>
       </form>}
-      {!locked && !editing && <form className="panel surface-flow" onSubmit={create} onChange={() => setCreateDirty(true)}>
+      {!locked && !editing && <form className="panel surface-flow" aria-label="Nova pendência" onSubmit={create} onChange={() => setCreateDirty(true)}>
         <h2>Nova pendência</h2>
         <PendingInputs sessions={sessions} entities={entities} busy={busy} />
         <div className="actions"><button className="primary" disabled={busy}>Criar pendência</button></div>

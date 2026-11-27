@@ -116,3 +116,11 @@ No desktop, a lateral recolhida mantém acervo e campanha numa faixa de 72 CSS p
 A visão geral prioriza uma lista de cartões de sessão com superfície principal acionável e ação de lixeira independente. O resumo confirmado é apresentado integralmente dentro do limite já suportado pelo campo. Anexos e administração ficam em seções secundárias. A wiki só renderiza a superfície de leitura quando há conteúdo.
 
 O diálogo de saída usa os tokens semânticos Codex e identifica as operações envolvidas. Cancelar devolve o foco ao controle de origem. Os comandos disponíveis refletem as garantias do módulo. [Critérios do refinamento](../specs/39-uxr-07-refinamento.md)
+
+### Formulários e ações associadas
+
+Em grades de formulário, rótulos e controles começam no topo da célula. As colunas equivalentes usam largura flexível e mínimo zero, e ações, descrições auxiliares e campos longos podem ocupar a linha inteira. Inputs e seletores simples em grades e grupos de ação têm mínimo de 44 CSS px, assim como os botões. Textareas mantêm redimensionamento e altura inicial adequada. Em Pendências, Origem continua sendo um campo de linha única e tem a mesma altura inicial de Descrição em desktop. Em telas estreitas, o formulário volta à ordem linear e Origem assume a altura normal de input.
+
+Use `field-actions` para campos rotulados ligados a botões. Alinhe pela base dos controles e permita quebra quando o espaço pedir. O ajuste cobre Alterar estado, Adicionar tag e Renomear anexo. Grupos de botões, abas e estados de salvamento preservam seu alinhamento contextual, com feedback em linha própria quando necessário. Preservam-se foco visível, semântica de validação, dimensões mínimas e estados indisponíveis.
+
+A ordem do Acervo é Busca, Campanhas, Anotações rápidas, Favoritos e Navegação rápida. Visão geral é a entrada única da campanha e apresenta sua lista de sessões. Sobre fica em grupo próprio após os demais destinos. [Critérios atualizados](../specs/39-uxr-07-refinamento.md#organização-final-solicitada-pelo-mantenedor)

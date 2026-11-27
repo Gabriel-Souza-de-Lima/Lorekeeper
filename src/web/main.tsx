@@ -1,3 +1,4 @@
+import { About } from './about.tsx'
 import { Narrative } from './narrative.tsx'
 import { Attachments } from './attachments.tsx'
 import { PendingItems } from './pending-items.tsx'
@@ -25,6 +26,7 @@ const statusLabels: Record<CampaignStatus, string> = { active: 'Ativa', paused: 
 
 type View = (
   | { page: 'dashboard' }
+  | { page: 'about' }
   | { page: 'search' }
   | { page: 'text-import' }
   | { page: 'search-note'; note: Note; campaign: Campaign | null }
@@ -104,11 +106,10 @@ function App() {
   const [working, setWorking] = useState(false)
   const [error, setError] = useState('')
 
-  const [atSessions, setAtSessions] = useState(false)
   const [navigationOpen, setNavigationOpen] = useState(() => !window.matchMedia(narrowNavigation).matches)
   const wikiVisit = useRef(0)
   const pageHeading = useRef<HTMLElement>(null)
-  const focusDestination = useRef<string | null>(null)
+  const focusDestination = useRef(false)
   const [quickOpen, setQuickOpen] = useState(false)
   const [favoritesOnly, setFavoritesOnly] = useState(false)
   const quickOrigin = useRef<HTMLElement | null>(null)
@@ -124,20 +125,17 @@ function App() {
 
   useEffect(() => {
     if (!focusDestination.current) return
-    const target = focusDestination.current
-    focusDestination.current = null
-    const heading = pageHeading.current?.querySelector<HTMLElement>(target)
-    if (target === '#campaign-sessions') heading?.scrollIntoView({ block: 'start' })
-    if (heading && (target !== 'h1' || !pageHeading.current?.contains(document.activeElement))) {
+    focusDestination.current = false
+    const heading = pageHeading.current?.querySelector<HTMLElement>('h1')
+    if (heading && !pageHeading.current?.contains(document.activeElement)) {
       heading.tabIndex = -1
       heading.focus()
     }
   }, [view])
 
-  function navigate(task: () => void, target = 'h1', origin?: HTMLElement | null) {
+  function navigate(task: () => void, origin?: HTMLElement | null) {
     leave(() => {
-      setAtSessions(target === '#campaign-sessions')
-      focusDestination.current = target
+      focusDestination.current = true
       setError('')
       if (window.matchMedia(narrowNavigation).matches) setNavigationOpen(false)
       task()
@@ -178,7 +176,7 @@ function App() {
     try {
       await task()
     } catch (failure) {
-      focusDestination.current = null
+      focusDestination.current = false
       setError(failure instanceof Error ? failure.message : 'A operação falhou.')
     } finally {
       setWorking(false)
@@ -194,7 +192,6 @@ function App() {
   async function openCampaign(id: string, page: 'campaign' | 'edit' = 'campaign') {
     const url = `${campaignPath}/${id}`
     const [campaign, rows] = await Promise.all([api<Campaign>(url), api<CampaignSessionSummary[]>(`${url}/sessions`)])
-    if (focusDestination.current !== '#campaign-sessions') setAtSessions(false)
     setSessions(rows)
     setView({ page, campaign })
   }
@@ -246,25 +243,9 @@ function App() {
     return <nav className={lateral ? 'sidebar-links' : 'actions campaign-destinations'} aria-label={`Campanha ${campaign.name}`}>
       {lateral && <>
         <p className="context">{campaign.name}</p>
-        <button aria-label="Visão geral" title="Visão geral" className="quiet" disabled={disabled} aria-current={view.page === 'campaign' && !atSessions ? 'page' : undefined}
+        <button aria-label="Visão geral" title="Visão geral" className="quiet" disabled={disabled} aria-current={view.page === 'campaign' ? 'page' : view.page === 'session' ? 'location' : undefined}
           onClick={() => navigate(() => void action(() => openCampaign(campaign.id)))}><NavigationIcon name="overview" /><span className="destination-label">Visão geral</span></button>
       </>}
-      <button aria-label="Sessões" title="Sessões" className="quiet" disabled={disabled} aria-current={view.page === 'session' ? 'page' : view.page === 'campaign' && atSessions ? 'location' : undefined}
-        onClick={() => {
-          if (view.page !== 'campaign') {
-            navigate(() => void action(() => openCampaign(campaign.id)), '#campaign-sessions')
-            return
-          }
-          leave(() => {
-            if (window.matchMedia(narrowNavigation).matches) setNavigationOpen(false)
-            setAtSessions(true)
-            requestAnimationFrame(() => {
-              const heading = document.getElementById('campaign-sessions')
-              heading?.scrollIntoView({ block: 'start' })
-              heading?.focus({ preventScroll: true })
-            })
-          })
-        }}><NavigationIcon name="sessions" /><span className="destination-label">Sessões</span></button>
       <button aria-label="Wiki da campanha" title="Wiki da campanha" className="quiet" disabled={disabled}
         aria-current={view.page === 'wiki' && !view.charactersOnly ? 'page' : undefined}
         onClick={() => navigateWiki(campaign)}><NavigationIcon name="wiki" /><span className="destination-label">Wiki da campanha</span></button>
@@ -306,7 +287,7 @@ function App() {
           {campaign.lastSessionDate && <span>Última sessão em {displayDate(campaign.lastSessionDate)}</span>}
         </div>
         <section aria-labelledby="campaign-sessions" className="campaign-session-section">
-          <header className="page-header"><h2 tabIndex={-1} id="campaign-sessions">Sessões</h2></header>
+          <header className="page-header"><h2 id="campaign-sessions">Sessões</h2></header>
           {sessions.length === 0 && <p className="empty">Nenhuma sessão registrada</p>}
           <ul className="session-list">
             {sessions.map((session) => <li key={session.id} className="panel campaign-session-card">
@@ -388,13 +369,14 @@ function App() {
     navigate(() => {
       if (destination.kind === 'campaign') void action(() => openCampaign(destination.campaign.id))
       else openSearchResult(destination.result)
-    }, 'h1', quickOrigin.current)
+    }, quickOrigin.current)
   }
 
   function currentPage() {
     const result = view.searchResult
     const onSearchBack = result ? () => returnToSearch(result) : undefined
     switch (view.page) {
+      case 'about': return <About />
       case 'text-import': return <TextImport onBack={dashboard}
         onOpen={(campaign, session) => setView({ page: 'session', campaign, session })} />
       case 'search': return null
@@ -526,16 +508,21 @@ function App() {
       <div id="sidebar-destinations">
         <nav className="sidebar-links" aria-label="Acervo">
           <p className="context">Acervo</p>
-          <button aria-label="Navegação rápida" title="Navegação rápida" className="quiet" disabled={working} aria-keyshortcuts="Control+K Meta+K" onClick={() => openQuick()}><NavigationIcon name="quick" /><span className="destination-label">Navegação rápida</span></button>
-          <button aria-label="Favoritos" title="Favoritos" className="quiet" disabled={working} onClick={() => openQuick(true)}><NavigationIcon name="favorite" /><span className="destination-label">Favoritos</span></button>
-          <button aria-label="Campanhas" title="Campanhas" className="quiet" aria-current={view.page === 'dashboard' ? 'page' : undefined}
-            disabled={working} onClick={() => navigate(dashboard)}><NavigationIcon name="library" /><span className="destination-label">Campanhas</span></button>
           <button aria-label="Busca" title="Busca" className="quiet" disabled={working} aria-current={view.page === 'search' ? 'page' : undefined}
             onClick={() => navigate(startSearch)}><NavigationIcon name="search" /><span className="destination-label">Busca</span></button>
+          <button aria-label="Campanhas" title="Campanhas" className="quiet" aria-current={view.page === 'dashboard' ? 'page' : undefined}
+            disabled={working} onClick={() => navigate(dashboard)}><NavigationIcon name="library" /><span className="destination-label">Campanhas</span></button>
           <button aria-label="Anotações rápidas" title="Anotações rápidas" className="quiet" disabled={working} aria-current={view.page === 'quick-notes' ? 'page' : undefined}
             onClick={() => navigate(() => setView({ page: 'quick-notes' }))}><NavigationIcon name="note" /><span className="destination-label">Anotações rápidas</span></button>
+          <button aria-label="Favoritos" title="Favoritos" className="quiet" disabled={working} onClick={() => openQuick(true)}><NavigationIcon name="favorite" /><span className="destination-label">Favoritos</span></button>
+          <button aria-label="Navegação rápida" title="Navegação rápida" className="quiet" disabled={working} aria-keyshortcuts="Control+K Meta+K" onClick={() => openQuick()}><NavigationIcon name="quick" /><span className="destination-label">Navegação rápida</span></button>
         </nav>
         {campaignContext && campaignDestinations(campaignContext, true)}
+        <nav className="sidebar-links" aria-label="Aplicação">
+          <button aria-label="Sobre" title="Sobre" className="quiet" disabled={working}
+            aria-current={view.page === 'about' ? 'page' : undefined}
+            onClick={() => navigate(() => setView({ page: 'about' }))}><NavigationIcon name="info" /><span className="destination-label">Sobre</span></button>
+        </nav>
       </div>
     </aside>
     <main ref={pageHeading} className={view.page === 'dashboard' || view.page === 'campaign' ? 'main-overview' : undefined}>

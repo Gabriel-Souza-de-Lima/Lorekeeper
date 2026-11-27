@@ -222,3 +222,23 @@ input[type="file"]::file-selector-button {
 }
 .navigation-protection { overflow: auto; max-height: calc(100dvh - 2rem); max-width: min(32rem, calc(100% - 2rem)); color: var(--ink); }
 .navigation-protection::backdrop { background: rgb(0 0 0 / 55%); }
+
+/* Grupos de campo e ação alinhados pelo controle, mesmo com rótulos acima. */
+.actions.field-actions { align-items: end; }
+.field-actions > label { flex: 1 1 12rem; min-width: 0; }
+.form-grid > label { align-content: start; min-width: 0; }
+.form-grid > label > :is(input, select:not([multiple])), .field-actions > label > :is(input, select) { min-height: 44px; }
+.pending-fields .paired-text-entry { height: 5rem; }
+.pending-identification { justify-content: space-between; }
+.pending-identification > div { min-width: 0; }
+.pending-state-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 14rem) auto;
+  justify-content: start;
+}
+.pending-history > summary { min-height: 44px; padding-block: var(--space-2); cursor: pointer; }
+
+@media (width < 760px) {
+  .pending-fields { grid-template-columns: minmax(0, 1fr); }
+  .pending-fields .paired-text-entry { height: auto; }
+}

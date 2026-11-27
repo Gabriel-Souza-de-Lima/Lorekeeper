@@ -134,7 +134,7 @@ export function Attachments({ campaignUrl, documentId, archived, navigationPendi
             <p className="context">{file.mime === 'image/png' ? 'PNG' : 'PDF'} · {new Intl.NumberFormat('pt-BR', {
               style: 'unit', unit: 'kilobyte', maximumFractionDigits: 1,
             }).format(file.size / 1000)}{file.source && ` · ${file.source}`}</p>
-            {!archived && (editing === file.id ? <form className="actions" onSubmit={(event) => {
+            {!archived && (editing === file.id ? <form className="actions field-actions" onSubmit={(event) => {
               event.preventDefault()
               const name = new FormData(event.currentTarget).get('name')
               void action(async () => { await api(`${path}/${file.id}`, 'PATCH', { name }); setEditing(null) })
