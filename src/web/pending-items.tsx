@@ -1,3 +1,4 @@
+import { NavigationIcon } from './navigation-icon.tsx'
 import { PendingStatus, pendingStateLabels } from './pending-status.tsx'
 import { Pagination } from './campaign-overview.tsx'
 import { useLeave, usePendingNavigation } from './navigation-guard.tsx'
@@ -208,15 +209,20 @@ export function PendingItems({ campaign, itemId, onBack, onSession, onWiki }: {
           <button aria-pressed={tab === 'open'} onClick={() => { setTab('open'); setPage(1) }}>Abertas {opened.length}</button>
           <button aria-pressed={tab === 'closed'} onClick={() => { setTab('closed'); setPage(1) }}>Fechadas {closed.length}</button>
         </div>
+        <div className="panel collection-panel">
         {filtered.length === 0 ? <p className="panel empty">Nenhuma pendência {tab === 'open' ? 'aberta' : 'fechada'}.</p> :
-          <ul className="session-list">{filtered.slice((page - 1) * 8, page * 8).map((row) => <li className="panel" key={row.id}>
-            <button className="quiet" data-pending={row.id} disabled={busy} onClick={() => void action(async () => {
+          <ul className="session-list overview-records">{filtered.slice((page - 1) * 8, page * 8).map((row) => <li key={row.id}>
+            <button className="overview-record" aria-label={row.title} data-pending={row.id} disabled={busy} onClick={() => void action(async () => {
               opener.current = row.id
               select(await api<PendingItem>(`${path}/${row.id}`))
-            }, false)}>{row.title}</button>
-            <span>{types[row.type]} · <PendingStatus state={row.state} /></span>
+            }, false)}>
+              <span className="record-copy"><strong className="campaign-card-title">{row.title}</strong>
+                <small>{types[row.type]}</small><PendingStatus state={row.state} /></span>
+              <span className="record-arrow"><NavigationIcon name="arrow" /></span>
+            </button>
           </li>)}</ul>}
         <Pagination page={page} pages={pages} onChange={setPage} />
+        </div>
       </section>}
       {item && <section className="panel surface-flow" aria-label="Detalhe da pendência">
         <header className="actions pending-identification">

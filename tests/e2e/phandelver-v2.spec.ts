@@ -65,7 +65,7 @@ test('PHV2-04/05/06/08/09: pagina 28 pendências e mantém os contextos de detal
     await expect(page.getByRole('form', { name: 'Nova pendência' })).toHaveCount(0)
     await list.getByRole('button', { name: 'Próxima' }).click()
     const item = list.getByRole('listitem').first().getByRole('button')
-    const name = (await item.innerText()).trim()
+    const name = (await item.getAttribute('aria-label'))!
     await item.click()
     await expect(list).toHaveCount(0)
     await expect(page.getByRole('heading', { name, exact: true })).toBeFocused()
@@ -99,7 +99,7 @@ test('PHV2-04/05/06/08/09: pagina 28 pendências e mantém os contextos de detal
       expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(width)
     }
     await page.setViewportSize({ width: 320, height: 800 })
-    await page.getByText('Anexos da campanha', { exact: true }).click()
+    await page.getByText('Ver arquivos vinculados', { exact: true }).click()
     const attachments = page.getByRole('region', { name: 'Anexos' })
     await expect(attachments.getByRole('link')).toHaveCount(6)
     await expect(attachments.getByLabel('Arquivo', { exact: true })).toHaveCount(0)
@@ -121,7 +121,7 @@ test('PHV2-08/11: estados legíveis, cartão acionável e anexos com largura út
     await expect(pending.locator('.pending-status').first()).toBeVisible()
     const recent = page.getByRole('region', { name: 'Sessões recentes' })
     const files = page.getByRole('region', { name: 'Anexos' })
-    await page.getByText('Anexos da campanha', { exact: true }).click()
+    await page.getByText('Ver arquivos vinculados', { exact: true }).click()
     await expect(files.getByRole('link')).toHaveCount(6)
     for (const width of [320, 390, 768, 1280, 1920]) {
       await page.setViewportSize({ width, height: 800 })
@@ -135,10 +135,11 @@ test('PHV2-08/11: estados legíveis, cartão acionável e anexos com largura út
         const name = row.querySelector('a')!.getBoundingClientRect()
         const actions = row.querySelector('.actions')!.getBoundingClientRect()
         const parent = row.getBoundingClientRect()
-        return { nameWidth: name.width, available: parent.width, nameBottom: name.bottom, actionsTop: actions.top }
+        return { nameWidth: name.width, available: parent.width, nameBottom: name.bottom, actionsTop: actions.top, actionsLeft: actions.left, nameRight: name.right }
       })
       expect(attachment.nameWidth).toBeGreaterThanOrEqual(Math.min(165, attachment.available * 0.7))
-      expect(attachment.actionsTop).toBeGreaterThanOrEqual(attachment.nameBottom)
+      if (width <= 900) expect(attachment.actionsTop).toBeGreaterThanOrEqual(attachment.nameBottom)
+      else expect(attachment.actionsLeft).toBeGreaterThanOrEqual(attachment.nameRight)
     }
     await pending.getByRole('button', { name: 'Ver pendências' }).press('Enter')
     const list = page.getByRole('region', { name: 'Lista de pendências' })

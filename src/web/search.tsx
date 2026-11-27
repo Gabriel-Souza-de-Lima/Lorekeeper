@@ -1,3 +1,4 @@
+import { NavigationIcon } from './navigation-icon.tsx'
 import { useEffect, useLayoutEffect, useRef, useState, type FormEvent } from 'react'
 import type { SearchFilters, SearchResult, SearchType } from '../contracts.ts'
 import { api } from './api.ts'
@@ -134,15 +135,19 @@ export function Search({ working, onBack, onOpen, returned }: {
     <p role="status">{pending ? 'Buscando…' : notice}</p>
     <h2 ref={heading} tabIndex={-1}>Resultados da busca</h2>
     {results?.length === 0 && <p className="panel empty">Nenhum documento encontrado.</p>}
-    {results && results.length > 0 && <ul ref={list} className="session-list">{results.map((result) => <li key={resultKey(result)} className="panel">
-      <div>
-        <button className="quiet" data-result={resultKey(result)} disabled={working || pending} onClick={() => onOpen(result)}>{result.title}</button>
-        <p className="context">{categories[result.type]} · {result.campaignName ?? 'Caixa de entrada'}
-          {result.archived ? ' · Campanha arquivada' : ''}</p>
-        <p>{result.snippet.map(({ text, match }, index) => match
-          ? <mark key={index}>{text}</mark>
-          : text)}</p>
-      </div>
+    {results && results.length > 0 && <ul ref={list} className="panel session-list overview-records">{results.map((result) => <li key={resultKey(result)}>
+      <button className="overview-record" aria-label={result.title} data-result={resultKey(result)}
+        disabled={working || pending} onClick={() => onOpen(result)}>
+        <span className="record-copy">
+          <strong className="campaign-card-title">{result.title}</strong>
+          <small>{categories[result.type]} · {result.campaignName ?? 'Caixa de entrada'}
+            {result.archived ? ' · Campanha arquivada' : ''}</small>
+          <span className="session-summary">{result.snippet.map(({ text, match }, index) => match
+            ? <mark key={index}>{text}</mark>
+            : text)}</span>
+        </span>
+        <span className="record-arrow"><NavigationIcon name="arrow" /></span>
+      </button>
     </li>)}</ul>}
   </>
 }

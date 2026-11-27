@@ -1,3 +1,4 @@
+import { NavigationIcon } from './navigation-icon.tsx'
 import { useEffect, useState } from 'react'
 import type { SearchResult } from '../contracts.ts'
 import { api } from './api.ts'
@@ -24,9 +25,12 @@ export function Favorites({ onOpen }: { onOpen: (result: SearchResult) => void }
       {error ? <><p role="alert">{error}</p><button onClick={() => { setError(''); setAttempt(attempt + 1) }}>Recarregar favoritos</button></>
         : !visible ? <p role="status">Carregando favoritos…</p>
         : !visible.length ? <p>Nenhum favorito encontrado.</p>
-        : <ul className="session-list">{visible.map((result) => <li className="panel" key={result.id}>
-          <button className="quiet" onClick={() => onOpen(result)}>{result.title}</button>
-          <span>{result.campaignName} · {categories[result.type]}</span>
+        : <ul className="session-list overview-records">{visible.map((result) => <li key={result.id}>
+          <button className="overview-record" aria-label={result.title} onClick={() => onOpen(result)}>
+            <span className="record-copy"><strong className="campaign-card-title">{result.title}</strong>
+              <small>{result.campaignName} · {categories[result.type]}</small></span>
+            <span className="record-arrow"><NavigationIcon name="arrow" /></span>
+          </button>
         </li>)}</ul>}
     </section>
   </>

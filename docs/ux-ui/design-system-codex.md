@@ -130,3 +130,9 @@ A ordem do Acervo é Busca, Campanhas, Anotações rápidas, Favoritos e Navega�
 A [especificação Phandelver V2](../specs/40-phandelver-v2.md) registra a prioridade aprovada dos painéis atuais, catálogo de sessões independente e grupos compactos de pendências, missões e anexos. As alterações serão incorporadas por etapa. A identidade Codex e o editor operacional permanecem como base.
 
 No V2, a identificação e os metadados da campanha compartilham o cabeçalho da ação principal. Sessões recentes ocupam a largura do painel e usam separadores, enquanto as coleções completas conservam seus controles próprios. Os estados de pendência usam `success`, `warning`, `info` e `muted` com rótulos textuais. Os anexos mantêm nome e metadados em uma coluna útil antes da linha de ações. [Validação consolidada](../specs/40-phandelver-v2.md#d--coesão-e-validação-consolidada)
+
+### Referência normativa de apresentação
+
+O HTML Phandelver V2, identificado por hash no [SDD de fidelidade](../specs/41-fidelidade-phandelver-v2.md), rege as superfícies comparáveis. A lateral usa 232/68 px, a área útil máxima 1180 px e a leitura 850 px. Os pontos de adaptação são até 900 e 700 px. A interface usa 14/21 px; painéis têm 18 px internos (14 no móvel), borda de 28% e raio de 12 px. Os controles usam raio de 8 px e mínimo de 44 px. Ícones usam 19 px com traço de 1,65. O foco usa contorno dourado de 2 px com deslocamento de 3 px, e a borda opaca permanece nos campos e controles cuja identificação depende dela. A validação de contraste decorre da cor computada sobre sua superfície.
+
+As composições de registro, painéis e listas do HTML substituem as medidas anteriores onde são equivalentes. Variações operacionais necessárias, como histórico, edição e validação, usam o mesmo vocabulário visual.

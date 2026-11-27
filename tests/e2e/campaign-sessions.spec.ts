@@ -111,7 +111,6 @@ test('UX70-03: anexos sem envio e gravação incerta impedem saída silenciosa',
     const url = origin + '/api/campaigns/' + id
     await page.goto(origin)
     await page.getByRole('button', { name: 'Costa', exact: true }).click()
-    await page.getByText('Anexos da campanha', { exact: true }).click()
     await page.getByRole('button', { name: 'Adicionar anexo' }).click()
     await page.getByLabel('Arquivo', { exact: true }).setInputFiles({
       name: 'registro.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.4'),
@@ -170,7 +169,6 @@ test('UX70-03a/b/c: confirma anexo e página da wiki sem abandonar operações i
     })
     await page.goto(origin)
     await page.getByRole('button', { name: 'Costa fictícia', exact: true }).click()
-    await page.getByText('Anexos da campanha', { exact: true }).click()
     await page.getByRole('button', { name: 'Adicionar anexo' }).click()
     await page.getByLabel('Arquivo', { exact: true }).setInputFiles({
       name: 'registro.pdf', mimeType: 'application/pdf', buffer: pdf,

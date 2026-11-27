@@ -16,7 +16,7 @@ test('UX70-02/06/09: ordena os destinos e protege o acesso à página Sobre', as
     const expected = ['Busca', 'Campanhas', 'Anotações rápidas', 'Favoritos']
     for (const width of [320, 390, 768, 1280, 1920]) {
       await page.setViewportSize({ width, height: 800 })
-      const expanded = width >= 760
+      const expanded = width > 700
       await expect(toggle).toHaveAttribute('aria-expanded', String(expanded))
       if (!expanded) await toggle.click()
       await expect(acervo.getByRole('button')).toHaveCount(expected.length)
@@ -77,7 +77,7 @@ test('UX70-07/08: mede os campos e as ações de estado nas larguras suportadas'
         ['Título', 'Tipo', 'Descrição', 'Origem', 'Observações', 'Sessão de origem', 'NPCs e localidades'].map(measure))
       expect(notes.y).toBeGreaterThan(source.y)
       expect(session.y).toBeGreaterThan(notes.y)
-      if (width >= 760) {
+      if (width > 700) {
         for (const [left, right] of [[title, type], [description, source]]) {
           expect(Math.abs(left.y - right.y)).toBeLessThan(1)
           expect(Math.abs(left.width - right.width)).toBeLessThan(1)
