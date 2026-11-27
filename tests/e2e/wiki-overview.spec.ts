@@ -19,7 +19,7 @@ test('I3-04a/b: opera missão e acessa destaque na visão geral', async ({ page,
     await missions.getByRole('button', { name: 'Explorar o farol' }).click({ timeout: 3500 })
     await page.getByRole('button', { name: 'Concluir missão' }).click()
     await expect(page.getByRole('button', { name: 'Reabrir missão' })).toBeVisible()
-    await page.getByRole('button', { name: 'Voltar à wiki' }).click()
+    await page.getByRole('button', { name: 'Voltar às missões' }).click()
     await page.locator('.sidebar').getByRole('button', { name: 'Personagens', exact: true }).click()
     await page.getByRole('button', { name: 'Guia da Bruma' }).click()
     await page.getByRole('button', { name: 'Destacar personagem' }).click()

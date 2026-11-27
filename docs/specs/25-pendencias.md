@@ -1,5 +1,8 @@
 # P2 — Pendências e pistas
 
+A interface vigente divide pendências em Abertas e Fechadas, oito por página. A visão geral traz até três abertas. A leitura, criação e edição têm telas próprias com retorno à guia e página quando possível. Os rótulos vigentes são Aberta, Em andamento, Concluída e Cancelada. [Apresentação Phandelver V2](40-phandelver-v2.md)
+
+
 - **Estado** — aprovado na validação local do Windows.
 - **Objetivo** — acompanhar perguntas, pistas, promessas e tarefas sem alterar o modelo de missões.
 - **Rastreabilidade** — Pós-MVP P2 e produto §4.10.

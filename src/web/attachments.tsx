@@ -26,6 +26,7 @@ export function Attachments({ campaignUrl, documentId, archived, navigationPendi
   const [rows, setRows] = useState<Attachment[] | null>(null)
   const [available, setAvailable] = useState<Attachment[]>([])
   const [selected, setSelected] = useState('')
+  const [showUpload, setShowUpload] = useState(false)
   const [editing, setEditing] = useState<string | null>(null)
   const [refresh, setRefresh] = useState(0)
   const [loadFailed, setLoadFailed] = useState(false)
@@ -108,6 +109,7 @@ export function Attachments({ campaignUrl, documentId, archived, navigationPendi
       form.reset()
       setSelectedFile(null)
       setSourceEdited(false)
+      setShowUpload(false)
     })
   }
 
@@ -116,7 +118,11 @@ export function Attachments({ campaignUrl, documentId, archived, navigationPendi
   }
 
   return <section className="panel attachments surface-flow" aria-label="Anexos">
-    <h2>Anexos</h2>
+    <header className="actions overview-heading">
+      <h2>Anexos{rows && <span className="context"> · {rows.length}</span>}</h2>
+      {!archived && rows !== null && !showUpload && <button disabled={blocked}
+        onClick={() => setShowUpload(true)}>Adicionar anexo</button>}
+    </header>
     {loadFailed && <div className="actions">
       <p className="error" aria-live="polite">Não foi possível carregar os anexos.</p>
       <button type="button" onClick={() => setRefresh((count) => count + 1)}>Recarregar anexos</button>
@@ -125,7 +131,7 @@ export function Attachments({ campaignUrl, documentId, archived, navigationPendi
     {retry && <button type="button" disabled={busy || navigationPending}
       onClick={() => void action(retry)}>Confirmar operação pendente do anexo</button>}
     {rows === null ? !loadFailed && <p className="context" aria-live="polite">Carregando anexos…</p> : rows.length === 0 ? <p>Nenhum anexo vinculado.</p> :
-      <ul className="session-list">{rows.map((file) => {
+      <ul className="session-list attachment-list">{rows.map((file) => {
         const url = `${path}/${file.id}/content`
         return <li key={file.id} className="attachment">
           {file.mime === 'image/png' && <img src={url} alt={file.name} loading="lazy" />}
@@ -153,12 +159,21 @@ export function Attachments({ campaignUrl, documentId, archived, navigationPendi
         </li>
       })}</ul>}
     {!archived && rows !== null && <>
-      <form ref={uploadForm} className="surface-flow attachment-controls" onSubmit={submit}>
+      {showUpload && <form ref={uploadForm} className="surface-flow attachment-controls" onSubmit={submit}>
         <label>Arquivo<input type="file" name="file" accept=".png,.pdf" required disabled={blocked}
           onChange={(event) => { upload.current = null; setSelectedFile(event.currentTarget.files?.[0] ?? null) }} /></label>
         <label>Origem do anexo<input name="source" maxLength={500} disabled={blocked} onChange={(event) => setSourceEdited(Boolean(event.currentTarget.value))} /></label>
-        <div className="actions"><button className="primary" disabled={blocked}>{busy ? 'Aguarde…' : 'Enviar anexo'}</button></div>
-      </form>
+        <div className="actions">
+          <button className="primary" disabled={blocked}>{busy ? 'Aguarde…' : 'Enviar anexo'}</button>
+          <button type="button" disabled={blocked} onClick={() => {
+            setShowUpload(false)
+            setSelectedFile(null)
+            setSourceEdited(false)
+            setError('')
+            upload.current = null
+          }}>Cancelar envio</button>
+        </div>
+      </form>}
       {available.length > 0 && <div className="surface-flow attachment-controls">
         <label>Arquivo existente<select value={selected} disabled={blocked}
           onChange={(event) => setSelected(event.currentTarget.value)}>

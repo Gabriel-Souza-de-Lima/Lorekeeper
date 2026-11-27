@@ -1,5 +1,8 @@
 # I3-04 — Missões abertas e personagem em destaque
 
+O destino Missões oferece guias Ativas e Encerradas e usa as mesmas páginas `quest` da Wiki. A visão geral mostra até três ativas e o indicador conta todas. [Apresentação Phandelver V2](40-phandelver-v2.md)
+
+
 - **Estado** — implementada, com CI remoto pendente.
 - **Objetivo** — retomar as pendências e abrir o personagem em destaque pela visão geral.
 - **Rastreabilidade** — MVP-02, MVP-09 e seções 4.5 e 4.8 do produto.

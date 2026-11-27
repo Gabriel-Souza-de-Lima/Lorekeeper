@@ -32,7 +32,7 @@ test('P1-01/02/03/06/07: abre referências no contexto e mantém rascunhos fora 
     await page.getByRole('button', { name: 'Voltar à campanha' }).click()
     await page.getByRole('region', { name: 'Missões abertas' }).getByRole('button', { name: 'Investigar a costa' }).click()
     await expect(page.getByRole('heading', { name: 'Investigar a costa' })).toBeVisible()
-    await page.getByRole('button', { name: 'Voltar à wiki' }).click()
+    await page.getByRole('button', { name: 'Voltar às missões' }).click()
     await page.getByRole('button', { name: 'Voltar à campanha' }).click()
     await panel.getByRole('button', { name: 'Travessia', exact: true }).click()
     await page.getByLabel('Anotações', { exact: true }).fill('Ainda em rascunho')

@@ -27,7 +27,7 @@ test('UX64-01/02: acervo explica exportação e diferencia carga de ação em pe
     await expect(page.getByRole('status')).toHaveText('Carregando pendências…')
     await expect(page.getByRole('button', { name: 'Carregando pendências…' })).toHaveCount(0)
     release.resolve()
-    await expect(page.getByText('Nenhuma pendência registrada.')).toBeVisible()
+    await expect(page.getByText('Nenhuma pendência aberta.')).toBeVisible()
     await page.setViewportSize({ width: 1280, height: 800 })
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(1280)
   } finally {
