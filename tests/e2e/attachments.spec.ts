@@ -40,6 +40,7 @@ test('P5-01/04/07: envia o primeiro PDF assim que os anexos da sessão estão di
     await page.getByRole('button', { name: 'Ilhas', exact: true }).click()
     await page.getByText('Anexos da campanha', { exact: true }).click()
     const panel = page.getByRole('region', { name: 'Anexos' })
+    await panel.getByRole('button', { name: 'Adicionar anexo' }).click()
     const file = panel.getByLabel('Arquivo', { exact: true })
     const send = panel.getByRole('button', { name: 'Enviar anexo' })
     await expect(file).toBeEnabled()
@@ -53,6 +54,7 @@ test('P5-01/04/07: envia o primeiro PDF assim que os anexos da sessão estão di
     await expect(panel.getByText('Carregando anexos…')).toBeVisible()
     await expect(file).toHaveCount(0)
     attachmentsResponse.resolve()
+    await panel.getByRole('button', { name: 'Adicionar anexo' }).click()
     await expect(file).toBeEnabled()
     await file.setInputFiles({ name: 'ficha.pdf', mimeType: 'application/pdf', buffer: Buffer.from(pdf) })
     const [response] = await Promise.all([
@@ -82,6 +84,7 @@ test('P5-01/03/07/11: mostra imagem e remove só o vínculo confirmado', async (
     await page.getByText('Anexos da campanha', { exact: true }).click()
     const attachments = page.getByRole('region', { name: 'Anexos' })
     await expect(attachments.getByText('Nenhum anexo vinculado.')).toBeVisible({ timeout: 4000 })
+    await attachments.getByRole('button', { name: 'Adicionar anexo' }).click()
     await attachments.getByLabel('Arquivo').setInputFiles({ name: 'mapa.png', mimeType: 'image/png', buffer: Buffer.from(
       'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGMImMb1HwAEGgHwIgPnSQAAAABJRU5ErkJggg==', 'base64',
     ) })

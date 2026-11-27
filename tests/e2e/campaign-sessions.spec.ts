@@ -112,6 +112,7 @@ test('UX70-03: anexos sem envio e gravação incerta impedem saída silenciosa',
     await page.goto(origin)
     await page.getByRole('button', { name: 'Costa', exact: true }).click()
     await page.getByText('Anexos da campanha', { exact: true }).click()
+    await page.getByRole('button', { name: 'Adicionar anexo' }).click()
     await page.getByLabel('Arquivo', { exact: true }).setInputFiles({
       name: 'registro.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.4'),
     })
@@ -170,6 +171,7 @@ test('UX70-03a/b/c: confirma anexo e página da wiki sem abandonar operações i
     await page.goto(origin)
     await page.getByRole('button', { name: 'Costa fictícia', exact: true }).click()
     await page.getByText('Anexos da campanha', { exact: true }).click()
+    await page.getByRole('button', { name: 'Adicionar anexo' }).click()
     await page.getByLabel('Arquivo', { exact: true }).setInputFiles({
       name: 'registro.pdf', mimeType: 'application/pdf', buffer: pdf,
     })
@@ -191,6 +193,7 @@ test('UX70-03a/b/c: confirma anexo e página da wiki sem abandonar operações i
     await expect(page.getByRole('link', { name: 'registro.pdf' })).toBeVisible()
     expect(uploads).toEqual([uploads[0], uploads[0]])
     expect(await (await request.get(root + '/attachments')).json()).toHaveLength(1)
+    await page.getByRole('button', { name: 'Adicionar anexo' }).click()
     await page.getByLabel('Arquivo', { exact: true }).setInputFiles({
       name: 'mapa.pdf', mimeType: 'application/pdf', buffer: pdf,
     })
@@ -198,7 +201,7 @@ test('UX70-03a/b/c: confirma anexo e página da wiki sem abandonar operações i
     await goWiki.click()
     await expect(send).toHaveCount(0)
     await dialog.getByRole('button', { name: 'Cancelar' }).click()
-    await page.getByRole('region', { name: 'Anexos' }).getByRole('button', { name: 'Cancelar' }).click()
+    await page.getByRole('region', { name: 'Anexos' }).getByRole('button', { name: 'Cancelar', exact: true }).click()
     await goWiki.click()
     await send.click()
     await expect(page.getByRole('heading', { name: 'Wiki da campanha' })).toBeFocused()

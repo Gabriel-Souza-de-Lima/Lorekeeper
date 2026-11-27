@@ -1,5 +1,8 @@
 # P5 — Anexos de campanha
 
+Na visão geral, os anexos ficam em seção expansível. O formulário abre por Adicionar anexo. Nomes e metadados têm largura própria, e as ações podem quebrar sem comprimir o nome. Guarda de navegação e reenvio preservam o mesmo arquivo e identificador. [Apresentação Phandelver V2](40-phandelver-v2.md)
+
+
 **Estado.** Aprovado na validação local do Windows e na regressão de abertura da sessão.
 
 ## Armazenamento e ciclo de vida

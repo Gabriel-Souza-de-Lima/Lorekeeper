@@ -406,7 +406,7 @@ function App() {
             setView({ page: 'session', campaign: view.campaign, session })
           })
         }} />
-      case 'pending-items': return <PendingItems campaign={view.campaign} itemId={view.itemId}
+      case 'pending-items': return <PendingItems key={view.campaign.id + (view.itemId ?? '')} campaign={view.campaign} itemId={view.itemId}
         onBack={() => void action(() => openCampaign(view.campaign.id))}
         onSession={(id) => void action(async () => {
           const session = await api<Session>(`${campaignPath}/${view.campaign.id}/sessions/${id}`)

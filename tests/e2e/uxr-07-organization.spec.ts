@@ -62,6 +62,7 @@ test('UX70-07/08: mede os campos e as ações de estado nas larguras suportadas'
     await page.goto(origin)
     await page.getByRole('button', { name: 'Costa fictícia', exact: true }).click()
     await page.getByRole('button', { name: 'Pendências', exact: true }).click()
+    await page.getByRole('button', { name: 'Nova pendência' }).click()
     const form = page.getByRole('form', { name: 'Nova pendência' })
     const field = (name: string) => form.getByLabel(name, { exact: name !== 'Tipo' && name !== 'Sessão de origem' && name !== 'NPCs e localidades' })
     await field('Título').fill('Pista fictícia')

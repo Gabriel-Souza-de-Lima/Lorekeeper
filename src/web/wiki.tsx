@@ -1,3 +1,4 @@
+import { Pagination } from './campaign-overview.tsx'
 import { FavoriteButton } from './favorites.tsx'
 import { useLeave, usePendingNavigation } from './navigation-guard.tsx'
 import { Attachments } from './attachments.tsx'
@@ -24,6 +25,9 @@ export function Wiki({ campaign, initialPage, charactersOnly, questsOnly, onOpen
   onSearchBack?: () => void
 }) {
   const url = `/api/campaigns/${campaign.id}/wiki`
+  const [missionPage, setMissionPage] = useState(1)
+  const [missionTab, setMissionTab] = useState<'active' | 'closed'>('active')
+  const [openMissions, setOpenMissions] = useState<Set<string>>(new Set())
   const [pages, setPages] = useState<WikiSummary[] | null>(null)
   const [page, setPage] = useState<WikiDetails | null>(initialPage ?? null)
   const [draft, setDraft] = useState<WikiPage | null>(null)
@@ -60,12 +64,19 @@ export function Wiki({ campaign, initialPage, charactersOnly, questsOnly, onOpen
 
   useEffect(() => {
     let active = true
-    void api<WikiSummary[]>(url).then(
-      (items) => { if (active) setPages(items) },
+    void Promise.all([
+      api<WikiSummary[]>(url),
+      questsOnly ? api<WikiSummary[]>(url + '?openQuests=true') : Promise.resolve([]),
+    ]).then(
+      ([items, missions]) => {
+        if (!active) return
+        setPages(items)
+        setOpenMissions(new Set(missions.map(({ id }) => id)))
+      },
       () => { if (active) setError('Não foi possível carregar a wiki.') },
     )
     return () => { active = false }
-  }, [refresh, url])
+  }, [questsOnly, refresh, url])
 
   async function open(id: string) {
     setBusy(true)
@@ -111,7 +122,14 @@ export function Wiki({ campaign, initialPage, charactersOnly, questsOnly, onOpen
     setError('')
     try {
       if (current.type === 'quest') {
-        setPage(await api<WikiDetails>(`${url}/${current.id}/quest-state`, 'PUT', { closed: !current.closed }))
+        const saved = await api<WikiDetails>(`${url}/${current.id}/quest-state`, 'PUT', { closed: !current.closed })
+        setPage(saved)
+        setOpenMissions((ids) => {
+          const next = new Set(ids)
+          if (saved.closed) next.delete(saved.id)
+          else next.add(saved.id)
+          return next
+        })
       } else {
         const id = featuredId === current.id ? null : current.id
         const updated = await api<Campaign>(`/api/campaigns/${campaign.id}/featured-character`, 'PUT', { id })
@@ -165,7 +183,7 @@ export function Wiki({ campaign, initialPage, charactersOnly, questsOnly, onOpen
 
   const feedback = error && <p className="error" role="alert">{error}</p>
   if (page) return <>
-    <button className="quiet" disabled={busy} onClick={() => leave(() => { opener.current = page.id; setError(''); setTitle(null); setTitleConflict(false); setPage(null) })}>Voltar à wiki</button>
+    <button className="quiet" disabled={busy} onClick={() => leave(() => { opener.current = page.id; setError(''); setTitle(null); setTitleConflict(false); setPage(null) })}>{questsOnly ? 'Voltar às missões' : 'Voltar à wiki'}</button>
     {onSearchBack && <button className="quiet" disabled={busy} onClick={() => leave(onSearchBack)}>Voltar à busca</button>}
     <header className="page-header"><div><p className="context">{campaign.name} · {labels[page.type]}</p>
       <h1 ref={articleHeading} tabIndex={-1}>{page.title}</h1></div></header>
@@ -199,10 +217,10 @@ export function Wiki({ campaign, initialPage, charactersOnly, questsOnly, onOpen
     </Fragment>
   </>
   if (draft) return <>
-    <h1>Nova página da wiki</h1>
+    <h1>{questsOnly ? 'Nova missão' : 'Nova página da wiki'}</h1>
     <form className="panel campaign-form" onSubmit={(event) => { event.preventDefault(); void createPage() }}>
       <fieldset className="form-grid" disabled={busy || uncertain}>
-        <label>Tipo<select value={draft.type} onChange={(event) => setDraft({ ...draft, type: event.target.value as WikiType })}>
+        <label>Tipo<select value={draft.type} disabled={questsOnly} onChange={(event) => setDraft({ ...draft, type: event.target.value as WikiType })}>
           {wikiTypes.map((type) => <option key={type} value={type}>{labels[type]}</option>)}
         </select></label>
         <label>Título<input required value={draft.title} onChange={(event) => setDraft({ ...draft, title: event.target.value })} /></label>
@@ -210,21 +228,26 @@ export function Wiki({ campaign, initialPage, charactersOnly, questsOnly, onOpen
           onChange={(event) => setDraft({ ...draft, body: event.target.value })} /></label>
       </fieldset>
       <div className="actions">
-        <button className="primary" disabled={busy}>{uncertain ? 'Repetir envio' : 'Criar página'}</button>
+        <button className="primary" disabled={busy}>{uncertain ? 'Repetir envio' : questsOnly ? 'Criar missão' : 'Criar página'}</button>
         <button type="button" disabled={busy} onClick={() => leave(() => {
           setDraft(null)
           setPage(null)
           setError('')
           setUncertain(false)
           setRefresh((value) => value + 1)
-        })}>Voltar à wiki</button>
+        })}>{questsOnly ? 'Voltar às missões' : 'Voltar à wiki'}</button>
       </div>
       {feedback}
     </form>
   </>
 
-  const visiblePages = questsOnly ? pages?.filter(({ type }) => type === 'quest')
+  const missions = pages?.filter(({ type }) => type === 'quest') ?? []
+  const visiblePages = questsOnly ? missions.filter(({ id }) => openMissions.has(id) === (missionTab === 'active'))
     : charactersOnly ? pages?.filter(({ type }) => type === 'character' || type === 'npc') : pages
+  const missionPages = Math.max(1, Math.ceil((visiblePages?.length ?? 0) / 8))
+  const currentMissionPage = Math.min(missionPage, missionPages)
+  const displayedPages = questsOnly ? visiblePages?.slice((currentMissionPage - 1) * 8, currentMissionPage * 8) : visiblePages
+
 
   return <>
     <button className="quiet" disabled={busy} onClick={() => leave(onBack)}>Voltar à campanha</button>
@@ -233,15 +256,20 @@ export function Wiki({ campaign, initialPage, charactersOnly, questsOnly, onOpen
       {!campaign.archivedAt && <button className="primary" disabled={busy} onClick={() => {
         setError('')
         setDraft({ id: crypto.randomUUID(), type: questsOnly ? 'quest' : 'character', title: '', body: '' })
-      }}>Nova página</button>}
+      }}>{questsOnly ? 'Nova missão' : 'Nova página'}</button>}
     </header>
     {feedback}
+    {questsOnly && pages && <div className="tabs" role="group" aria-label="Estado da missão">
+      <button aria-pressed={missionTab === 'active'} onClick={() => { setMissionTab('active'); setMissionPage(1) }}>Ativas {openMissions.size}</button>
+      <button aria-pressed={missionTab === 'closed'} onClick={() => { setMissionTab('closed'); setMissionPage(1) }}>Encerradas {missions.length - openMissions.size}</button>
+    </div>}
     {pages === null ? error ? <button onClick={() => { setError(''); setRefresh((value) => value + 1) }}>Recarregar wiki</button>
       : <p>Carregando páginas…</p>
-      : !visiblePages?.length ? <p className="panel empty">{charactersOnly ? 'Nenhum personagem cadastrado.' : 'Nenhuma página cadastrada.'}</p>
-        : <ul ref={list} className="session-list">{visiblePages.map((item) => <li key={item.id} className="panel">
+      : !visiblePages?.length ? <p className="panel empty">{questsOnly ? 'Nenhuma missão nesta guia.' : charactersOnly ? 'Nenhum personagem cadastrado.' : 'Nenhuma página cadastrada.'}</p>
+        : <ul ref={list} className="session-list">{displayedPages?.map((item) => <li key={item.id} className="panel">
           <button className="quiet" data-wiki-page={item.id} disabled={busy} onClick={() => void open(item.id)}>{item.title}</button>
           <span>{labels[item.type]}</span>
         </li>)}</ul>}
+    {questsOnly && <Pagination page={currentMissionPage} pages={missionPages} onChange={setMissionPage} />}
   </>
 }
